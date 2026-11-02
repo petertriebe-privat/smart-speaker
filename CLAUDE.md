@@ -15,7 +15,7 @@ shared/prompts/      persona.h, prompts.h, assistant_name.h: one source for ever
                      prompts.json, made by core/tools/extract_prompts.py)
 services/            servers next to the devices: deployer, home-gateway, mcp-servers, agent-mcp,
                      whatsapp-relay
-tools/               cross-device tools (wake word training)
+tools/               cross-device tools (wake word training, github-settings.sh for the repository)
 ```
 
 - Open work, ideas and bugs: GitHub issues (`gh issue list`), not a file in the repo.

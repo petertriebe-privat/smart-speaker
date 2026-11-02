@@ -169,7 +169,7 @@ sh tools/deploy.sh --all      # every device with local/devices/<host>.json, Dot
 ```
 
 [`tools/deploy.sh`](../../tools/deploy.sh) recognises the Dot because the host is
-in `local/dot-ssh/config`. It runs vet and tests, builds, copies `assistant`, `assistant.sh`,
+in `local/dot-ssh/config`. It runs vet and tests, builds, copies `jarvis`, `assistant.sh`,
 `install-assistant.sh` and optional `device.json`, secrets, `librespot`, `btspeaker` into
 `/data/echo-dot-dev/jarvis-stage`, and runs `install-assistant.sh` there. The first install of the
 service reboots the Dot once, because `services.sh` reads its list at boot. After that,

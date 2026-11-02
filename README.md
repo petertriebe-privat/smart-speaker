@@ -230,13 +230,20 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   owner's merge deploys it on every Echo through the CI on the Raspberry Pi, which checks that the
   new version runs, rolls back when not, and reports it in Telegram (`services/deployer`; the CI pipeline itself is set up per repository and is not part of this repository yet).
   The server agent reads every Echo's status, logs and errors for the analysis, only reading and through the
-  Pi (`ssh jarvis-diag`, skill `assistant`) *(Echo)*. The Fire TV app is built and installed on every
+  Pi (`ssh jarvis-diag`, skill `jarvis`) *(Echo)*. The Fire TV app is built and installed on every
   stick the same way, as an update that keeps its setup.
 - Delivery: results, reminders and hints the assistant brings unasked go to the phone (Telegram or
   WhatsApp); on a speaker only when the user names it (or, for hints, where the presence sensor
   sees someone), a phone call only when asked or very important.
-- Backups of the memory in Google Drive, an error log, a self-test; tests on the devices (`assistant
+- Backups of the memory in Google Drive, an error log, a self-test; tests on the devices (`jarvis
   ctl`, the M5's serial suite) and an evaluation bench for prompts and tools *(Echo)*.
+
+## Contributing
+
+Ideas and bug reports are welcome as issues. To change something, fork the repository and open a
+pull request; only the owner pushes to `main`. Workflows from a pull request run only after the
+owner approved them. Please keep household data (names, addresses, devices) out of everything you
+send: your own values belong in the git-ignored files described above.
 
 ## Thank you
 

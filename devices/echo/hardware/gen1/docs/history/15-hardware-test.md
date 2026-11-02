@@ -55,7 +55,7 @@ Tested: after a restart the chain starts automatically (by the assistant) in abo
 | 0x35 | 12 o'clock | 11 o'clock | 10 o'clock |
 
 - The red LED in the mute button is connected neither to the GPO outputs of the LP5523 nor to `power-led`/`network-led`: it is switched by the hardware (see mute).
-- `led_offset` in the settings rotates the picture if needed; test: `assistant ctl ledtest` (a red light runs clockwise from 12 o'clock).
+- `led_offset` in the settings rotates the picture if needed; test: `jarvis ctl ledtest` (a red light runs clockwise from 12 o'clock).
 
 ## Buttons and volume ring
 
