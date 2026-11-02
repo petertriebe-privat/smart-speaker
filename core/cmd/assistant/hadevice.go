@@ -33,9 +33,9 @@ func (d *device) haName() string {
 
 // haDeviceID: stable across renames and unique: the WiFi's MAC address. Not the host name: both
 // Echo Gen 1 report "(none)" and became one device in HA (27.10.2026).
-// The Fire TV app passes its Android id in ASSISTANT_ID: Android hides the MAC address from apps.
+// The Fire TV app passes its Android id in JARVIS_ID: Android hides the MAC address from apps.
 func haDeviceID() string {
-	if id := mqtt.TopicID(os.Getenv("ASSISTANT_ID")); id != "" {
+	if id := mqtt.TopicID(os.Getenv("JARVIS_ID")); id != "" {
 		return prompts.Slug() + "_tv_" + id
 	}
 	return prompts.Slug() + "_" + cmp.Or(macID(interfaces()), "speaker")

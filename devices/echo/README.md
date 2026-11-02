@@ -25,12 +25,12 @@ hardware/dot2/   Echo Dot 2: own Linux (init, network, services), unlock and boo
 local/           git-ignored: SSH profiles, WiFi, keys, device settings, persona, images, backups
 ```
 
-On the Echo the program lives in `/usr/local/echo-dev/assistant/assistant` (the Dot:
-`/data/echo-dot-dev/assistant/assistant`), its state in `/mnt/data/assistant`, its secrets in
-`assistant-secrets.json` (made by `tools/make_secrets.py` from `devices/atoms3r/include/secrets.h`)
-and it is started by `services/assistant.sh`. The command line tool is `assistant ctl …`
-(`assistant rawcapture …` records raw microphones). An own wake word model goes to
-`/mnt/data/assistant/wakemodel/` (see [tools/wakeword](../../tools/wakeword/README.md)).
+On the Echo the program lives in `/usr/local/echo-dev/jarvis/jarvis` (the Dot:
+`/data/echo-dot-dev/jarvis/jarvis`), its state in `/mnt/data/jarvis`, its secrets in
+`jarvis-secrets.json` (made by `tools/make_secrets.py` from `devices/atoms3r/include/secrets.h`)
+and it is started by `services/jarvis.sh`. The command line tool is `jarvis ctl …`
+(`jarvis rawcapture …` records raw microphones). An own wake word model goes to
+`/mnt/data/jarvis/wakemodel/` (see [tools/wakeword](../../tools/wakeword/README.md)).
 
 ## Deploying
 
@@ -48,11 +48,6 @@ A merge into `main` can deploy on every Echo through a CI job on a Raspberry Pi
 (`services/deployer`); the CI pipeline itself is set up per repository and is not part of this
 repository yet.
 
-**First deploy from this repository.** An Echo installed under the earlier names (everything
-called `jarvis`) is migrated once by the installer: it moves the folders and the data to the
-`assistant` names. The Gen 1 reboots once; the Dot reboots once for the new service. Later
-deploys do not.
-
 For a household's own persona, run `py -3 core/tools/extract_prompts.py --persona`: it writes
 `local/assistant/persona.json`, which the deploy puts into the Echo's state directory as
 `persona.json`.
@@ -61,7 +56,7 @@ For a household's own persona, run `py -3 core/tools/extract_prompts.py --person
 
 | Document | What it covers |
 |---|---|
-| [docs/16-assistant.md](docs/16-assistant.md) | The assistant on the Echo: architecture, control commands (`assistant ctl`), measurements, lessons |
+| [docs/16-assistant.md](docs/16-assistant.md) | The assistant on the Echo: architecture, control commands (`jarvis ctl`), measurements, lessons |
 | [docs/18-several-echos.md](docs/18-several-echos.md) | Several Echos as one assistant: leader, rooms, shared state, failover |
 | [docs/17-bluetooth.md](docs/17-bluetooth.md) | Bluetooth on the Echo Gen 1 |
 | [docs/22-alexa-wakeword-original.md](docs/22-alexa-wakeword-original.md) | How Amazon's own engine on the Echo Gen 1 detects its wake word |

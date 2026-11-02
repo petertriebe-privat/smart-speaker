@@ -92,7 +92,7 @@ start() {
     i=0
     while [ $i -lt 20 ] && [ ! -S $PULSE_SOCKET ]; do sleep 1; i=$((i+1)); done
     if [ -S $PULSE_SOCKET ]; then log "pulseaudio ready"; else log "pulseaudio socket missing"; return 1; fi
-    # Fixed DSP level (100: the ring's top is the speaker's maximum, as with Alexa); The assistant sets
+    # Fixed DSP level (100: the ring's top is the speaker's maximum, as with Alexa); Jarvis sets
     # the volume as a gain on its own samples. One call only:
     # audioCtrl's LIPC property deadlocked during repeated calls (16.10.2026).
     $BIN/lipc-set-prop -i com.doppler.audiod MainVolume ${DSP_VOLUME:-100} > $RUN/volume.log 2>&1 &

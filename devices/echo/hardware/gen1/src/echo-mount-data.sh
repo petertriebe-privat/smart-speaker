@@ -1,6 +1,6 @@
 #!/bin/sh
 # Mount the eMMC data partition (Amazon's /var/local, ext3, label "data") read-write at
-# /mnt/data for the assistant's state (/mnt/data/assistant). The stock system mounts it read-write at every
+# /mnt/data for Jarvis' state (/mnt/data/jarvis). The stock system mounts it read-write at every
 # boot too; Amazon's files stay untouched. Checks label and ext3 magic before mounting.
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DEV=/dev/mmcblk0p8
@@ -14,6 +14,6 @@ ok = struct.unpack("<H", sb[56:58])[0] == 0xEF53 and sb[120:136].rstrip(chr(0)) 
 sys.exit(0 if ok else 1)' "$DEV" || { echo "mount-data: $DEV is not the ext3 data partition"; exit 1; }
 mkdir -p "$MNT"
 mount -t ext3 -o rw,noatime,data=ordered "$DEV" "$MNT" || exit 1
-mkdir -p "$MNT/assistant"
-chmod 700 "$MNT/assistant"
+mkdir -p "$MNT/jarvis"
+chmod 700 "$MNT/jarvis"
 echo "mount-data: $MNT ready"

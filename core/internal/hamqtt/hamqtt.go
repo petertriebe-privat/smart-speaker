@@ -36,7 +36,7 @@ type Device struct {
 
 const discoveryPrefix = "homeassistant"
 
-func (d *Device) base() string         { return "assistant/" + d.ID }
+func (d *Device) base() string         { return "jarvis/" + d.ID }
 func (d *Device) availability() string { return d.base() + "/status" }
 func (d *Device) stateTopic(key string) string {
 	return d.base() + "/" + key
@@ -45,7 +45,7 @@ func (d *Device) commandTopic(key string) string { return d.base() + "/" + key +
 
 // Start connects to the broker and keeps the device up to date. Returns at once.
 func (d *Device) Start(url, user, password string) error {
-	c, err := mqtt.New(mqtt.Options{URL: url, User: user, Password: password, ClientID: "assistant_" + d.ID,
+	c, err := mqtt.New(mqtt.Options{URL: url, User: user, Password: password, ClientID: "jarvis_" + d.ID,
 		WillTopic: d.availability(), WillPayload: "offline",
 		OnConnect: d.onConnect, OnMessage: d.onMessage})
 	if err != nil {

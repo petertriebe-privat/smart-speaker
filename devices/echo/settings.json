@@ -2,8 +2,8 @@
  "volume": 40,
  "led_level": 120,
  "led_offset": 0,
- "state_dir": "/mnt/data/assistant",
- "run_dir": "/mnt/assistant",
+ "state_dir": "/mnt/data/jarvis",
+ "run_dir": "/mnt/jarvis",
  "echo_gate": false,
  "primary": false
 }

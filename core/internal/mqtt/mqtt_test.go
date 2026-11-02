@@ -46,7 +46,7 @@ func TestSession(t *testing.T) {
 		defer conn.Close()
 		r := bufio.NewReader(conn)
 		kind, body, _ := readPacket(r)
-		if kind != 1 || !bytes.Contains(body, []byte("assistant/x/status")) || !bytes.Contains(body, []byte("secret")) ||
+		if kind != 1 || !bytes.Contains(body, []byte("jarvis/x/status")) || !bytes.Contains(body, []byte("secret")) ||
 			body[7]&0xC6 != 0xC6 {
 			got <- "bad connect"
 			return
@@ -60,7 +60,7 @@ func TestSession(t *testing.T) {
 			switch kind {
 			case 8:
 				got <- "subscribe " + string(body[4:len(body)-1])
-				conn.Write(publishPacket("assistant/x/volume/set", []byte("55"), false))
+				conn.Write(publishPacket("jarvis/x/volume/set", []byte("55"), false))
 			case 3:
 				m, _ := parsePublish(body)
 				got <- "publish " + m.Topic + " " + string(m.Payload)
@@ -69,17 +69,17 @@ func TestSession(t *testing.T) {
 	}()
 	received := make(chan Message, 1)
 	c, err := New(Options{URL: "mqtt://" + ln.Addr().String(), User: "jarvis", Password: "secret", ClientID: "x",
-		WillTopic: "assistant/x/status", WillPayload: "offline", KeepAlive: time.Minute,
+		WillTopic: "jarvis/x/status", WillPayload: "offline", KeepAlive: time.Minute,
 		OnConnect: func(c *Client) {
-			c.Publish("assistant/x/status", []byte("online"), true)
-			c.Subscribe("assistant/x/+/set")
+			c.Publish("jarvis/x/status", []byte("online"), true)
+			c.Subscribe("jarvis/x/+/set")
 		},
 		OnMessage: func(m Message) { received <- m }})
 	if err != nil {
 		t.Fatal(err)
 	}
 	go c.session()
-	want := []string{"publish assistant/x/status online", "subscribe assistant/x/+/set"}
+	want := []string{"publish jarvis/x/status online", "subscribe jarvis/x/+/set"}
 	for _, w := range want {
 		select {
 		case g := <-got:
@@ -92,7 +92,7 @@ func TestSession(t *testing.T) {
 	}
 	select {
 	case m := <-received:
-		if m.Topic != "assistant/x/volume/set" || string(m.Payload) != "55" {
+		if m.Topic != "jarvis/x/volume/set" || string(m.Payload) != "55" {
 			t.Fatalf("received %+v", m)
 		}
 	case <-time.After(3 * time.Second):

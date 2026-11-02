@@ -302,8 +302,8 @@ String welcome(const Person& p)
         ways += "<li><b>Telegram:</b> <a href=\"" + link + "\">diesen Link öffnen</a> und auf „Starten“ tippen. "
                 "Danach erkennt " ASSISTANT_NAME " Sie dort; Sie können ihm schreiben und Sprachnachrichten, Fotos oder Dateien "
                 "schicken.</li>";
-    if (*ASSISTANT_PHONE_NUMBER && p.phones.size())
-        ways += "<li><b>Telefon:</b> " + html(ASSISTANT_PHONE_NUMBER) + " anrufen. Von Ihrer Nummer " + html(p.phones[0]) +
+    if (*JARVIS_PHONE_NUMBER && p.phones.size())
+        ways += "<li><b>Telefon:</b> " + html(JARVIS_PHONE_NUMBER) + " anrufen. Von Ihrer Nummer " + html(p.phones[0]) +
                 " aus erkennt er Sie.</li>";
     if (mail::takesCommands())
         ways += "<li><b>E-Mail:</b> an " + html(mail::address()) + " schreiben, was er erledigen soll; er antwortet "

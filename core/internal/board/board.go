@@ -12,14 +12,14 @@ const dotPrivacy = "/sys/devices/soc/10010000.keypad/amz_privacy"
 var Dot2 = present(dotPrivacy)
 
 // FireTV: running inside the assistant app on a Fire TV stick (devices/android/firetv), which starts
-// The assistant with ASSISTANT_BOARD=firetv: no ring, no buttons, microphone and speaker are the app's
+// The assistant with JARVIS_BOARD=firetv: no ring, no buttons, microphone and speaker are the app's
 // (internal/audio/tv.go), the remote's microphone key is push to talk.
-var FireTV = os.Getenv("ASSISTANT_BOARD") == "firetv"
+var FireTV = os.Getenv("JARVIS_BOARD") == "firetv"
 
 // Phone: running inside the assistant app on an Android phone (devices/android/phone, #75), started
-// with ASSISTANT_BOARD=phone: microphone and speaker are the app's as on the Fire TV, its the assistant
+// with JARVIS_BOARD=phone: microphone and speaker are the app's as on the Fire TV, its the assistant
 // button talks (tap: a conversation, held: push to talk; cmd/assistant/phoneboard.go).
-var Phone = os.Getenv("ASSISTANT_BOARD") == "phone"
+var Phone = os.Getenv("JARVIS_BOARD") == "phone"
 
 // Android: inside one of the Android apps (FireTV or Phone): no ring, no buttons, no Bluetooth
 // stack, the clock is Android's, and Android's seccomp filter forbids some system calls.

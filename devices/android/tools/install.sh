@@ -1,10 +1,10 @@
 #!/bin/sh
-# Build the assistant app and install it on a Fire TV stick over network ADB.
+# Build the Jarvis app and install it on a Fire TV stick over network ADB.
 #
 #   devices/android/tools/install.sh <stick host> <room> [name] [--core]
 #
-# Without --core the stick is the screen of the other the assistant devices (cards over MQTT). With
-# --core it runs a assistant of its own (core/, board firetv): the household's secrets go into the
+# Without --core the stick is the screen of the other Jarvis devices (cards over MQTT). With
+# --core it runs a Jarvis of its own (core/, board firetv): the household's secrets go into the
 # app's private files, the remote's microphone key talks to him, he answers from the TV.
 #
 # The stick needs ADB debugging on (Settings > My Fire TV > Developer options); the first
@@ -34,7 +34,7 @@ secrets_w=$(cygpath -w "$secrets" 2>/dev/null || echo "$secrets") # Windows Pyth
 export ANDROID_HOME=${ANDROID_HOME:-'E:\Android\sdk'}
 export JAVA_HOME=${JAVA_HOME_17:-'E:\Android\jdk17'}
 adb="$(cygpath -u "$ANDROID_HOME" 2>/dev/null || echo "$ANDROID_HOME")/platform-tools/adb"
-pkg=dev.smartspeaker.screen
+pkg=dev.jarvis.screen
 case "$host" in *:*) target=$host ;; *) target=$host:5555 ;; esac
 
 if [ -z "$SKIP_BUILD" ]; then
@@ -44,7 +44,7 @@ if [ -z "$SKIP_BUILD" ]; then
     mkdir -p "$lib"
     (cd "$repo/core" && python tools/extract_prompts.py >/dev/null &&
         CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w" \
-            -o "$(cygpath -w "$lib/libassistant.so" 2>/dev/null || echo "$lib/libassistant.so")" ./cmd/assistant)
+            -o "$(cygpath -w "$lib/libjarvis.so" 2>/dev/null || echo "$lib/libjarvis.so")" ./cmd/assistant)
     (cd "$here" && ./gradlew --quiet :firetv:assembleDebug)
 fi
 apk="$here/firetv/build/outputs/apk/debug/firetv-debug.apk"
@@ -59,19 +59,19 @@ fi
 
 "$adb" connect "$target" >/dev/null
 # Installed as from Amazon's Appstore: Fire OS' home screen lists no app without an installer
-# (installed by plain ADB, the assistant was found only under Settings > Applications).
+# (installed by plain ADB, Jarvis was found only under Settings > Applications).
 "$adb" -s "$target" install -r -i com.amazon.venezia "$apk"
 # Fire OS has no settings page for "display over other apps"; ADB may grant it.
 "$adb" -s "$target" shell appops set $pkg SYSTEM_ALERT_WINDOW allow
-# No microphone symbol at the top right for the assistant (SystemUI's exemption list; read when SystemUI
+# No microphone symbol at the top right for Jarvis (SystemUI's exemption list; read when SystemUI
 # starts, so it takes effect after the stick's next restart).
 "$adb" -s "$target" shell settings put global sysui_mic_disclosure_exempt $pkg
 if [ -n "$core" ]; then
     "$adb" -s "$target" shell pm grant $pkg android.permission.RECORD_AUDIO
     # The secrets into the app's private files (run-as works for this debug build); the copy in
     # /data/local/tmp lives only for the moment of the transfer.
-    MSYS_NO_PATHCONV=1 "$adb" -s "$target" push "$secrets_w" /data/local/tmp/assistant-secrets.json >/dev/null
-    MSYS_NO_PATHCONV=1 "$adb" -s "$target" shell "cat /data/local/tmp/assistant-secrets.json | run-as $pkg sh -c 'mkdir -p files && cat > files/secrets.json && chmod 600 files/secrets.json'; rm /data/local/tmp/assistant-secrets.json"
+    MSYS_NO_PATHCONV=1 "$adb" -s "$target" push "$secrets_w" /data/local/tmp/jarvis-secrets.json >/dev/null
+    MSYS_NO_PATHCONV=1 "$adb" -s "$target" shell "cat /data/local/tmp/jarvis-secrets.json | run-as $pkg sh -c 'mkdir -p files && cat > files/secrets.json && chmod 600 files/secrets.json'; rm /data/local/tmp/jarvis-secrets.json"
 fi
 # Values in single quotes for the stick's shell.
 q() { printf "'%s'" "$(printf %s "$1" | sed "s/'/'\\\\''/g")"; }
@@ -79,4 +79,4 @@ q() { printf "'%s'" "$(printf %s "$1" | sed "s/'/'\\\\''/g")"; }
     --es mqtt_user $(q "$mqtt_user") --es mqtt_password $(q "$mqtt_password") \
     --es room $(q "$room") --es name $(q "$name")" >/dev/null
 sleep 4
-"$adb" -s "$target" logcat -d -s AssistantScreen:* AssistantCore:* | tail -12
+"$adb" -s "$target" logcat -d -s JarvisScreen:* JarvisCore:* | tail -12

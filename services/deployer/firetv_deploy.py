@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""The assistant's deploy on the Fire TV sticks (#126), on the Raspberry Pi: a merge into main goes onto
+"""Jarvis' deploy on the Fire TV sticks (#126), on the Raspberry Pi: a merge into main goes onto
 every stick, as the Echos get it (deployer.py).
 
-Run by the CI (job "firetv-deploy" of .github/workflows/assistant-build.yml) on the Pi's runner:
+Run by the CI (job "firetv-deploy" of .github/workflows/jarvis-build.yml) on the Pi's runner:
 
-    python3 /opt/assistant-deployer/firetv_deploy.py <commit> <apk>
+    python3 /opt/jarvis-deployer/firetv_deploy.py <commit> <apk>
 
 The CI's debug APK is re-signed with the key of the app already on the sticks (the PC's debug
 keystore, ~/.android/debug.keystore; Android installs an update only with the same key), then
 installed over network ADB as devices/android/tools/install.sh does it, as an update: the app
 keeps its settings and secrets, so nothing secret is needed here. The Pi's ADB key is the PC's
-(~/.android/adbkey), which the sticks already allow. A stick whose app runs a assistant of its own
+(~/.android/adbkey), which the sticks already allow. A stick whose app runs a Jarvis of its own
 (files/secrets.json) must log "starting, version <commit>"; one that fails gets the last good
-APK back. Telegram reports the outcome. Sticks: /opt/assistant-deployer/local/firetv/<name>.json
+APK back. Telegram reports the outcome. Sticks: /opt/jarvis-deployer/local/firetv/<name>.json
 with {"host": "<address>"}. Offline test: python3 test_firetv_deploy.py
 """
 import json
@@ -24,7 +24,7 @@ from pathlib import Path
 
 import deployer
 
-PKG = "dev.smartspeaker.screen"
+PKG = "dev.jarvis.screen"
 
 
 class Adb:
@@ -76,7 +76,7 @@ class FireTV:
             return "nicht erreichbar"
         core = self.shell(target, f"run-as {PKG} ls files/secrets.json").returncode == 0
         mic = "RECORD_AUDIO: granted=true" in self.shell(target, f"dumpsys package {PKG}").stdout
-        # as from Amazon's Appstore, so Fire OS' home screen lists the assistant (install.sh)
+        # as from Amazon's Appstore, so Fire OS' home screen lists Jarvis (install.sh)
         r = self.adb("-s", target, "install", "-r", "-i", "com.amazon.venezia", str(apk), timeout=300)
         if "Success" not in r.stdout:
             return "Installation: " + (r.stdout + r.stderr).strip()[-200:]
@@ -94,7 +94,7 @@ class FireTV:
                 continue
             if not core or version is None:
                 return None
-            log = self.shell(target, f"run-as {PKG} cat files/run/assistant.log").stdout
+            log = self.shell(target, f"run-as {PKG} cat files/run/jarvis.log").stdout
             if f"starting, version {version}" in log:
                 return None
         return "läuft nicht" if not core else f"Version {version} startet nicht"
@@ -145,7 +145,7 @@ class FireTV:
 def main():
     if len(sys.argv) != 3:
         sys.exit("usage: firetv_deploy.py <commit> <apk>")
-    cfg = deployer.Config({**deployer.read_env("/etc/assistant-deployer.env"), **os.environ})
+    cfg = deployer.Config({**deployer.read_env("/etc/jarvis-deployer.env"), **os.environ})
     sys.exit(0 if FireTV(cfg).run(sys.argv[1], Path(sys.argv[2])) else 1)
 
 

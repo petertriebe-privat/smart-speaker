@@ -38,12 +38,12 @@ constexpr float PEER_LEVEL_SCALE = 0.3f;
 
 // Nothing incoming on this device: no phone line, no Telegram/WhatsApp/mail polling, no Home
 // Assistant events, no scheduled tasks, no backups and no Google login renewal. Two devices doing
-// those would answer twice and overwrite each other. A member never does them; ASSISTANT_INBOUND 0
+// those would answer twice and overwrite each other. A member never does them; JARVIS_INBOUND 0
 // in secrets.h makes a standalone device a second speaker without the network.
-#ifndef ASSISTANT_INBOUND
-#define ASSISTANT_INBOUND 1
+#ifndef JARVIS_INBOUND
+#define JARVIS_INBOUND 1
 #endif
-constexpr bool INBOUND = ASSISTANT_INBOUND && !MEMBER;
+constexpr bool INBOUND = JARVIS_INBOUND && !MEMBER;
 
 // --- Household (set in secrets.h) -------------------------------------------------
 #ifndef OWNER_NAME
@@ -78,8 +78,8 @@ constexpr bool INBOUND = ASSISTANT_INBOUND && !MEMBER;
 // = GOOGLE_REFRESH_TOKEN, the admin's).
 #define WATCHED_MAILBOXES
 #endif
-#ifndef ASSISTANT_PHONE_NUMBER
-#define ASSISTANT_PHONE_NUMBER ""  // the number people call to reach the assistant (welcome mail); "" = not mentioned
+#ifndef JARVIS_PHONE_NUMBER
+#define JARVIS_PHONE_NUMBER ""  // the number people call to reach the assistant (welcome mail); "" = not mentioned
 #endif
 #ifndef SIP_REGISTRAR
 #define SIP_REGISTRAR "192.168.178.1"  // the phone system (a FritzBox's default address)
@@ -178,12 +178,12 @@ constexpr uint32_t SPEAKER_START_WINDOW_MS = 60000;  // a greeting not started b
 
 // --- Wake word -------------------------------------------------------------
 // microWakeWord model "Hey Jarvis" (include/wake_model.h, from esphome/micro-wake-word-models).
-// ASSISTANT_WAKE_WORD 0 in secrets.h: only the button starts a conversation (a second speaker in the
+// JARVIS_WAKE_WORD 0 in secrets.h: only the button starts a conversation (a second speaker in the
 // room of another assistant listening for the same word).
-#ifndef ASSISTANT_WAKE_WORD
-#define ASSISTANT_WAKE_WORD 1
+#ifndef JARVIS_WAKE_WORD
+#define JARVIS_WAKE_WORD 1
 #endif
-constexpr bool WAKE_WORD_ENABLED = ASSISTANT_WAKE_WORD;
+constexpr bool WAKE_WORD_ENABLED = JARVIS_WAKE_WORD;
 // Model default 0.97; higher = fewer false triggers. 0.85 needed many tries (19.10.2026, as the
 // Echo's 0.65): 0.6, at the cost of more false starts.
 constexpr float WAKE_PROBABILITY_CUTOFF = 0.6f;

@@ -82,7 +82,7 @@ type Register struct {
 
 func New(s config.Secrets) *Register {
 	r := &Register{owner: s.String("OWNER_NAME"), ownerPhone: s.String("PHONE_OWNER"),
-		ownerMail: s.String("OWNER_EMAIL"), assistantPhone: s.String("ASSISTANT_PHONE_NUMBER")}
+		ownerMail: s.String("OWNER_EMAIL"), assistantPhone: s.String("JARVIS_PHONE_NUMBER")}
 	if v, ok := s["TELEGRAM_OWNER_ID"].(float64); ok {
 		r.ownerTG = int64(v)
 	}

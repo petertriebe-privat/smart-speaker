@@ -21,7 +21,7 @@ how one device takes over from a failed one, and how devices are assigned to roo
 Problems as soon as a second Echo runs:
 
 - **State per device:** Memory (`memory/core.json`), people, tasks, `agenda_said.json`,
-  `phone_speaker.json`, chat histories, mail and Telegram offsets live in `/mnt/data/assistant` of each
+  `phone_speaker.json`, chat histories, mail and Telegram offsets live in `/mnt/data/jarvis` of each
   device. What the secondary Echo learns or plans, the main device does not know, and without backup rights
   it is lost on a switch.
 - **Both hear "Hey Jarvis":** If two Echos are within earshot, both open a conversation, both
@@ -243,7 +243,7 @@ The values exist only on the device, not in the repository.
 - **SIP access:** shared from `secrets.h`, no device-specific secrets needed.
 - **Deploy:** `deploy.sh` with `ECHO_HOST=echo2` (already today via `local/ssh/config`) and
   `--all` for all devices one after another, tests once beforehand.
-- **Tailscale:** second name (`assistant-echo2`), so the server reaches both.
+- **Tailscale:** second name (`jarvis-echo2`), so the server reaches both.
 - **Docs:** after implementation this document becomes the description; `16-assistant.md` links to it.
 
 ## Phases

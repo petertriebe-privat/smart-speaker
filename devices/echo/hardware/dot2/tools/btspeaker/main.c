@@ -7,11 +7,11 @@
 //                                   Runs until stdin closes: connectable, so the speaker may connect
 //                                   itself, and connecting out again every 15 s.
 //
-// Options before the command: -d <dir> for the link keys (default /data/assistant/bt), -b <addr> for
+// Options before the command: -d <dir> for the link keys (default /data/jarvis/bt), -b <addr> for
 // the Dot's own address (default: the WiFi MAC + 1, as the chip comes up with a placeholder),
 // -n <name> for the name the speaker lists (default "Jarvis"). In play mode fd 3, when open,
 // takes commands: "VOLUME <0..100>" sets the speaker's volume (AVRCP absolute volume, with -v).
-// State lines on stdout (READY, CONNECTED, STREAMING, DELAY, DISCONNECTED, ERROR) are for the assistant.
+// State lines on stdout (READY, CONNECTED, STREAMING, DELAY, DISCONNECTED, ERROR) are for Jarvis.
 
 #include <errno.h>
 #include <fcntl.h>
@@ -49,7 +49,7 @@ enum mode { MODE_SCAN, MODE_TONE, MODE_PLAY };
 static enum mode mode;
 static bd_addr_t remote;
 static int tone_seconds = 5;
-static const char *key_dir = "/data/assistant/bt";
+static const char *key_dir = "/data/jarvis/bt";
 static bd_addr_t own_addr;
 static bool own_addr_set;
 static const char *local_name = "Jarvis";
@@ -157,7 +157,7 @@ static void connect_later(uint32_t ms) {
 // --- audio ---
 
 // stdin_ready: PCM into the FIFO; when it is full the oldest goes, so a stalled link never builds
-// up delay (and the assistant is never blocked by it).
+// up delay (and Jarvis is never blocked by it).
 static void stdin_ready(btstack_data_source_t *ds, btstack_data_source_callback_type_t type) {
     (void)type;
     uint8_t buf[4096];
@@ -329,7 +329,7 @@ static void on_volume_timer(btstack_timer_source_t *t) {
     fflush(stdout);
 }
 
-// control_ready: commands from the assistant on fd 3, one per line ("VOLUME 40").
+// control_ready: commands from Jarvis on fd 3, one per line ("VOLUME 40").
 static void control_ready(btstack_data_source_t *ds, btstack_data_source_callback_type_t type) {
     (void)type;
     ssize_t n = read(ds->source.fd, control_line + control_len, sizeof(control_line) - 1 - control_len);

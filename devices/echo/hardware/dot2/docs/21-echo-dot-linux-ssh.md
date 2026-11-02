@@ -75,7 +75,7 @@ reboot
   rootfs/                      historical TWRP chroot test, not the active root file system
 ```
 
-`/data/echo-dot-dev/services/assistant.sh` (source `hardware/dot2/tools/assistant.sh`) starts the assistant with `exec`. LF line endings and the execute permission are required. New services are read at a reboot; merely copying to services starts nothing yet (the deploy therefore reboots the Dot the first time). Services must wait for network readiness or handle connection errors themselves; the assistant starts before WiFi and time and catches up with both by itself.
+`/data/echo-dot-dev/services/jarvis.sh` (source `hardware/dot2/tools/assistant.sh`) starts the assistant with `exec`. LF line endings and the execute permission are required. New services are read at a reboot; merely copying to services starts nothing yet (the deploy therefore reboots the Dot the first time). Services must wait for network readiness or handle connection errors themselves; the assistant starts before WiFi and time and catches up with both by itself.
 
 An own static **Go 1.26.1 program for linux/arm, GOARM=7, CGO_ENABLED=0** was already copied over SFTP and run on the Dot. The output confirms arm and, in this sample, three CPUs visible online. This proves toolchain, program transfer and simple execution, not yet audio/assistant capability. Source: `hardware/dot2/tools/probe/main.go`; private finding: `local/dot-usb/development-validation.json`. In a runtime sample **MemAvailable 467580 kB** was present.
 
@@ -112,11 +112,11 @@ Operation:
 ECHO_HOST=dot-dev sh tools/deploy.sh [--secrets] [--librespot]
 sh tools/deploy.sh --all           # all Echos including the Dot (local/devices/dot-dev.json)
 # on the Dot (dropbear's PATH does not include /usr/local/bin)
-/data/echo-dot-dev/assistant/assistant ctl status
-tail -f /run/echo-dot-dev/assistant.sh.log
+/data/echo-dot-dev/jarvis/jarvis ctl status
+tail -f /run/echo-dot-dev/jarvis.sh.log
 ```
 
-Layout: binary, librespot and `device.json` in `/data/echo-dot-dev/assistant`, secrets in `private/assistant-secrets.json`, state (`state_dir`) in **`/data/assistant`**, socket and runtime in `/run/assistant`. The Dot gets **no `settings.json`**: its Echo paths (`/mnt/data/assistant`) would be in RAM here; the built-in defaults are the Dot paths on the Dot. `assistant.sh` protects dropbear from the OOM killer, sets the assistant to `oom_score_adj` 500, slows crash loops (more than five starts in five minutes: five minutes' pause) and rotates the log (4 MiB). To disable: `touch /data/echo-dot-dev/assistant/disabled` and stop the assistant.
+Layout: binary, librespot and `device.json` in `/data/echo-dot-dev/jarvis`, secrets in `private/jarvis-secrets.json`, state (`state_dir`) in **`/data/jarvis`**, socket and runtime in `/run/jarvis`. The Dot gets **no `settings.json`**: its Echo paths (`/mnt/data/jarvis`) would be in RAM here; the built-in defaults are the Dot paths on the Dot. `assistant.sh` protects dropbear from the OOM killer, sets the assistant to `oom_score_adj` 500, slows crash loops (more than five starts in five minutes: five minutes' pause) and rotates the log (4 MiB). To disable: `touch /data/echo-dot-dev/jarvis/disabled` and stop the assistant.
 
 ### WiFi loses broadcasts (measured 2026-10-20)
 
@@ -124,7 +124,7 @@ The router renews the WPA2 group key every 10 minutes (`Group rekeying completed
 
 Consequences on the first evening: the Dot considered another device in the household failed and took over the lead role at 18:49, reported all others as missing, answered the wake word together with the M5, and the Spotify app did not find it (pairing via mDNS).
 
-Countermeasures: `no_lead` in its `device.json` (never takes the lead role); the peer link additionally sends every datagram directly to all devices seen in the last 10 minutes (Echos and M5); librespot got the Spotify credentials (`/data/assistant/spotify/credentials.json`) from an Echo and registers with them through Spotify's servers, which needs no mDNS. The actual driver cause is open (#72); mDNS/SSDP services (YouTube DIAL search, pairing new Spotify accounts) therefore remain unreliable on the Dot.
+Countermeasures: `no_lead` in its `device.json` (never takes the lead role); the peer link additionally sends every datagram directly to all devices seen in the last 10 minutes (Echos and M5); librespot got the Spotify credentials (`/data/jarvis/spotify/credentials.json`) from an Echo and registers with them through Spotify's servers, which needs no mDNS. The actual driver cause is open (#72); mDNS/SSDP services (YouTube DIAL search, pairing new Spotify accounts) therefore remain unreliable on the Dot.
 
 Peer name, Spotify name and room have been set since 2026-10-20 (household values, not published here).
 

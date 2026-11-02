@@ -1,9 +1,0 @@
-# The assistant's phones away from home (#75, services/home-gateway): the public port, passed through
-# unopened (TLS ends at the home gateway, which checks the certificate) over the WireGuard link to
-# the gateway. Made by install.sh from gateway.env; goes to /etc/nginx/streams-enabled/ on the VPS.
-server {
-    listen @PORT@;
-    proxy_pass @GATEWAY_WG@:@PORT@;
-    proxy_connect_timeout 5s;
-    proxy_timeout 10m;
-}

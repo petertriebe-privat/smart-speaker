@@ -1,4 +1,4 @@
-"""Cuts the spoken "Jarvis" takes out of the guided recordings (#61, assistant ctl enroll).
+"""Cuts the spoken "Jarvis" takes out of the guided recordings (#61, jarvis ctl enroll).
 
     python cut_takes.py <recordings_dir> <out_dir>
 

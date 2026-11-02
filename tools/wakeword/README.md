@@ -38,7 +38,7 @@ docker stats wakeword-v1        # memory and CPU
 ```
 
 Household voices never go into the repository: the recordings live on the Echo
-(`/mnt/data/assistant/voices/`), in `devices/echo/local/wakeword/recordings/` (git-ignored) and in the work
+(`/mnt/data/jarvis/voices/`), in `devices/echo/local/wakeword/recordings/` (git-ignored) and in the work
 directory `E:/wakeword-work` outside the repository. The trained model is kept out of the
 repository too (it is trained on them). The augmentation datasets have mixed licences: models
 trained with them are for personal, non-commercial use.
@@ -71,12 +71,12 @@ Windows): keep 3.6. The generator's old `webrtcvad` needs `pkg_resources` (setup
 
 ## Per person: the recordings
 
-On the Echo, the person in the room: `assistant ctl enroll <person> guided` (eight parts, ~15 min,
+On the Echo, the person in the room: `jarvis ctl enroll <person> guided` (eight parts, ~15 min,
 the assistant announces each; `guided <part>` goes on after an interruption). Then on the PC:
 
 ```sh
 cd devices/echo/local/wakeword/recordings
-ssh -F ../../ssh/config echo-dev 'cd /mnt/data/assistant/voices && tar cf - <person>' | tar xf -
+ssh -F ../../ssh/config echo-dev 'cd /mnt/data/jarvis/voices && tar cf - <person>' | tar xf -
 venv/Scripts/python.exe tools/wakeword/cut_takes.py <recordings> E:/wakeword-work/real
 ```
 
@@ -174,12 +174,12 @@ the commit charge before starting (`Get-CimInstance Win32_OperatingSystem`:
 TotalVirtualMemorySize - FreeVirtualMemory): leave the WSL limit (16 GB) free.
 
 ```sh
-# clips and conversation records of every device (Echo: /mnt/data/assistant, Dot: /data/assistant)
-ssh -F devices/echo/local/ssh/config echo-dev 'cd /mnt/data/assistant/wake && tar cf - .' | tar xf - -C E:/wakeword-work/clips/echo-dev
-ssh -F devices/echo/local/ssh/config echo-dev 'cat /mnt/data/assistant/memory/sessions.jsonl' > E:/wakeword-work/sessions/echo-dev.jsonl
+# clips and conversation records of every device (Echo: /mnt/data/jarvis, Dot: /data/jarvis)
+ssh -F devices/echo/local/ssh/config echo-dev 'cd /mnt/data/jarvis/wake && tar cf - .' | tar xf - -C E:/wakeword-work/clips/echo-dev
+ssh -F devices/echo/local/ssh/config echo-dev 'cat /mnt/data/jarvis/memory/sessions.jsonl' > E:/wakeword-work/sessions/echo-dev.jsonl
 python harvest.py E:/wakeword-work "devices/atoms3r/include/secrets.h" 5 <sessions.jsonl,...> <clips_dir> ...
 # decide every clip in hard/review.csv (clip,verdict: positive|negative|skip -> hard/verdicts.csv), run again
-# TV in the room, nobody says "Jarvis": assistant rawcapture 600 /mnt/data/assistant/raw/tv-<date>, then
+# TV in the room, nobody says "Jarvis": jarvis rawcapture 600 /mnt/data/jarvis/raw/tv-<date>, then
 python cut_tv.py E:/wakeword-work <micsout.wav>
 sh tools/wakeword/pipeline.sh v<n> 20000
 ```
@@ -205,7 +205,7 @@ sh tools/wakeword/pipeline.sh v<n> 20000
 
 ## On the devices
 
-- The Echo: copy `models/<name>/jarvis.tflite` and `jarvis.json` to `/mnt/data/assistant/wakemodel/` (not `wake/`:
+- The Echo: copy `models/<name>/jarvis.tflite` and `jarvis.json` to `/mnt/data/jarvis/wakemodel/` (not `wake/`:
   the clips there are pruned to the newest 400) and
   set `"wake_model": "wakemodel/jarvis.tflite"` in `device.json` (a model that does not load falls back
   to the built-in "Hey Jarvis"). Current microWakeWord models use SPLIT_V, which the Go interpreter

@@ -471,7 +471,7 @@ func (d *device) setupServices() {
 
 // addLiveTools: phone_call / press_keys and start_conversation, as phone:: and live::addTools()
 // on the M5. Need the session. The phone registers at the FritzBox on every Echo (setupServices);
-// the M5 does not register while it is a secondary device (ASSISTANT_INBOUND 0).
+// the M5 does not register while it is a secondary device (JARVIS_INBOUND 0).
 func (d *device) addLiveTools() {
 	s := &d.svc
 	s.phone = phone.New(d.cfg.Secrets, s.people, d.phoneSession, phone.Deps{

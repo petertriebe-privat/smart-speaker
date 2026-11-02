@@ -26,9 +26,9 @@ import (
 
 // The service names the gateway routes by (services/home-gateway).
 const (
-	RPC  = "rpc.assistant"
-	MQTT = "mqtt.assistant"
-	HA   = "ha.assistant"
+	RPC  = "rpc.jarvis"
+	MQTT = "mqtt.jarvis"
+	HA   = "ha.jarvis"
 )
 
 // Files in dir (state_dir/home, put there by devices/android/tools/install_phone.sh).

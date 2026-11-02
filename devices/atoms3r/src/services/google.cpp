@@ -35,7 +35,7 @@
 #ifndef GOOGLE_WEB_CLIENT_SECRET
 #define GOOGLE_WEB_CLIENT_SECRET ""
 #endif
-// A refresh token of the web client (e.g. the main Echo's), for a member (ASSISTANT_INBOUND 0) that never
+// A refresh token of the web client (e.g. the main Echo's), for a member (JARVIS_INBOUND 0) that never
 // sends the login link itself.
 #ifndef GOOGLE_REFRESH_TOKEN_WEB
 #define GOOGLE_REFRESH_TOKEN_WEB ""

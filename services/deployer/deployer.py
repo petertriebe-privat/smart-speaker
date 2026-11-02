@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""The assistant's deploy on the Raspberry Pi (#122): a merge into main goes onto every Echo.
+"""Jarvis' deploy on the Raspberry Pi (#122): a merge into main goes onto every Echo.
 
-Run by the CI (job "deploy" of .github/workflows/assistant-build.yml) on the Pi's self-hosted runner,
+Run by the CI (job "deploy" of .github/workflows/jarvis-build.yml) on the Pi's self-hosted runner,
 after the build of a commit on main:
 
-    python3 /opt/assistant-deployer/deployer.py <commit> <binary>
+    python3 /opt/jarvis-deployer/deployer.py <commit> <binary>
 
 Installs the CI's binary with devices/echo/tools/deploy.sh --all from the runner's checkout of
 that commit, checks that the new version runs (deploy.sh), rolls back to the last good commit and
-binary when not, and reports the outcome in Telegram through the assistant's bot (sending only). The SSH
-keys to the Echos and the Telegram token stay on the Pi (/etc/assistant-deployer.env), not in
+binary when not, and reports the outcome in Telegram through Jarvis' bot (sending only). The SSH
+keys to the Echos and the Telegram token stay on the Pi (/etc/jarvis-deployer.env), not in
 GitHub. Standard library only. Offline test: python3 test_deployer.py
 """
 import json
@@ -43,11 +43,11 @@ class Config:
         self.server = env.get("GITHUB_SERVER_URL", "https://github.com")
         self.run_url = (f"{self.server}/{self.repo}/actions/runs/{env['GITHUB_RUN_ID']}"
                         if env.get("GITHUB_RUN_ID") else "")
-        self.bot = env.get("TELEGRAM_BOT_TOKEN", "")        # The assistant's bot: sendMessage only
+        self.bot = env.get("TELEGRAM_BOT_TOKEN", "")        # Jarvis' bot: sendMessage only
         self.chat = env.get("TELEGRAM_CHAT_ID", "")         # the owner's chat
-        self.home = Path(env.get("DEPLOYER_HOME", "/opt/assistant-deployer"))
+        self.home = Path(env.get("DEPLOYER_HOME", "/opt/jarvis-deployer"))
         self.workspace = Path(env.get("GITHUB_WORKSPACE", "."))
-        self.builds = self.home / "builds"                  # <commit>/assistant, the last three
+        self.builds = self.home / "builds"                  # <commit>/jarvis, the last three
         self.local = self.home / "local"                    # devices/<host>.json for deploy.sh
         self.state_file = self.home / "state.json"
 
@@ -91,7 +91,7 @@ class Workspace:
 
     def deploy(self, sha, binary):
         self.checkout(sha)
-        env = {**os.environ, "ASSISTANT_BIN": str(binary), "VERSION": sha[:12], "CHECKED": "1"}
+        env = {**os.environ, "JARVIS_BIN": str(binary), "VERSION": sha[:12], "CHECKED": "1"}
         out = subprocess.run(["sh", "devices/echo/tools/deploy.sh", "--all"], cwd=self.cfg.workspace,
                              env=env, capture_output=True, text=True, timeout=1800)
         text = out.stdout + out.stderr
@@ -118,12 +118,12 @@ class Deployer:
         """Copies the binary to builds/<sha>; keeps the three newest and the running one."""
         target = self.cfg.builds / sha
         target.mkdir(parents=True, exist_ok=True)
-        shutil.copy(binary, target / "assistant")
-        (target / "assistant").chmod(0o755)
+        shutil.copy(binary, target / "jarvis")
+        (target / "jarvis").chmod(0o755)
         for p in sorted(self.cfg.builds.iterdir(), key=lambda p: p.stat().st_mtime)[:-3]:
             if p.name not in (sha, self.state.get("deployed")):
                 shutil.rmtree(p, ignore_errors=True)
-        return target / "assistant"
+        return target / "jarvis"
 
     def run(self, sha, binary):
         """True when the new version runs on every Echo."""
@@ -139,11 +139,11 @@ class Deployer:
             return True
         tail = "\n".join(out.strip().splitlines()[-6:])
         good = self.state.get("deployed")
-        if not good or not (self.cfg.builds / good / "assistant").exists():
+        if not good or not (self.cfg.builds / good / "jarvis").exists():
             self.telegram(f"Deploy von {sha[:12]} fehlgeschlagen, keine frühere Version zum "
                           f"Zurückrollen.\n{subject}\n{tail}\n{self.cfg.run_url}")
             return False
-        back, _ = self.ws.deploy(good, self.cfg.builds / good / "assistant")
+        back, _ = self.ws.deploy(good, self.cfg.builds / good / "jarvis")
         self.telegram(f"Deploy von {sha[:12]} fehlgeschlagen: {subject}\n{tail}\n"
                       + (f"Zurückgerollt auf {good[:12]}, die Echos laufen wieder."
                          if back else f"Zurückrollen auf {good[:12]} ging AUCH schief: bitte prüfen.")
@@ -173,7 +173,7 @@ def pr_message(env):
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    env = {**read_env("/etc/assistant-deployer.env"), **os.environ}
+    env = {**read_env("/etc/jarvis-deployer.env"), **os.environ}
     cfg = Config(env)
     if sys.argv[1:] == ["notify-pr"]:
         send_telegram(cfg, pr_message(env))

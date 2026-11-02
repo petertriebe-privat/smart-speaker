@@ -1,0 +1,36 @@
+# Jarvis' phones (#75, services/home-gateway): TLS with a client certificate of the home CA, then
+# by the name asked for (SNI) to a service of the house. Made by install.sh from gateway.env; goes
+# to /etc/nginx/streams-enabled/ on the home gateway (inside its stream block).
+#   rpc.jarvis   the Echos' peer calls (an Echo that is not the primary passes them on)
+#   mqtt.jarvis  the broker (this gateway's own MQTT forward)
+#   ha.jarvis    Home Assistant (this gateway's own HTTP forward)
+
+# Devices whose certificate is let in: revoked by taking the name off DEVICES.
+map $ssl_client_s_dn $jarvis_device {
+@DEVICE_MAP@
+    default 0;
+}
+
+map "$jarvis_device:$ssl_server_name" $jarvis_backend {
+    "1:rpc.jarvis"  jarvis_rpc;
+    "1:mqtt.jarvis" 127.0.0.1:1883;
+    "1:ha.jarvis"   127.0.0.1:8123;
+    default         127.0.0.1:9; # nothing listens: refused
+}
+
+# The primary first, the others behind it when it does not answer.
+upstream jarvis_rpc {
+@RPC_SERVERS@
+}
+
+server {
+    listen @PORT@ ssl;
+    ssl_certificate         /etc/nginx/jarvis-mobile/server.crt;
+    ssl_certificate_key     /etc/nginx/jarvis-mobile/server.key;
+    ssl_client_certificate  /etc/nginx/jarvis-mobile/ca.crt;
+    ssl_verify_client       on;
+    ssl_protocols           TLSv1.2 TLSv1.3;
+    proxy_pass              $jarvis_backend;
+    proxy_connect_timeout   5s;
+    proxy_timeout           10m;
+}

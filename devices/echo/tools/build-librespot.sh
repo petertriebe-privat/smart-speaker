@@ -6,7 +6,7 @@
 #
 # musl, hard-float: nothing is linked dynamically, so the Echo's softfp EGLIBC does not matter.
 # Features: rustls with compiled-in Mozilla roots (no OpenSSL), zeroconf in pure Rust (libmdns),
-# and the pipe backend, which needs no audio library: the assistant plays the PCM itself.
+# and the pipe backend, which needs no audio library: Jarvis plays the PCM itself.
 set -e
 VERSION=v0.8.0
 ZIG=zig-x86_64-linux-0.14.1

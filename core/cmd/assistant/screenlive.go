@@ -86,7 +86,7 @@ type screenLive struct {
 
 func (d *device) screenCard(seconds int) map[string]any {
 	l := &d.screenLive
-	card := map[string]any{"kind": "status", "name": prompts.Name(), "state": l.state, "user": l.user, "assistant": l.assistant,
+	card := map[string]any{"kind": "status", "name": prompts.Name(), "state": l.state, "user": l.user, "jarvis": l.assistant,
 		"here": board.Android}
 	if seconds > 0 {
 		card["seconds"] = seconds

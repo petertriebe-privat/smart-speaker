@@ -2,7 +2,7 @@
 
 A voice assistant that runs on an **M5Stack AtomS3R** with the **Echo Pyramid** base and talks
 directly to OpenAI's speech-to-speech model **GPT Live** over a WebSocket — no server, no
-Raspberry Pi. Say "Hey Jarvis", and a butler persona (German-speaking by default) answers,
+Raspberry Pi. Say "Hey Jarvis", and Jarvis, a butler persona (German-speaking by default, name and persona configurable), answers,
 controls your smart home through **Home Assistant**, remembers your household, makes phone calls,
 chats on **Telegram** and **WhatsApp**, and uses your **Google** calendars, contacts, Drive, Tasks, Sheets, Maps,
 YouTube and Gemini.
@@ -72,10 +72,10 @@ Use an OpenAI project key with a spending limit.
      [shared/prompts/assistant_name.h](../../shared/prompts/assistant_name.h)); the Echo gets the same value from the
      household's secrets. The name is only configuration: the wake word model stays "Hey Jarvis" (`hey_jarvis.tflite`).
      Home Assistant events and entities use its slug (lower case `a-z0-9_`, `jarvis` by default): `<slug>_announce`,
-     `<slug>_task`, `<slug>_conversation`, `binary_sensor.<slug>_presence`. Further switches: `ASSISTANT_INBOUND`,
-     `ASSISTANT_WAKE_WORD`, `ASSISTANT_PHONE_NUMBER`.
-   - **Persona:** [shared/prompts/persona.h](../../shared/prompts/persona.h) holds a neutral default (a composed,
-     politely formal butler with a dry wit). A household's own persona goes into `shared/prompts/persona_local.h`
+     `<slug>_task`, `<slug>_conversation`, `binary_sensor.<slug>_presence`. Further switches: `JARVIS_INBOUND`,
+     `JARVIS_WAKE_WORD`, `JARVIS_PHONE_NUMBER`.
+   - **Persona:** [shared/prompts/persona.h](../../shared/prompts/persona.h) holds the default, Jarvis (a composed,
+     politely formal British butler with a bone-dry wit). Another character goes into `shared/prompts/persona_local.h`
      (git-ignored, same constants: `PERSONA_CORE`, `PERSONA_LEVELS`, `PERSONA_MAX_LEVEL`, `PERSONA_LIMITS`, `PERSONA_CHILD`),
      which the M5 build uses instead. The Echo reads the same constants from `persona.json` in its state directory,
      written by `py -3 core/tools/extract_prompts.py --persona` (by default to `devices/echo/local/assistant/persona.json`).

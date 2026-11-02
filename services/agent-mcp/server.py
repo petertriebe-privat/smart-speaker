@@ -1,7 +1,7 @@
-"""MCP server that lets the assistant delegate tasks to an OpenHands agent profile.
+"""MCP server that lets Jarvis delegate tasks to an OpenHands agent profile.
 
 Tools: delegate_task, task_status, task_reply, task_cancel. Tasks are OpenHands conversations
-tagged source=assistant; a background loop sends each finished task's final message to the owner
+tagged source=jarvis; a background loop sends each finished task's final message to the owner
 by Telegram. The agent's name (AGENT_NAME) only appears in texts, so it can be renamed.
 
 Approval (#57): a task or message with scope "change" waits until the owner taps "Freigeben" in
@@ -31,7 +31,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
-NAME = os.environ.get("AGENT_NAME", "Agent")
+NAME = os.environ.get("AGENT_NAME", "Ultron")
 PROFILE = os.environ.get("AGENT_PROFILE", NAME)
 OH_URL = os.environ.get("OPENHANDS_URL", "http://127.0.0.1:8100")
 OH_KEY = os.environ["LOCAL_BACKEND_API_KEY"]
@@ -50,8 +50,8 @@ APPROVAL_DEFAULT = os.environ.get("APPROVAL", "off").strip().lower()
 SETTINGS = STATE.with_name("settings.json")
 PENDING_MAX_S = 24 * 3600
 POLL_S = 15
-TAG = {"source": "assistant"}
-PREFIX = "[" + os.environ.get("ASSISTANT_NAME", "Jarvis") + "] "
+TAG = {"source": "jarvis"}
+PREFIX = "[Jarvis] "
 DONE = ("finished", "error", "stuck")
 
 log = logging.getLogger("agent-mcp")
@@ -69,15 +69,15 @@ async def profile_id() -> str:
     raise RuntimeError(f"agent profile '{PROFILE}' not found")
 
 
-async def assistant_tasks(limit: int = 30) -> list[dict]:
+async def jarvis_tasks(limit: int = 30) -> list[dict]:
     r = await oh.get("/api/conversations/search", params={"limit": limit})
     r.raise_for_status()
-    return [c for c in r.json().get("items", []) if (c.get("tags") or {}).get("source") == "assistant"]
+    return [c for c in r.json().get("items", []) if (c.get("tags") or {}).get("source") == "jarvis"]
 
 
 async def find(task_id: str) -> dict | None:
     task_id = task_id.strip().lower()
-    for c in await assistant_tasks(100):
+    for c in await jarvis_tasks(100):
         if c["id"].replace("-", "").startswith(task_id.replace("-", "")):
             return c
     return None
@@ -131,7 +131,7 @@ def text_message(text: str) -> dict:
 mcp = FastMCP("agent", stateless_http=True, json_response=True)
 
 
-# The assistant cuts tool descriptions at 600 characters (MCP_DESCRIPTION_CHARS).
+# Jarvis cuts tool descriptions at 600 characters (MCP_DESCRIPTION_CHARS).
 DELEGATE = (
     f"Starts a NEW task for {NAME}, an autonomous agent with a Linux machine, internet, code and "
     "admin access to the owner's server: multi-step work of minutes (code, server, research). Only "
@@ -158,17 +158,17 @@ RESEARCH_ONLY = (
     "Scope: research only. Read, look up and report; you may write notes and files inside your "
     "workspace. Change nothing outside it: no commits, pushes, deploys, server or service changes, "
     "messages to anyone, purchases or accounts. If the task needs such a change, stop and say so in "
-    "your report; the assistant then asks the owner for approval.\n\n")
+    "your report; Jarvis then asks the owner for approval.\n\n")
 
-# Sent with every task of scope "change" (#122): a change to the assistant itself goes through a pull
+# Sent with every task of scope "change" (#122): a change to Jarvis himself goes through a pull
 # request; the owner merges it, and the CI deploys it on every Echo from the Raspberry Pi
-# (services/deployer). The server agent works with the owner's GitHub account: only this rule keeps it from
+# (services/deployer). Ultron works with the owner's GitHub account: only this rule keeps it from
 # merging itself.
 CODE_RULES = (
     "A new feature or a change of behaviour: first only the proposal and your questions (your "
     "instructions say how), no branch yet; build after the owner's answer. A bug fix with a clear "
-    f"cause, or once agreed, if it changes the assistant's own code ({os.environ.get('ASSISTANT_REPO', 'his repository')}): "
-    "work on a new branch agent/<topic> from the current main, keep to the repository's CLAUDE.md, run go vet "
+    f"cause, or once agreed, if it changes Jarvis' own code ({os.environ.get('JARVIS_REPO', 'his repository')}): "
+    "work on a new branch ultron/<topic> from the current main, keep to the repository's CLAUDE.md, run go vet "
     "and go test in core/ and add a test for the change, push the branch and open a pull request "
     "with gh that says what changed and how to test it; put its link in your report. Never merge, "
     "never push to main, never deploy and never log in to a speaker, even though your GitHub access would allow it: the "
@@ -181,21 +181,21 @@ def scope_of(scope: str) -> str:
 
 def notify_of(notify: str) -> str:
     """How the result reaches the owner: "message" (default) = the Telegram report only, "speak" =
-    also announced on a assistant speaker, "call" = the assistant phones it. Results came as announcements
+    also announced on a Jarvis speaker, "call" = Jarvis phones him. Results came as announcements
     in the living room while the owner was elsewhere (27.10.2026): unasked, only his phone."""
     return notify if notify in ("speak", "call") else "message"
 
 
 def after_text(notify: str, room: str) -> str:
     if notify == "call":
-        return "The report comes by Telegram and the assistant calls the owner when it is done."
+        return "The report comes by Telegram and Jarvis calls the owner when it is done."
     if notify == "speak":
         return f"The report comes by Telegram and is announced on the speaker {room or 'here'}."
     return "The report comes by Telegram."
 
 
 async def start_task(task: str, notify: str, scope: str, room: str = "") -> str:
-    """Starts the OpenHands conversation; the result text for the assistant."""
+    """Starts the OpenHands conversation; the result text for Jarvis."""
     lead = RESEARCH_ONLY if scope == "research" else CODE_RULES
     body = {
         "agent_profile_id": await profile_id(),
@@ -214,7 +214,7 @@ async def start_task(task: str, notify: str, scope: str, room: str = "") -> str:
 
 
 async def send_reply(c: dict, message: str, notify: str, scope: str, room: str = "") -> str:
-    """Posts a message into an existing task; the result text for the assistant."""
+    """Posts a message into an existing task; the result text for Jarvis."""
     tags = c.get("tags") or {}
     # A change released once keeps its scope; a research task becomes one only by approval.
     scope = "change" if tags.get("scope", "change") == "change" or scope == "change" else "research"
@@ -266,7 +266,7 @@ def approval_buttons(nonce: str) -> dict:
 
 
 async def ask_approval(entry: dict) -> str:
-    """Keeps the request and sends the owner the buttons; the result text for the assistant."""
+    """Keeps the request and sends the owner the buttons; the result text for Jarvis."""
     if not (TG_TOKEN and TG_CHAT):
         return f"Error: {NAME} needs the owner's approval for this, and Telegram is not configured."
     nonce = secrets.token_hex(8)
@@ -297,7 +297,7 @@ async def delegate_task(task: str, notify: str = "message", scope: str = "change
 @mcp.tool(description=STATUS)
 async def task_status(task_id: str = "") -> str:
     if not task_id:
-        tasks = (await assistant_tasks())[:8]
+        tasks = (await jarvis_tasks())[:8]
         lines = [f"waiting for the owner's approval in Telegram | {e['text'][:120]}"
                  for e in load_pending().values()]
         if not tasks and not lines:
@@ -444,8 +444,8 @@ async def telegram(text: str, as_html: bool = False, markup: dict | None = None)
 
 
 async def announce(text: str, deliver: str, room: str = "") -> None:
-    """Through the WhatsApp relay's /event queue, which the device polls: "speak" = the assistant announces
-    `text` on the speaker in `room` ('' = the device itself), "call" = the assistant phones the owner and
+    """Through the WhatsApp relay's /event queue, which the device polls: "speak" = Jarvis announces
+    `text` on the speaker in `room` ('' = the device itself), "call" = Jarvis phones the owner and
     tells it (then he can ask back)."""
     if not (RELAY_URL and RELAY_TOKEN):
         return
@@ -465,7 +465,7 @@ async def notifier() -> None:
     state = load_state()
     while True:
         try:
-            tasks = await assistant_tasks()
+            tasks = await jarvis_tasks()
             if state is None:  # first start: do not announce old tasks
                 state = {c["id"]: c["updated_at"] for c in tasks if c["execution_status"] in DONE}
                 save_state(state)

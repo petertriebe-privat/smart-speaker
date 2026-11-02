@@ -28,10 +28,10 @@ import (
 )
 
 const (
-	prefix = "assistant/screen/"
+	prefix = "jarvis/screen/"
 	// StartCommand: the shell command that (re)starts the app's service on the stick; the service
 	// directly, not an activity, so a film in front is not interrupted.
-	StartCommand = "am start-foreground-service -n dev.smartspeaker.screen/.ScreenService"
+	StartCommand = "am start-foreground-service -n dev.jarvis.screen/.ScreenService"
 	maxItems     = 30
 	maxSeconds   = 3600
 )

@@ -26,10 +26,10 @@ class DeployerTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         home = Path(self.tmp.name)
-        self.binary = home / "assistant"
+        self.binary = home / "jarvis"
         self.binary.write_bytes(b"\x7fELF")
         (home / "builds").mkdir()
-        self.cfg = deployer.Config({"DEPLOYER_HOME": self.tmp.name, "GITHUB_REPOSITORY": "o/assistant",
+        self.cfg = deployer.Config({"DEPLOYER_HOME": self.tmp.name, "GITHUB_REPOSITORY": "o/jarvis",
                                     "GITHUB_RUN_ID": "9"})
         self.ws, self.sent = FakeWorkspace(), []
 
@@ -42,7 +42,7 @@ class DeployerTest(unittest.TestCase):
     def test_success_reports_every_echo(self):
         self.assertTrue(self.deployer().run("a" * 40, self.binary))
         self.assertIn("Neue Version aaaaaaaaaaaa aktiv auf dot-dev, echo-dev, echo2", self.sent[-1])
-        self.assertIn("https://github.com/o/assistant/commit/" + "a" * 40, self.sent[-1])
+        self.assertIn("https://github.com/o/jarvis/commit/" + "a" * 40, self.sent[-1])
         self.assertEqual(self.deployer().state["deployed"], "a" * 40)
 
     def test_failure_rolls_back_to_the_last_good(self):
@@ -66,10 +66,10 @@ class DeployerTest(unittest.TestCase):
         for c in "abcde":
             d.run(c * 40, self.binary)
         self.assertEqual(len(list(self.cfg.builds.iterdir())), 3)
-        self.assertTrue((self.cfg.builds / ("e" * 40) / "assistant").exists())
+        self.assertTrue((self.cfg.builds / ("e" * 40) / "jarvis").exists())
 
     def test_pr_message(self):
-        env = {"PR_NUMBER": "7", "PR_TITLE": "Fix timers", "PR_BRANCH": "agent/timers",
+        env = {"PR_NUMBER": "7", "PR_TITLE": "Fix timers", "PR_BRANCH": "ultron/timers",
                "PR_SHA": "a" * 40, "PR_URL": "https://gh/pr/7", "RUN_URL": "https://ci/run/1",
                "ECHO_RESULT": "success", "FIRETV_RESULT": "skipped"}
         text = deployer.pr_message(env)

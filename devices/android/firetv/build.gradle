@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'dev.smartspeaker.screen'
+    namespace 'dev.jarvis.screen'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'dev.smartspeaker.screen'
+        applicationId 'dev.jarvis.screen'
         minSdk 25          // Fire OS 6
         targetSdk 30       // Fire OS 8 is Android 11; sideloaded, never in a store
         versionCode 1

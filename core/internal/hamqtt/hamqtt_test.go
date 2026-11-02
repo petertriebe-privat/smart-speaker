@@ -30,13 +30,13 @@ func TestDiscovery(t *testing.T) {
 	d := &Device{ID: "echo1", Name: "Jarvis", Model: "Echo", Version: "abc", SuggestedArea: "Küche"}
 	cfg := d.discovery(Entity{Component: "number", Key: "volume", Config: map[string]any{"name": "Lautstärke", "min": 10},
 		State: func() string { return "40" }, Command: func(string) {}})
-	if cfg["unique_id"] != "echo1_volume" || cfg["state_topic"] != "assistant/echo1/volume" ||
-		cfg["command_topic"] != "assistant/echo1/volume/set" || cfg["availability_topic"] != "assistant/echo1/status" ||
+	if cfg["unique_id"] != "echo1_volume" || cfg["state_topic"] != "jarvis/echo1/volume" ||
+		cfg["command_topic"] != "jarvis/echo1/volume/set" || cfg["availability_topic"] != "jarvis/echo1/status" ||
 		cfg["min"] != 10 || cfg["device"].(map[string]any)["suggested_area"] != "Küche" {
 		t.Fatalf("%v", cfg)
 	}
 	ev := d.discovery(Entity{Component: "event", Key: "events"})
-	if ev["state_topic"] != "assistant/echo1/events" || ev["command_topic"] != nil {
+	if ev["state_topic"] != "jarvis/echo1/events" || ev["command_topic"] != nil {
 		t.Fatalf("event: %v", ev)
 	}
 }

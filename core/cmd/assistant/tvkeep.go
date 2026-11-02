@@ -25,10 +25,10 @@ const (
 
 // tvPackage: the Android app of the assistant (Core.java passes it on the stick).
 func tvPackage() string {
-	if p := os.Getenv("ASSISTANT_PACKAGE"); p != "" {
+	if p := os.Getenv("JARVIS_PACKAGE"); p != "" {
 		return p
 	}
-	return "dev.smartspeaker.screen"
+	return "dev.jarvis.screen"
 }
 
 func (d *device) keepTVs(s *services) {

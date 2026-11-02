@@ -138,7 +138,7 @@ func tvEntities(id string, list []hamqtt.Entity) (kept []hamqtt.Entity, retired 
 
 func (d *device) startTVAudio() {
 	if !audio.OnTV() {
-		log.Print("[Audio] Android app: ASSISTANT_AUDIO missing, no microphone or speaker")
+		log.Print("[Audio] Android app: JARVIS_AUDIO missing, no microphone or speaker")
 		return
 	}
 	d.mic = audio.TVMic()

@@ -2,14 +2,14 @@ plugins {
     id 'com.android.application'
 }
 
-// The phone app (#75): a assistant of its own (core/ for arm64, board phone) with the Fire TV app's
-// HUD and hologram upright, the assistant's button to talk, and the screen for its cards.
+// The phone app (#75): a Jarvis of its own (core/ for arm64, board phone) with the Fire TV app's
+// HUD and hologram upright, Jarvis' button to talk, and the screen for his cards.
 android {
-    namespace 'dev.smartspeaker.phone'
+    namespace 'dev.jarvis.phone'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'dev.smartspeaker.phone'
+        applicationId 'dev.jarvis.phone'
         minSdk 29          // Android 10
         targetSdk 34       // sideloaded, never in a store
         versionCode 1
@@ -43,7 +43,7 @@ android {
         buildConfig true
     }
 
-    // the core (libassistant.so) must lie as a file in nativeLibraryDir to run
+    // the core (libjarvis.so) must lie as a file in nativeLibraryDir to run
     packaging {
         jniLibs {
             useLegacyPackaging true

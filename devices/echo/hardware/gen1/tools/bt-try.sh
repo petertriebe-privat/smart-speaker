@@ -221,7 +221,7 @@ daemon() {
 # endpoints with BlueZ (discover) and plays a phone's A2DP stream on the speaker (policy). The
 # hands-free role needs a "Handsfree Agent" at BlueZ, and that is oFono: without it the phone
 # connects HFP and BlueZ drops it at once ("Handsfree Agent not registered", 17.10.2026). oFono
-# makes a modem per paired phone; powering it connects HFP, and that is up to the assistant.
+# makes a modem per paired phone; powering it connects HFP, and that is up to Jarvis.
 audio() {
 	running bluetoothd || {
 		log "audio: no bluetoothd - run daemon first"
@@ -230,7 +230,7 @@ audio() {
 	$PULSE list modules short 2>/dev/null | grep -q module-bluetooth-discover ||
 		{ $PULSE load-module module-bluetooth-discover >/dev/null && log "audio: PulseAudio module-bluetooth-discover"; }
 	# A2DP only: with hfgw the policy loops a call between phone and room itself (see
-	# hardware/gen1/src/echo-bluetooth.sh); call audio is the assistant's bridge on hw:0,2.
+	# hardware/gen1/src/echo-bluetooth.sh); call audio is Jarvis' bridge on hw:0,2.
 	$PULSE list modules short 2>/dev/null | grep -q module-bluetooth-policy ||
 		{ $PULSE load-module module-bluetooth-policy hfgw=false a2dp_source=true >/dev/null && log "audio: PulseAudio module-bluetooth-policy (A2DP only)"; }
 	if ! running ofonod; then
@@ -242,8 +242,8 @@ audio() {
 		}
 		log "audio: ofonod is up"
 	fi
-	# The modem's Powered is the assistant's now (mobile_handsfree, off by default): powered here, the assistant
-	# would switch it off again within half a second. Without the assistant, by hand:
+	# The modem's Powered is Jarvis' now (mobile_handsfree, off by default): powered here, Jarvis
+	# would switch it off again within half a second. Without Jarvis, by hand:
 	#   dbus-send --system --print-reply --dest=org.ofono /hfp/<adapter>_<phone> \
 	#     org.ofono.Modem.SetProperty string:Powered variant:boolean:true
 	wlan after-audio

@@ -15,7 +15,7 @@ Everything here is optional. Without Google settings the tools below are simply 
 | `summarize_video` | Gemini API | AI Studio key |
 | `play_video`, `control_video` | none: DIAL and the YouTube Lounge API in your LAN | — |
 
-A member M5 (`ASSISTANT_INBOUND 0`) never sends the login link (only the main device does), so an
+A member M5 (`JARVIS_INBOUND 0`) never sends the login link (only the main device does), so an
 expired login of its own stayed expired (found 25.10.2026). `GOOGLE_REFRESH_TOKEN_WEB` in
 `secrets.h` takes the main Echo's web-client login (the `refresh_token` of its `google.json`):
 it is used when no login from a link is stored, and when the stored one is refused (that one is

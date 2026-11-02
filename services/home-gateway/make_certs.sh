@@ -21,7 +21,7 @@ export MSYS_NO_PATHCONV=1 # Git Bash: "/CN=…" is no path
 
 if [ ! -f ca.key ]; then
     openssl ecparam -name prime256v1 -genkey -noout -out ca.key
-    openssl req -x509 -new -key ca.key -sha256 -days 3650 -subj "/CN=Assistant home CA" -out ca.crt \
+    openssl req -x509 -new -key ca.key -sha256 -days 3650 -subj "/CN=Jarvis home CA" -out ca.crt \
         -addext "basicConstraints=critical,CA:TRUE" -addext "keyUsage=critical,keyCertSign,cRLSign"
     echo "CA made"
 fi
@@ -29,8 +29,8 @@ fi
 # The gateway answers for the services' names (internal/hometunnel), not for a DNS name.
 if [ ! -f server.crt ]; then
     openssl ecparam -name prime256v1 -genkey -noout -out server.key
-    openssl req -new -key server.key -subj "/CN=assistant home gateway" -out server.csr
-    printf 'subjectAltName=DNS:rpc.assistant,DNS:mqtt.assistant,DNS:ha.assistant\nextendedKeyUsage=serverAuth\n' > server.ext
+    openssl req -new -key server.key -subj "/CN=jarvis home gateway" -out server.csr
+    printf 'subjectAltName=DNS:rpc.jarvis,DNS:mqtt.jarvis,DNS:ha.jarvis\nextendedKeyUsage=serverAuth\n' > server.ext
     openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 1825 -sha256 \
         -extfile server.ext -out server.crt
     rm -f server.csr server.ext

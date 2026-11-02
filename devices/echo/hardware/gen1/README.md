@@ -288,7 +288,7 @@ with the scripts to a stage directory in RAM, then runs `install-assistant.sh` o
 script writes only below `/usr/local/echo-dev`; init, bootloader and partitions stay as they are.
 The service loop restarts the assistant within seconds. Secrets come from the git-ignored
 `devices/atoms3r/include/secrets.h` (copy `secrets.h.example`; one file for both device types)
-and are generated into `private/assistant-secrets.json` (mode 0600).
+and are generated into `private/jarvis-secrets.json` (mode 0600).
 
 **Per-device settings.** If `devices/echo/local/devices/<host>.json` exists, it is installed as
 that device's `device.json` (role, wake word, room, Spotify name and so on). Without it the
@@ -296,7 +296,7 @@ device keeps the file it has. See [`../../docs/18-several-echos.md`](../../docs/
 for the roles of several Echos. Use `--all` for a household with more than one Echo, so no
 device is left running old code.
 
-Control and checks on the device: `/usr/local/echo-dev/assistant/assistant ctl status`, `ctl tools`,
+Control and checks on the device: `/usr/local/echo-dev/jarvis/jarvis ctl status`, `ctl tools`,
 `ctl tool <name> <json>`. After a deploy of the service loop itself, restart with
 `/usr/local/echo-dev/bin/echo-reboot`. Full description of the assistant:
 [`../../docs/16-assistant.md`](../../docs/16-assistant.md). Hardware test of speaker, microphones,

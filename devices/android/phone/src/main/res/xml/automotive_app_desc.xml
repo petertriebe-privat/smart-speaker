@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android Auto: the assistant as a Car App Library app (templates), car/AssistantCarService -->
+<!-- Android Auto: Jarvis as a Car App Library app (templates), car/JarvisCarService -->
 <automotiveApp>
     <uses name="template" />
 </automotiveApp>

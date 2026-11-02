@@ -2,7 +2,7 @@
 
     python cut_tv.py <work_dir> <recording.wav> [test_every]     (default 4)
 
-Record in the room with `assistant rawcapture <s> <dir>` while the TV runs and nobody says "Jarvis";
+Record in the room with `jarvis rawcapture <s> <dir>` while the TV runs and nobody says "Jarvis";
 use micsout.wav (what the wake word hears). The recording is cut into 30 s blocks: every
 <test_every>-th block goes whole to hard/tv_test (for wakeeval: false detections per hour), the rest
 in 3 s pieces to hard/tv (prepare.py: tv_negative). Blocks interleave, so both halves hold the same

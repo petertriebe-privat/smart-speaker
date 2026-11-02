@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	Dir = "/mnt/data/assistant"
+	Dir = "/mnt/data/jarvis"
 	mu  sync.Mutex // serializes writes of the same file from several goroutines
 )
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Bluetooth at every boot (issue #51, step 4): run by the service loop once a minute, it brings
 # up what is missing - the chip, the WiFi coexistence, bluetoothd with its key store, the audio
-# profiles and oFono - and nothing that already runs. The assistant does the rest (pairing, calls).
+# profiles and oFono - and nothing that already runs. Jarvis does the rest (pairing, calls).
 #
 # Off until /mnt/data/bluetooth.enabled exists: a deploy must not change how the device boots
 # by itself. The trial (hardware/gen1/tools/bt-try.sh, docs/17-bluetooth.md) found the WiFi unharmed, but the
@@ -104,11 +104,11 @@ ensure() {
 		sleep 3
 		running bluetoothd && log "bluetoothd up" || log "bluetoothd did not stay up"
 	fi
-	# PulseAudio is the assistant's (echo-audio.sh) and may restart: its modules are checked every time.
+	# PulseAudio is Jarvis' (echo-audio.sh) and may restart: its modules are checked every time.
 	# The policy plays A2DP from the phone on the speaker, but NOT its hands-free profile (hfgw):
 	# with that, PulseAudio looped the call between the phone and the speaker and microphone
-	# itself, next to the assistant's bridge and without its gate - the far end heard herself, late
-	# (17.10.2026). Call audio is the assistant's (hw:0,2).
+	# itself, next to Jarvis' bridge and without its gate - the far end heard herself, late
+	# (17.10.2026). Call audio is Jarvis' (hw:0,2).
 	if [ -S "$PULSE_SOCKET" ]; then
 		modules=$(pulse list modules short 2>/dev/null)
 		echo "$modules" | grep -q module-bluetooth-discover ||

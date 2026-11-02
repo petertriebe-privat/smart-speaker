@@ -41,8 +41,8 @@ type Source struct {
 	About string `json:"about,omitempty"` // a mail's sender; Own for a task in the assistant's own list
 }
 
-// Own: the About of a task in the assistant's own list. Until #29 it was "jarvis" (Load converts).
-const Own = "assistant"
+// Own: the About of a task in the assistant's own list (stored in affairs.json).
+const Own = "jarvis"
 
 // Change: one entry of an affair's history.
 type Change struct {
@@ -105,13 +105,6 @@ func Load() *Book {
 	b := &Book{Now: time.Now, saves: true}
 	if !store.LoadJSON(file, &b.st) {
 		b.st = saved{}
-	}
-	for _, a := range b.st.Affairs {
-		for i := range a.Sources {
-			if a.Sources[i].About == "jarvis" {
-				a.Sources[i].About = Own
-			}
-		}
 	}
 	return b
 }

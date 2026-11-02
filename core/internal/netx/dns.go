@@ -10,17 +10,17 @@ import (
 )
 
 // Android (the Android apps, board.Android) has no /etc/resolv.conf: Go's resolver would ask
-// localhost and find nothing. The app passes the network's DNS servers in ASSISTANT_DNS
+// localhost and find nothing. The app passes the network's DNS servers in JARVIS_DNS
 // ("192.168.1.1,1.1.1.1"); without them public ones. The phone changes networks: its app writes
-// the current network's servers into ASSISTANT_DNS_FILE at every change, read at each lookup. With the
+// the current network's servers into JARVIS_DNS_FILE at every change, read at each lookup. With the
 // home Wi-Fi's router kept as the first server, nothing resolved on mobile data (01.11.2026): a
 // UDP "connection" to it never fails, the question only goes unanswered.
 func init() {
 	if _, err := os.Stat("/etc/resolv.conf"); err == nil {
 		return
 	}
-	fixed := parseServers(cmp.Or(os.Getenv("ASSISTANT_DNS"), "1.1.1.1,8.8.8.8"))
-	file := os.Getenv("ASSISTANT_DNS_FILE")
+	fixed := parseServers(cmp.Or(os.Getenv("JARVIS_DNS"), "1.1.1.1,8.8.8.8"))
+	file := os.Getenv("JARVIS_DNS_FILE")
 	var next atomic.Uint32
 	net.DefaultResolver = &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
 		servers := fixed

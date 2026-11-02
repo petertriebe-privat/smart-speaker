@@ -30,13 +30,16 @@ tools/               cross-device tools (wake word training)
 
 ## The assistant's name
 
-The name is configuration (`ASSISTANT_NAME` in `secrets.h`, "Jarvis" by default), never part of a
-folder, file, identifier, path or protocol string: use `assistant` there. Where a user sees or hears
-the name, use `ASSISTANT_NAME` (C++, `shared/prompts/assistant_name.h`) or `prompts.Name()` (Go);
-Home Assistant events and entities take `prompts.Slug()` / `name::slug()` as prefix. Prose in
-code, docs and prompts says "the assistant" (it/its). The persona in `shared/prompts/persona.h` is a
-neutral default; a household's own goes into `persona_local.h` (M5) and `persona.json` in the
-Echo's state directory (`core/tools/extract_prompts.py --persona`).
+Jarvis is the default, and the name is configuration (`ASSISTANT_NAME` in `secrets.h`). Where a
+user sees or hears the name, use `ASSISTANT_NAME` (C++, `shared/prompts/assistant_name.h`) or
+`prompts.Name()` (Go); Home Assistant events and entities take `prompts.Slug()` / `name::slug()` as
+prefix (`jarvis_…` by default). What devices, the Pi and Home Assistant already use keeps its name
+whatever the assistant is called: paths (`/mnt/data/jarvis`), the binary (`jarvis ctl`), the apps
+(`dev.jarvis.*`), MQTT topics (`jarvis/…`), secrets switches (`JARVIS_*`), the Pi's deployer and
+`jarvis-diag`. New code, folders and files use neutral names (`assistant`), and prose says "the
+assistant" (it/its). The persona in `shared/prompts/persona.h` is the default (Jarvis); another
+character goes into `persona_local.h` (M5) and `persona.json` in the Echo's state directory
+(`core/tools/extract_prompts.py --persona`).
 
 ## Several devices, one assistant
 
@@ -55,7 +58,7 @@ The assistant runs on the Amazon Echos (`devices/echo/`, Go in `core/`), the Ato
   promise a tool one device lacks: device-only abilities go in a device-only prompt (e.g.
   `LIVE_ECHO_ABILITIES`).
 - **Tests before a deploy or flash.** `core/`: `go vet` and `go test` (the deploy script runs
-  them), then tools directly with `assistant ctl tool …` and spoken input with `assistant ctl
+  them), then tools directly with `jarvis ctl tool …` and spoken input with `jarvis ctl
   inject`. The M5: `pio run -e atoms3r`, the serial suite `devices/atoms3r/tests/device/run_tests.py`
   and the tool golden file. The services: their `test_*.py`. A new tool gets a test. Real GPT Live
   conversations and paid APIs only sparingly, after the free checks.
@@ -66,8 +69,8 @@ The assistant runs on the Amazon Echos (`devices/echo/`, Go in `core/`), the Ato
 - **Deploying.** The Echos: `devices/echo/tools/deploy.sh` (`--all` for every Echo, `--secrets`
   for new secrets). The M5: `pio run -e atoms3r -t upload` in `devices/atoms3r/`, one serial user
   at a time. The Fire TV: `devices/android/tools/install.sh <host> <room> [--core]` (builds core/
-  for ARMv7 into the APK; the stick's log: `adb shell run-as dev.smartspeaker.screen cat
-  files/run/assistant.log`). A change in core/ goes to the Echos, the sticks and the phone.
+  for ARMv7 into the APK; the stick's log: `adb shell run-as dev.jarvis.screen cat
+  files/run/jarvis.log`). A change in core/ goes to the Echos, the sticks and the phone.
 
 ## Working on the Echo hardware
 

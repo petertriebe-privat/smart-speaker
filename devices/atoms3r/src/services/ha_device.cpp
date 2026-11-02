@@ -313,7 +313,7 @@ void begin()
     mac.replace(":", "");
     mac.toLowerCase();
     id = name::slug() + "_" + mac;
-    base = "assistant/" + id;
+    base = "jarvis/" + id;
     declare();
     mqtt.setServer(host, port);
     mqtt.setBufferSize(1280);  // the largest discovery config is ~700 bytes

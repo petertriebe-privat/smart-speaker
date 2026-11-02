@@ -2,8 +2,8 @@
 // action button. Same persona, prompts and protocol as the M5 version in devices/atoms3r/.
 //
 //	assistant                run the assistant
-//	assistant ctl <command>   talk to the running one (start, stop, status, say, inject, led, ...)
-//	assistant rawcapture <seconds> <dir>   the DSP's raw microphones as WAV (rawcapture.go)
+//	jarvis ctl <command>   talk to the running one (start, stop, status, say, inject, led, ...)
+//	jarvis rawcapture <seconds> <dir>   the DSP's raw microphones as WAV (rawcapture.go)
 package main
 
 import (
@@ -51,11 +51,11 @@ import (
 
 var (
 	// Defaults for the Echo Gen 1 and the Dot (hardware/dot2/tools/assistant.sh), so ctl needs no flags there.
-	secretsPath  = flag.String("secrets", board.Path("/usr/local/echo-dev/private/assistant-secrets.json", "/data/echo-dot-dev/private/assistant-secrets.json"), "private values (from secrets.h)")
-	settingsPath = flag.String("settings", board.Path("/usr/local/echo-dev/assistant/settings.json", "/data/echo-dot-dev/assistant/settings.json"), "device settings")
+	secretsPath  = flag.String("secrets", board.Path("/usr/local/echo-dev/private/jarvis-secrets.json", "/data/echo-dot-dev/private/jarvis-secrets.json"), "private values (from secrets.h)")
+	settingsPath = flag.String("settings", board.Path("/usr/local/echo-dev/jarvis/settings.json", "/data/echo-dot-dev/jarvis/settings.json"), "device settings")
 	audioScript  = flag.String("audio", "/usr/local/echo-dev/echo-audio.sh", "starts the DSP audio chain (Echo Gen 1)")
 	micPath      = flag.String("mic", "/dev/shm/BMicsOut.shm", "DSP microphone buffer (Echo Gen 1)")
-	ctlPath      = flag.String("ctl", board.Path("/mnt/assistant/ctl.sock", "/run/assistant/ctl.sock"), "control socket")
+	ctlPath      = flag.String("ctl", board.Path("/mnt/jarvis/ctl.sock", "/run/jarvis/ctl.sock"), "control socket")
 )
 
 // version is the commit the binary was built from (-X main.version=..., by deploy.sh and the CI);

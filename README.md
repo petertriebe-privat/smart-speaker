@@ -24,13 +24,14 @@ device or on several that work together as one assistant.
 The assistant is what the household makes of it:
 
 - **Name:** `ASSISTANT_NAME` in the household's secrets (`devices/atoms3r/include/secrets.h`, which
-  `tools/make_secrets.py` also turns into the Echo's `assistant-secrets.json`); default "Jarvis".
+  `tools/make_secrets.py` also turns into the Echo's `jarvis-secrets.json`); default "Jarvis".
   The Home Assistant events and entities carry the name's lower-case slug (`<slug>_announce`,
   `<slug>_task`, `<slug>_conversation`, `binary_sensor.<slug>_presence`); the MQTT topics are
-  `assistant/...`.
-- **Persona:** `shared/prompts/persona.h` is a neutral default (a composed, politely formal
-  butler with a dry wit). A household's own persona goes into `shared/prompts/persona_local.h`
-  (git-ignored, the same constants), used by the M5 build. For the Echo,
+  `jarvis/...`. Paths, the binary (`jarvis ctl`), the apps (`dev.jarvis.*`) and the secrets
+  switches (`JARVIS_*`) keep the name "jarvis" whatever the assistant is called.
+- **Persona:** `shared/prompts/persona.h` is Jarvis, the default: a composed, politely formal
+  British butler with a bone-dry wit, after the films. Another character goes into
+  `shared/prompts/persona_local.h` (git-ignored, the same constants), used by the M5 build instead. For the Echo,
   `py -3 core/tools/extract_prompts.py --persona` writes `devices/echo/local/assistant/persona.json`,
   which goes to the Echo's state directory as `persona.json`.
 - **Wake word:** the built-in model is "Hey Jarvis" (microWakeWord by Kevin Ahrendt / esphome). An
@@ -229,7 +230,7 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   owner's merge deploys it on every Echo through the CI on the Raspberry Pi, which checks that the
   new version runs, rolls back when not, and reports it in Telegram (`services/deployer`; the CI pipeline itself is set up per repository and is not part of this repository yet).
   The server agent reads every Echo's status, logs and errors for the analysis, only reading and through the
-  Pi (`ssh assistant-diag`, skill `assistant`) *(Echo)*. The Fire TV app is built and installed on every
+  Pi (`ssh jarvis-diag`, skill `assistant`) *(Echo)*. The Fire TV app is built and installed on every
   stick the same way, as an update that keeps its setup.
 - Delivery: results, reminders and hints the assistant brings unasked go to the phone (Telegram or
   WhatsApp); on a speaker only when the user names it (or, for hints, where the presence sensor

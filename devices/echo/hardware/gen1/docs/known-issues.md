@@ -79,7 +79,7 @@ Detected components: [hardware.md](hardware.md). Audio, microphones and echo can
 | 0x35 | 12 o'clock | 11 o'clock | 10 o'clock |
 
 - The red LED in the mute button is connected neither to the LP5523 GPO outputs nor to `power-led`/`network-led`; the hardware switches it (see mute).
-- `led_offset` in the settings rotates the picture; test: `assistant ctl ledtest` (a red light runs clockwise from 12 o'clock).
+- `led_offset` in the settings rotates the picture; test: `jarvis ctl ledtest` (a red light runs clockwise from 12 o'clock).
 
 ### Buttons and volume ring
 

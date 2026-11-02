@@ -1,6 +1,6 @@
 # agent-mcp
 
-MCP server that lets the assistant hand tasks to an OpenHands agent profile (see *Task agent* in
+MCP server that lets Jarvis hand tasks to an OpenHands agent profile (see *Task agent* in
 [docs/architecture.md](../../devices/atoms3r/docs/architecture.md)). Runs next to OpenHands on the server, reachable
 for the device behind the web server with a bearer token.
 
@@ -24,7 +24,7 @@ such tools to a model, so a model cannot approve its own task. Offline test: `py
 | `OPENHANDS_URL` | default `http://127.0.0.1:8100` |
 | `MCP_BEARER_TOKEN` | token the device sends (`connect_mcp_server`) |
 | `AGENT_NAME`, `AGENT_PROFILE` | name in all texts; OpenHands agent profile to launch |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | the assistant's bot and the admin's chat (sending only) |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Jarvis' bot and the admin's chat (sending only) |
 | `RELAY_URL`, `RELAY_EVENT_TOKEN` | WhatsApp relay and its `EVENT_TOKEN` secret |
 | `PORT`, `STATE_FILE` | default `8110`, `/data/notified.json` (`pending.json`, `settings.json` next to it) |
 | `APPROVAL` | start value of the approval mode: `off` (default) or `change` |

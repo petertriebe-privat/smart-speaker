@@ -171,7 +171,7 @@ sh tools/deploy.sh --all      # every device with local/devices/<host>.json, Dot
 [`tools/deploy.sh`](../../tools/deploy.sh) recognises the Dot because the host is
 in `local/dot-ssh/config`. It runs vet and tests, builds, copies `assistant`, `assistant.sh`,
 `install-assistant.sh` and optional `device.json`, secrets, `librespot`, `btspeaker` into
-`/data/echo-dot-dev/assistant-stage`, and runs `install-assistant.sh` there. The first install of the
+`/data/echo-dot-dev/jarvis-stage`, and runs `install-assistant.sh` there. The first install of the
 service reboots the Dot once, because `services.sh` reads its list at boot. After that,
 the assistant is restarted by killing it; the service loop starts it again.
 
@@ -183,10 +183,10 @@ Dot specifics:
 | Topic | On the Dot |
 | --- | --- |
 | Settings | **No `settings.json`**; the built-in defaults are the Dot paths. Only `device.json`. |
-| Files | Binary, `device.json`, `librespot` in `/data/echo-dot-dev/assistant`; secrets in `private/assistant-secrets.json`; state in `/data/assistant`; socket in `/run/assistant`. |
-| `assistant ctl` | Under Dropbear `/usr/local/bin` is not in PATH: call `/data/echo-dot-dev/assistant/assistant ctl status`. |
-| Log | `tail -f /run/echo-dot-dev/assistant.sh.log` (rotated at 4 MiB). |
-| Service | [`assistant.sh`](tools/assistant.sh) (installed as `services/assistant.sh`) shields Dropbear from the OOM killer, backs off after more than five starts in five minutes, and can be disabled with a `disabled` file in the assistant's folder. |
+| Files | Binary, `device.json`, `librespot` in `/data/echo-dot-dev/jarvis`; secrets in `private/jarvis-secrets.json`; state in `/data/jarvis`; socket in `/run/jarvis`. |
+| `jarvis ctl` | Under Dropbear `/usr/local/bin` is not in PATH: call `/data/echo-dot-dev/jarvis/jarvis ctl status`. |
+| Log | `tail -f /run/echo-dot-dev/jarvis.sh.log` (rotated at 4 MiB). |
+| Service | [`assistant.sh`](tools/assistant.sh) (installed as `services/jarvis.sh`) shields Dropbear from the OOM killer, backs off after more than five starts in five minutes, and can be disabled with a `disabled` file in the assistant's folder. |
 | Audio | ALSA used directly from Go; no PulseAudio, no DSP. Own mixing loop for playback, microphone channel 6. |
 | Echo | No echo cancellation: the echo gate is on, no barge-in while the assistant speaks. |
 | Bluetooth | No BlueZ. Only the [`btspeaker`](tools/btspeaker/) helper (issue #74): the Dot as A2DP source, built on BTstack over `/dev/stpbt`. |

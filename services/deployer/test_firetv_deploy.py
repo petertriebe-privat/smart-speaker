@@ -40,9 +40,9 @@ class FakeSticks:
             return done("android.permission.RECORD_AUDIO: granted=true\n")
         if command.startswith("pidof"):
             return done("1234\n")
-        if command.endswith("cat files/run/assistant.log"):
+        if command.endswith("cat files/run/jarvis.log"):
             v = s["installed"][:12] if s["installed"] and not (s["broken"] and s["installed"] == "b" * 40) else "old"
-            return done(f"[Assistant] Fire TV starting, version {v}\n")
+            return done(f"[Jarvis] Fire TV starting, version {v}\n")
         return done()
 
 
@@ -52,7 +52,7 @@ class FireTVTest(unittest.TestCase):
         home = Path(self.tmp.name)
         (home / "local" / "firetv").mkdir(parents=True)
         self.cfg = deployer.Config({"DEPLOYER_HOME": self.tmp.name, "GITHUB_RUN_ID": "9",
-                                    "GITHUB_REPOSITORY": "o/assistant"})
+                                    "GITHUB_REPOSITORY": "o/jarvis"})
         self.adb, self.sent = FakeSticks(), []
         self.apk = home / "in.apk"
         self.apk.write_bytes(b"PK")

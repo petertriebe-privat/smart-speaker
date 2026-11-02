@@ -1,4 +1,4 @@
-"""Make the Fire TV app's banner (640 x 360) and icon (192 x 192) from a render of the assistant's 3D
+"""Make the Fire TV app's banner (640 x 360) and icon (192 x 192) from a render of Jarvis' 3D
 hologram (tools/avatar.png: a screenshot of the console, cut to the sphere).
 
 Usage: python devices/android/tools/make_icons.py   (needs Pillow; writes firetv/src/main/res/drawable-xhdpi)

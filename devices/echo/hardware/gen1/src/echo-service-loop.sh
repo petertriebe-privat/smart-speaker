@@ -8,10 +8,10 @@ RUNTIME=/mnt/echo-net
 WPA_PID=
 DHCP_PID=
 SSH_PID=
-ASSISTANT_PID=
+JARVIS_PID=
 TS_PID=
-ASSISTANT_STARTS=0
-ASSISTANT_SINCE=
+JARVIS_STARTS=0
+JARVIS_SINCE=
 alive() { [ -n "$1" ] && kill -0 "$1" 2>/dev/null; }
 load_wifi() {
     grep -q '^compat ' /proc/modules || insmod /lib/modules/2.6.37/compat.ko || return 1
@@ -60,22 +60,22 @@ rotate() {
         : > "$f"
     done
 }
-start_assistant() {
-    [ -x "$BASE/assistant/assistant" ] && [ -s "$BASE/private/assistant-secrets.json" ] || return 0
-    [ -e "$BASE/assistant/disabled" ] && return 0
+start_jarvis() {
+    [ -x "$BASE/jarvis/jarvis" ] && [ -s "$BASE/private/jarvis-secrets.json" ] || return 0
+    [ -e "$BASE/jarvis/disabled" ] && return 0
     # After repeated crashes, back off so a broken build does not spin. A run of more than five
     # minutes was no crash loop (deploys restart it on purpose): count from zero again.
     now=$(cut -d. -f1 /proc/uptime)
-    [ -n "$ASSISTANT_SINCE" ] && [ $((now - ASSISTANT_SINCE)) -gt 300 ] && ASSISTANT_STARTS=0
-    [ "$ASSISTANT_STARTS" -gt 5 ] && [ $((now % 300)) -gt 10 ] && return 0
-    ASSISTANT_SINCE=$now
-    ASSISTANT_STARTS=$((ASSISTANT_STARTS+1))
+    [ -n "$JARVIS_SINCE" ] && [ $((now - JARVIS_SINCE)) -gt 300 ] && JARVIS_STARTS=0
+    [ "$JARVIS_STARTS" -gt 5 ] && [ $((now % 300)) -gt 10 ] && return 0
+    JARVIS_SINCE=$now
+    JARVIS_STARTS=$((JARVIS_STARTS+1))
     [ -x "$BASE/mount-data.sh" ] && "$BASE/mount-data.sh"
-    mkdir -p /mnt/assistant
-    chmod 700 /mnt/assistant
-    "$BASE/assistant/assistant" -secrets "$BASE/private/assistant-secrets.json" -settings "$BASE/assistant/settings.json" \
-        -audio "$BASE/echo-audio.sh" -ctl /mnt/assistant/ctl.sock >>"$RUNTIME/assistant.log" 2>&1 </dev/null &
-    ASSISTANT_PID=$!
+    mkdir -p /mnt/jarvis
+    chmod 700 /mnt/jarvis
+    "$BASE/jarvis/jarvis" -secrets "$BASE/private/jarvis-secrets.json" -settings "$BASE/jarvis/settings.json" \
+        -audio "$BASE/echo-audio.sh" -ctl /mnt/jarvis/ctl.sock >>"$RUNTIME/jarvis.log" 2>&1 </dev/null &
+    JARVIS_PID=$!
 }
 # Tailscale (#46): the Echo in the household's tailnet, so a Claude Code session on the server
 # reaches it by SSH from anywhere. Userspace networking (no TUN on the old kernel needed);
@@ -117,7 +117,7 @@ health() {
     [ $((now - HEALTH_AT)) -ge 60 ] || return 0
     HEALTH_AT=$now
     grep -q ' /mnt/data ' /proc/mounts || return 0
-    f=/mnt/data/assistant/health.log
+    f=/mnt/data/jarvis/health.log
     {
         echo "== $(date '+%Y-%m-%d %H:%M:%S') up $now load $(cut -d' ' -f1-4 /proc/loadavg) free $(sed -n 's/^MemFree: *//p' /proc/meminfo) tmpfs $(df /mnt | awk 'NR==2 {print $5}')"
         top -b -n 1 2>/dev/null | sed -n '5,9p'
@@ -127,12 +127,12 @@ health() {
 }
 # Memory guard. A working SSH connection comes first (20.10.2026: the mirror read the wake word
 # recordings into RAM, the kernel dropped everyone's code pages, sshd stopped answering and the
-# watchdog reset Echo 1 every two minutes). The assistant guards itself (internal/memguard: it ends
+# watchdog reset Echo 1 every two minutes). Jarvis guards himself (internal/memguard: he ends
 # above memory_limit_mb, and his children inherit oom_score_adj 500); this is the second line:
 # - sshd with its sessions, init, the watchdog feeder and this loop are never chosen by the
 #   kernel's OOM killer (-1000; sshd resets it for the sessions it forks);
-# - every 2 s: reclaimable memory below 12 MB kills the assistant and librespot (the loop restarts
-#   The assistant), logged in health.log;
+# - every 2 s: reclaimable memory below 12 MB kills Jarvis and librespot (the loop restarts
+#   Jarvis), logged in health.log;
 # - the kernel keeps 8 MB free for itself (Wi-Fi, SSH) instead of 1.8 MB.
 mem_avail_kb() {
     # no MemAvailable on 2.6.37: free + unmapped file cache + reclaimable slab (as memguard)
@@ -150,9 +150,9 @@ memwatch() {
         protect
         avail=$(mem_avail_kb)
         if [ -n "$avail" ] && [ "$avail" -lt 12288 ]; then
-            pids=$(pidof assistant librespot)
+            pids=$(pidof jarvis librespot)
             [ -n "$pids" ] && kill -9 $pids 2>/dev/null
-            [ -d /mnt/data/assistant ] && echo "== $(date '+%Y-%m-%d %H:%M:%S') memory guard: $avail kB reclaimable, killed assistant and librespot ($pids)" >> /mnt/data/assistant/health.log
+            [ -d /mnt/data/jarvis ] && echo "== $(date '+%Y-%m-%d %H:%M:%S') memory guard: $avail kB reclaimable, killed jarvis and librespot ($pids)" >> /mnt/data/jarvis/health.log
             sleep 10
         fi
         sleep 2
@@ -181,12 +181,12 @@ while :; do
         "$BASE/bin/sshd" -D -f "$BASE/sshd_config" -E "$RUNTIME/sshd.log" &
         SSH_PID=$!
     fi
-    if ! alive "$ASSISTANT_PID"; then
-        start_assistant
+    if ! alive "$JARVIS_PID"; then
+        start_jarvis
     fi
     if ! alive "$TS_PID"; then
         start_tailscale
     fi
-    rotate "$RUNTIME/assistant.log" "$RUNTIME/wpa.log" "$RUNTIME/dhcp.log" "$RUNTIME/services.log" "$RUNTIME/tailscale.log"
+    rotate "$RUNTIME/jarvis.log" "$RUNTIME/wpa.log" "$RUNTIME/dhcp.log" "$RUNTIME/services.log" "$RUNTIME/tailscale.log"
     sleep 10
 done

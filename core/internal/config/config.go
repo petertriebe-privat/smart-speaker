@@ -176,7 +176,7 @@ type Config struct {
 func Load(secretsPath, settingsPath string) (*Config, error) {
 	c := &Config{Settings: Settings{
 		Volume: 40, LedLevel: DefaultLedLevel,
-		StateDir: board.Path("/mnt/data/assistant", "/data/assistant"), RunDir: board.Path("/mnt/assistant", "/run/assistant"),
+		StateDir: board.Path("/mnt/data/jarvis", "/data/jarvis"), RunDir: board.Path("/mnt/jarvis", "/run/jarvis"),
 		EchoGate: true, SpotifyName: prompts.Name(),
 		VoicePeak: 120, WakeCutoff: 0.45, WakeCutoffMusic: 0.4, MusicRing: true, WakeWord: true, MemoryLimitMB: 96,
 		SpeakerGainDB: 12, NightVolume: 25,

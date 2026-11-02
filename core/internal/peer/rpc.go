@@ -27,7 +27,7 @@ import (
 //
 // under PEER_KEY. A request older than maxSkew or with a nonce seen before is refused.
 
-const authHeader = "X-Assistant-Auth"
+const authHeader = "X-Jarvis-Auth"
 
 // Handler: one call's answer to its JSON body.
 type Handler func(body []byte) ([]byte, error)
@@ -166,7 +166,7 @@ func (s *Service) SetRemote(hostPort string) {
 
 // relayHeader: a call from outside the LAN (the phone over the gateway): the device that takes it
 // passes it on to the primary unless it is the primary.
-const relayHeader = "X-Assistant-Relay"
+const relayHeader = "X-Jarvis-Relay"
 
 // relay: the call on the primary for a device that is not; its answer signed by this one.
 func (s *Service) relay(w http.ResponseWriter, r *http.Request, body []byte) {

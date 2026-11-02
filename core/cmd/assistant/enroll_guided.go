@@ -21,7 +21,7 @@ import (
 	"echo-assistant/internal/tools"
 )
 
-// The guided wake word training (#61): `assistant ctl enroll <person> guided`. The assistant announces each
+// The guided wake word training (#61): `jarvis ctl enroll <person> guided`. The assistant announces each
 // part (where to stand, what to say), waits until the person is there, records the part as
 // `enroll <person> <session>` does, and goes on to the next one by himself. The action button or
 // `enroll stop` ends it. About 15 minutes; the wake word stays off throughout.

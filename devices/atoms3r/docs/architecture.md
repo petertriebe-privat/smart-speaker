@@ -810,7 +810,7 @@ device; design of the network: [devices/echo/docs/18-several-echos.md](../../ech
   broadcasts after every second group key renewal, 20.10.2026),
   `J1 <hex HMAC-SHA256 under PEER_KEY> <JSON>`, a heartbeat every 5 s
   (state, room, `no_lead`, `occupied`, the calls' port); signed HTTP calls on 47801 both ways
-  (`X-Assistant-Auth`). The datagram and the call signature are checked against vectors made with
+  (`X-Jarvis-Auth`). The datagram and the call signature are checked against vectors made with
   Python's `hmac` (`core/internal/peer/m5_test.go`). The UDP socket is polled in the main
   loop; static RAM +4.8 KB for the whole network part, internal free after boot 114 KB, largest
   block 102 KB (19.10.2026, wake word on).

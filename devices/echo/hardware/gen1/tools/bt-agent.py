@@ -4,12 +4,12 @@
 # Makes the adapter visible for a while and confirms a pairing with Secure Simple Pairing's
 # numeric comparison: both sides show the same six digits, and only if they match is there
 # nobody in between. The agent registers with the capability DisplayYesNo, so BlueZ asks it with
-# RequestConfirmation; here that question goes to the console. In the finished feature the assistant
+# RequestConfirmation; here that question goes to the console. In the finished feature Jarvis
 # says the number at the speaker and listens for the answer - that is the only difference.
 #
 #   python bt-agent.py                  120 s visible, ask on the console
 #   python bt-agent.py --seconds 300
-#   python bt-agent.py --name the assistant    the name the phone shows (runtime only, main.conf stays)
+#   python bt-agent.py --name Jarvis    the name the phone shows (runtime only, main.conf stays)
 #   python bt-agent.py --yes            confirm without asking (only with nobody around, and
 #                                       never outside a window you opened yourself)
 #
@@ -25,7 +25,7 @@ import dbus.mainloop.glib
 import dbus.service
 import gobject
 
-AGENT_PATH = "/assistant/agent"
+AGENT_PATH = "/jarvis/agent"
 IFACE = "org.bluez.Agent"
 
 

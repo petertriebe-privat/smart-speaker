@@ -474,7 +474,7 @@ def various(suite, device, member=False):
     suite.contains("send_last_image checks the delivery",
                    device.tool("send_last_image", {"print": False, "email_to": ""}), "Error")
     suite.contains("unknown tool", device.tool("gibt_es_nicht"), "unknown function")
-    # Nothing is dialled in these: the checks refuse before. A second speaker (ASSISTANT_INBOUND 0)
+    # Nothing is dialled in these: the checks refuse before. A second speaker (JARVIS_INBOUND 0)
     # has no phone line at all and refuses every call.
     called = device.tool("phone_call", {"to": "Niemand 4711", "task": "Regressionstest, nicht anrufen"}) or ""
     second_speaker = "no phone line" in called

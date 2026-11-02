@@ -1,10 +1,10 @@
-// WhatsApp relay for the assistant: the Cloud API delivers incoming messages only by webhook, the device
+// WhatsApp relay for Jarvis: the Cloud API delivers incoming messages only by webhook, the device
 // sits behind the home router. This worker takes Meta's webhook (verify-token handshake,
 // X-Hub-Signature-256 over the raw body), keeps the events in a Durable Object, and the device
 // fetches them like Telegram's getUpdates: GET /poll?after=<last id>, which also drops everything
 // up to that id. Replies go from the device straight to the Graph API, not through here.
 // POST /event puts an announcement from a server of the household (the task agent's MCP server:
-// "<agent> ist fertig: ...") into the same queue; the device speaks it, nothing else.
+// "Ultron ist fertig: ...") into the same queue; the device speaks it, nothing else.
 // GET /google is the redirect target of the device's Google login links (see googleLogin).
 //
 // Secrets (wrangler secret put): APP_SECRET (Meta app), VERIFY_TOKEN (chosen freely, also entered
@@ -19,17 +19,17 @@ const MAX_ANNOUNCEMENT = 300;  // spoken at home
 const MAX_CALL_REPORT = 1500;  // told in a call back, where the owner can ask
 
 // Meta needs a privacy policy URL before the app can go live.
-const privacy = (name) => `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Datenschutz – ${name}</title><body style="font-family:sans-serif;max-width:40em;margin:2em auto;padding:0 1em;line-height:1.5">
+const PRIVACY = `<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Datenschutz – Jarvis</title><body style="font-family:sans-serif;max-width:40em;margin:2em auto;padding:0 1em;line-height:1.5">
 <h1>Datenschutzhinweis</h1>
-<p>${name} ist der private digitale Assistent eines Haushalts. Er beantwortet WhatsApp-Nachrichten von Mitgliedern dieses
+<p>Jarvis ist der private digitale Assistent eines Haushalts. Er beantwortet WhatsApp-Nachrichten von Mitgliedern dieses
 Haushalts; Nachrichten anderer Absender werden nicht bearbeitet, sondern nur dem Inhaber gemeldet.</p>
 <p>Eingehende Nachrichten werden über diesen Dienst (Cloudflare) an das Gerät des Haushalts weitergereicht und hier
 gelöscht, sobald das Gerät sie abgeholt hat, spätestens nach sieben Tagen. Zur Beantwortung werden Inhalte an OpenAI
 übermittelt (ohne Verwendung zum Training). Es findet keine Weitergabe zu Werbezwecken statt.</p>
-<p>Auskunft und Löschung: über den WhatsApp-Chat mit ${name} oder beim Inhaber des Haushalts.</p>
+<p>Auskunft und Löschung: über den WhatsApp-Chat mit Jarvis oder beim Inhaber des Haushalts.</p>
 <h2>Privacy notice</h2>
-<p>${name} is a household's private assistant. WhatsApp messages are relayed to the household's device, deleted here once
+<p>Jarvis is a household's private assistant. WhatsApp messages are relayed to the household's device, deleted here once
 fetched (at the latest after seven days), and processed with OpenAI (not used for training). No data is sold or shared
 for advertising.</p></body></html>`;
 
@@ -41,17 +41,13 @@ export default {
     if (url.pathname === "/poll" && request.method === "GET") return poll(request, url, env);
     if (url.pathname === "/event" && request.method === "POST") return announce(request, env);
     if (url.pathname === "/google" && request.method === "GET") return googleLogin(url, env);
-    if (url.pathname === "/privacy") return new Response(privacy(esc(assistantName(env))), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    if (url.pathname === "/privacy") return new Response(PRIVACY, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     return new Response("not found", { status: 404 });
   },
 };
 
-// The assistant's name is configuration (wrangler.jsonc "vars" or a dashboard variable).
-const assistantName = (env) => String(env.ASSISTANT_NAME || "Jarvis").slice(0, 40);
-const esc = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-
 function inbox(env) {
-  return env.INBOX.get(env.INBOX.idFromName("assistant"));
+  return env.INBOX.get(env.INBOX.idFromName("jarvis"));
 }
 
 // Meta's subscription check: echo hub.challenge if the token matches.
@@ -71,7 +67,7 @@ async function receive(request, env) {
   } catch {
     return new Response("bad json", { status: 400 });
   }
-  // Keep only what the device needs: changes with incoming messages. Delivery statuses of the assistant's
+  // Keep only what the device needs: changes with incoming messages. Delivery statuses of Jarvis'
   // own answers (sent, delivered, read) would only wake the device for nothing.
   const values = [];
   for (const entry of payload.entry || [])
@@ -90,7 +86,7 @@ async function poll(request, url, env) {
   return Response.json({ events });
 }
 
-// {"source": "Agent", "text": "...", "deliver": "speak"|"call", "room": "..."}: queued as
+// {"source": "Ultron", "text": "...", "deliver": "speak"|"call", "room": "..."}: queued as
 // {"announcement": {...}}.
 // Plain text only, spoken at home or told in a call to the admin: a leaked token can make the
 // device talk (or ring the admin), not act.
@@ -106,7 +102,7 @@ async function announce(request, env) {
   const text = String(body.text || "").trim();
   const source = String(body.source || "Server").trim().slice(0, 40);
   const deliver = body.deliver === "call" ? "call" : "speak";
-  const room = String(body.room || "").trim().slice(0, 40); // the assistant speaker to say it on, "" = the device
+  const room = String(body.room || "").trim().slice(0, 40); // the Jarvis speaker to say it on, "" = the device
   const max = deliver === "call" ? MAX_CALL_REPORT : MAX_ANNOUNCEMENT;
   if (!text || text.length > max) return new Response(`text: 1-${max} characters`, { status: 400 });
   await inbox(env).add([{ announcement: { source, text, deliver, room } }]);
@@ -122,11 +118,10 @@ async function googleLogin(url, env) {
   const state = url.searchParams.get("state") || "";
   const ok = code && code.length <= 512 && /^[A-Za-z0-9]{32}$/.test(state);
   if (ok) await inbox(env).add([{ google_login: { code, state } }]);
-  const name = esc(assistantName(env));
-  const text = ok ? `Danke! ${name} übernimmt die Anmeldung und meldet sich gleich.`
+  const text = ok ? "Danke! Jarvis übernimmt die Anmeldung und meldet sich gleich."
     : "Die Anmeldung wurde abgebrochen. Sie können den Link noch einmal öffnen.";
   return new Response(`<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>${name} – Google</title><body style="font-family:sans-serif;max-width:30em;margin:3em auto;padding:0 1em;line-height:1.5">
+<title>Jarvis – Google</title><body style="font-family:sans-serif;max-width:30em;margin:3em auto;padding:0 1em;line-height:1.5">
 <p>${text}</p></body></html>`, { status: ok ? 200 : 400, headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 

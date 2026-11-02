@@ -1,7 +1,7 @@
-# The assistant on the TV: design and use cases
+# Jarvis on the TV: design and use cases
 
-The screen app (#108) shows the assistant as a heads-up display in amber on near black. This file is the
-design language, the card format the renderer understands (`app/src/main/assets/assistant.js`) and
+The screen app (#108) shows Jarvis as a heads-up display in amber on near black. This file is the
+design language, the card format the renderer understands (`app/src/main/assets/jarvis.js`) and
 the use cases it is built for. Sample cards for every use case: `tools/samples.json`; show them on
 a stick with `python tools/demo.py <room id> [names]`.
 
@@ -18,8 +18,8 @@ Our own take, no film assets or logos:
 | Colour | One amber `#ff9a1f` with a hot `#ffc46b` and a deep `#e8590c`; text warm white `#fbf3e8`, secondary `#c4ad94`; red `#ff4b3e` only for alarms. Background `#050608`. |
 | Type | Rajdhani (OFL, bundled) for headings, labels, numbers; letter-spaced capitals for eyebrows and labels. Running text in the system sans (Roboto / Amazon Ember) for reading from the sofa. |
 | Panels | Chamfered corners, a 1.5 px amber edge fading in the middle, L-brackets on two corners, a faint amber gradient from the top. |
-| The hologram | The assistant itself, in 3D (`assistant3d.js`, WebGL), drawn in glowing lines rather than a cloud of points: broad ring bands of parallel lines around the sphere, an eye in the centre (concentric rings with ticks, always facing the viewer) with spokes running out, circuit traces with nodes on the inner shells, arc dashes and small panels on the outer one, thin outline rings, soft bokeh lights and a few sparks (~6 300 line segments as screen-space quads with a bright core and a glow, ~600 points). Each shell turns slowly at its own speed and tilt, the far side is dimmed, the lines flicker a little, over a soft glow. States, eased into each other: idle (slow turn), listening (a little faster, the shells breathe), thinking (faster, more flicker), speaking (the shells swell gently, the glow pulses); all calm, nothing races. A new status updates the running sphere instead of starting it again. Without WebGL the 2D orb (segmented SVG rings) stands in; the small brand mark in the top bar stays 2D. |
-| HUD frame (full screen) | Top bar: orb + the assistant's name, the card's kind between two lines with a scanning light, date and clock. Bottom bar: "Zurück · Schließen", a bar running down the card's time, "Sys · Online". Background: a 48 px grid and a warm glow. the assistant's avatar: the hologram (600 px) on the left, the card to its right unfolds from its side; the avatar shows his state while it talks about the card (`state` on any card). Web pages and videos get a smaller avatar and more room; cards with their own hologram (status, idle screen) hide it. |
+| The hologram | Jarvis himself, in 3D (`jarvis3d.js`, WebGL), drawn in glowing lines rather than a cloud of points: broad ring bands of parallel lines around the sphere, an eye in the centre (concentric rings with ticks, always facing the viewer) with spokes running out, circuit traces with nodes on the inner shells, arc dashes and small panels on the outer one, thin outline rings, soft bokeh lights and a few sparks (~6 300 line segments as screen-space quads with a bright core and a glow, ~600 points). Each shell turns slowly at its own speed and tilt, the far side is dimmed, the lines flicker a little, over a soft glow. States, eased into each other: idle (slow turn), listening (a little faster, the shells breathe), thinking (faster, more flicker), speaking (the shells swell gently, the glow pulses); all calm, nothing races. A new status updates the running sphere instead of starting it again. Without WebGL the 2D orb (segmented SVG rings) stands in; the small brand mark in the top bar stays 2D. |
+| HUD frame (full screen) | Top bar: orb + JARVIS, the card's kind between two lines with a scanning light, date and clock. Bottom bar: "Zurück · Schließen", a bar running down the card's time, "Sys · Online". Background: a 48 px grid and a warm glow. Jarvis' avatar: the hologram (600 px) on the left, the card to its right unfolds from its side; the avatar shows his state while he talks about the card (`state` on any card). Web pages and videos get a smaller avatar and more room; cards with their own hologram (status, idle screen) hide it. |
 | Motion | Cards rise in (0.45 s), blocks follow one after the other; icons have a turning ring. Nothing flashes except alarms and a live camera. |
 
 Sizes: the overlay is 440 dp wide in the top right corner above any app. The full screen is laid
@@ -28,7 +28,7 @@ looks the same on every set; running text 25 px, headings 46 px on that stage.
 
 ## Card format
 
-`assistant/screen/<room id>/show` (see the README for the topics):
+`jarvis/screen/<room id>/show` (see the README for the topics):
 
 ```json
 {"id": "...", "mode": "overlay | fullscreen | web", "seconds": 0,
@@ -74,16 +74,16 @@ history first, then closes. It stays until closed unless `seconds` is given.
 
 ## Use cases
 
-What the assistant can put on the TV, by situation. *Trigger*: asked (the user wants to see it),
-proactive (an event from Home Assistant or the assistant's own initiative; rules decide when, no fixed
-thresholds), or companion (shown while the assistant talks, so the answer can stay short).
+What Jarvis can put on the TV, by situation. *Trigger*: asked (the user wants to see it),
+proactive (an event from Home Assistant or Jarvis' own initiative; rules decide when, no fixed
+thresholds), or companion (shown while Jarvis talks, so the answer can stay short).
 
-### the assistant itself
+### Jarvis himself
 - **The hologram with live captions** (`status`): listening / thinking / speaking, what the user
-  said and what the assistant answers; small in the corner above a film, or large and free in the full
+  said and what Jarvis answers; small in the corner above a film, or large and free in the full
   screen. Companion to every conversation in the room.
 - **Idle screen** (`ambient`): the hologram with the clock below it, weather, the rest of the day. As a screensaver or
-  on "the assistant, zeig mir den Tag".
+  on "Jarvis, zeig mir den Tag".
 
 ### Everyday answers (companion)
 - Weather today, tomorrow, the week, rain radar picture (`forecast`, `image`).
@@ -123,7 +123,7 @@ thresholds), or companion (shown while the assistant talks, so the answer can st
 ### Media
 - Now playing on Spotify with cover and the speaker (`media`).
 - Videos: news clips, a how-to, a camera clip, in the app with sound (`video`).
-- Web pages: the article the assistant talks about, a recipe site, a timetable (`mode: web`).
+- Web pages: the article Jarvis talks about, a recipe site, a timetable (`mode: web`).
 - Photos: a picture from the phone or Google Photos, a slideshow later.
 
 ### Knowledge and family
@@ -134,7 +134,7 @@ thresholds), or companion (shown while the assistant talks, so the answer can st
 ## Next
 
 - `show_on_screen` on the Echo: kinds and blocks in the tool's schema (short, generic), web pages
-  and videos; the assistant's state (orb, captions) published by the speaker in the room automatically.
+  and videos; Jarvis' state (orb, captions) published by the speaker in the room automatically.
 - Proactive cards from HA events (door bell, washing machine, alarms) with rules for when the TV
   may be interrupted.
 - The idle screen as the stick's screensaver if Fire OS lets it.

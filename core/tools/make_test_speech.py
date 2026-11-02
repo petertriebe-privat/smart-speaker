@@ -1,4 +1,4 @@
-"""Make a spoken test utterance as raw s16le 16 kHz mono (for `assistant ctl inject`).
+"""Make a spoken test utterance as raw s16le 16 kHz mono (for `jarvis ctl inject`).
 
 Uses OpenAI's speech API with the key from devices/echo/local/assistant/secrets.json.
 Usage: py -3 tools/make_test_speech.py "Wie spät ist es?" out.raw

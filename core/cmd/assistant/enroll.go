@@ -21,9 +21,9 @@ import (
 
 // Guided wake word recordings (#61, E3; later the voice profile of #45):
 //
-//	assistant ctl enroll <person> <session> [takes]   a beep per take, the person says "Jarvis"
-//	assistant ctl enroll <person> negative [seconds]  free talk without the wake word (default 90 s)
-//	assistant ctl enroll status | stop | delete <person>
+//	jarvis ctl enroll <person> <session> [takes]   a beep per take, the person says "Jarvis"
+//	jarvis ctl enroll <person> negative [seconds]  free talk without the wake word (default 90 s)
+//	jarvis ctl enroll status | stop | delete <person>
 //
 // The whole session is recorded without gaps, the raw microphones and BMicsOut side by side
 // (recordRaw), into <state_dir>/voices/<person>/<session>-<time>/; takes.json says when each take

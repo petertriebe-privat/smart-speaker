@@ -1,4 +1,4 @@
-"""Show the sample cards (tools/samples.json) on a assistant screen, one after the other.
+"""Show the sample cards (tools/samples.json) on a Jarvis screen, one after the other.
 
 Usage: python devices/android/tools/demo.py <room id> [sample name ...]
 Needs paho-mqtt (pip install paho-mqtt) and the broker from devices/echo/local/assistant/secrets.json.
@@ -20,11 +20,11 @@ def main():
     room, wanted = sys.argv[1], set(sys.argv[2:])
     s = json.load(open(SECRETS, encoding="utf-8"))
     u = urllib.parse.urlparse(s["MQTT_URL"])
-    c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="assistant-screen-demo")
+    c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="jarvis-screen-demo")
     c.username_pw_set(s.get("MQTT_USER"), s.get("MQTT_PASSWORD"))
     c.connect(u.hostname, u.port or 1883)
     c.loop_start()
-    base = "assistant/screen/" + room
+    base = "jarvis/screen/" + room
     samples = json.load(open(os.path.join(HERE, "samples.json"), encoding="utf-8"))
     for sample in samples:
         if wanted and sample["name"] not in wanted:

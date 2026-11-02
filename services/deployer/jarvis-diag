@@ -1,0 +1,5 @@
+#!/bin/sh
+# Ultron's forced command on the Raspberry Pi (authorized_keys of the user ultron, #124): the
+# command he sent goes as one argument to the read-only diagnostics, run as jarvis-deploy (the
+# user with the speakers' keys; sudoers allows exactly this).
+exec sudo -n -u jarvis-deploy /usr/bin/python3 /usr/local/lib/jarvis-diag/jarvis_diag.py "${SSH_ORIGINAL_COMMAND:-help}"

@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- the phone's communication mode while the assistant listens (AudioBridge.route) -->
+    <!-- the phone's communication mode while Jarvis listens (AudioBridge.route) -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- the orb's plasma crackles in the hand (assistant.js orbPlay) -->
+    <!-- the orb's plasma crackles in the hand (jarvis.js orbPlay) -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- the phone's tools (PhoneTools): calls, contacts, SMS, alarms; drawing over other apps is
          Android's exemption for starting Maps, a call or an app from the background -->
@@ -43,7 +43,7 @@
         <service android:name=".PhoneService" android:exported="false"
             android:foregroundServiceType="microphone|mediaPlayback" />
 
-        <!-- The app's icon: the assistant console (the hologram, the conversation, his cards) -->
+        <!-- The app's icon: the Jarvis console (the hologram, the conversation, his cards) -->
         <activity
             android:name=".PhoneActivity"
             android:exported="true"
@@ -54,10 +54,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Android Auto: the assistant on the car's screen (car/AssistantCarService). Sideloaded, so Android
+        <!-- Android Auto: Jarvis on the car's screen (car/JarvisCarService). Sideloaded, so Android
              Auto's developer settings need "Unknown sources" once. -->
         <service
-            android:name=".car.AssistantCarService"
+            android:name=".car.JarvisCarService"
             android:exported="true">
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
@@ -95,9 +95,9 @@
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <!-- turned, the page only fits itself anew (assistant.js fit): the console keeps its state -->
+        <!-- turned, the page only fits itself anew (jarvis.js fit): the console keeps its state -->
         <activity
-            android:name="dev.smartspeaker.shared.FullscreenActivity"
+            android:name="dev.jarvis.shared.FullscreenActivity"
             android:exported="false"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"

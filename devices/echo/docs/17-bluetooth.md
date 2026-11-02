@@ -77,7 +77,7 @@ and the RAM logs were lost after pulling the power.
 Copy the files over (from the server; the container jumps via the host):
 
 ```sh
-scp devices/echo/hardware/gen1/tools/bt-try.sh devices/echo/hardware/gen1/tools/bt-agent.py assistant-echo:/mnt/
+scp devices/echo/hardware/gen1/tools/bt-try.sh devices/echo/hardware/gen1/tools/bt-agent.py jarvis-echo:/mnt/
 ```
 
 From the PC (Git Bash) with the private SSH profile:
@@ -245,7 +245,7 @@ real time, like the RTP sender with its own clock on the landline. The wake word
 ringing reached only 0.35 (threshold 0.8): while ringing and during a conversation at the
 speaker the music threshold (0.5) now applies.
 
-**Echo test** (`assistant ctl echotest <mobile number> [beeps]`, `echotest.go`): the assistant calls
+**Echo test** (`jarvis ctl echotest <mobile number> [beeps]`, `echotest.go`): the assistant calls
 the paired phone from the landline, without GPT Live, without its own bridge, without ringback tone in the room. The
 Echo itself answers the phone call, which goes to speaker and microphone like any other.
 On the landline side beeps (1 kHz, 200 ms) go out every 3 s, and the assistant looks for them in

@@ -12,7 +12,7 @@ import (
 )
 
 // On the Fire TV (board.FireTV) the assistant app (devices/android/firetv) is microphone and speaker.
-// The assistant reaches it over local TCP at ASSISTANT_AUDIO (e.g. 127.0.0.1:47160), one connection each:
+// The assistant reaches it over local TCP at JARVIS_AUDIO (e.g. 127.0.0.1:47160), one connection each:
 //
 //	"mic\n"                       the app streams 16 kHz s16le mono in real time: the remote's
 //	                              microphone while its key is held, silence otherwise
@@ -22,9 +22,9 @@ import (
 //	                              (cmd/assistant/phoneboard.go)
 //
 // The phone app (board.Phone) speaks the same protocol.
-var tvAddr = os.Getenv("ASSISTANT_AUDIO")
+var tvAddr = os.Getenv("JARVIS_AUDIO")
 
-// OnTV: the app plays and records (ASSISTANT_AUDIO set).
+// OnTV: the app plays and records (JARVIS_AUDIO set).
 func OnTV() bool { return tvAddr != "" }
 
 const tvMicRing = 1 << 18 // 16 s

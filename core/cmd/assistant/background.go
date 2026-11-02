@@ -51,7 +51,7 @@ func (d *device) addBackgroundTools() {
 			"Bescheid'). Returns at once; tell the user you will come back to it. The result always goes to the user " +
 			"as a message (to keep), and into this conversation as a note while it lasts. thorough: careful thought " +
 			"(slower). Not for what you can answer or do yourself in a moment. Work that takes longer than a few " +
-			"minutes, or needs a computer, a browser or code, goes to the server agent instead (its " +
+			"minutes, or needs a computer, a browser or code, goes to Ultron instead (the server agent, its " +
 			"delegate_task: it runs on the owner's subscription without API costs, and its result comes back by " +
 			"itself, into a running conversation too). Give the complete task in German with everything the user " +
 			"said that matters: the run does not know this conversation.",

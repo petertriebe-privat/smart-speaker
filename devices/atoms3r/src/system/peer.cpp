@@ -29,7 +29,7 @@ constexpr uint32_t ALIVE_MS = 3 * HEARTBEAT_MS;  // a device counts as present t
 constexpr uint32_t DIRECT_MS = 10 * 60 * 1000;   // a device that went quiet still gets every datagram directly
 constexpr uint32_t LEVEL_WINDOW_MS = 1000;  // the level is measured in the second before a detection
 constexpr uint32_t BUSY_AFTER_MS = 2000;    // a conversation this old answers claims (not our own new one)
-constexpr const char* AUTH_HEADER = "X-Assistant-Auth";
+constexpr const char* AUTH_HEADER = "X-Jarvis-Auth";
 constexpr int MAX_PEERS = 8, MAX_CLAIMS = 8;
 
 struct Device {
@@ -505,7 +505,7 @@ void serve()
         name.toLowerCase();
         value.trim();
         if (name == "content-length") length = value.toInt();
-        else if (name == "x-assistant-auth") auth = value;
+        else if (name == "x-jarvis-auth") auth = value;
     }
     String body;
     if (length <= BODY_MAX) {

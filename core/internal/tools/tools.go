@@ -17,7 +17,7 @@ type Channel uint8
 const (
 	Voice    Channel = 1 << iota // voice conversation (GPT Live's backend)
 	Agent                        // agent runs: chat messages, mail commands, scheduled tasks
-	Console                      // assistant ctl tool ... (tests)
+	Console                      // jarvis ctl tool ... (tests)
 	Stranger                     // a phone call to someone else: only what that call needs
 )
 

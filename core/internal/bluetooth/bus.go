@@ -25,7 +25,7 @@ type device struct {
 	Paired, Trusted     bool
 }
 
-const agentPath = "/assistant/agent"
+const agentPath = "/jarvis/agent"
 
 var errRejected = errors.New("org.bluez.Error.Rejected")
 

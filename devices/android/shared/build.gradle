@@ -5,7 +5,7 @@ plugins {
 // Shared by the Android apps: the HUD renderer and hologram (assets), the overlay window, the
 // full-screen activity with its native video and web layers.
 android {
-    namespace 'dev.smartspeaker.shared'
+    namespace 'dev.jarvis.shared'
     compileSdk 34
 
     defaultConfig {

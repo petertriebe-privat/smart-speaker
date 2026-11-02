@@ -12,7 +12,7 @@ import (
 	"echo-assistant/internal/audio"
 )
 
-// assistant rawcapture <seconds> <dir>: records the DSP's raw capture (internal/audio/ring.go) and
+// jarvis rawcapture <seconds> <dir>: records the DSP's raw capture (internal/audio/ring.go) and
 // The assistant's own input side by side as WAV files, all starting at the same moment:
 //
 //	mics.wav     the 7 raw microphones (16 kHz, 7 channels)
@@ -40,7 +40,7 @@ var (
 
 func rawCapture(args []string) int {
 	if len(args) != 2 {
-		fmt.Fprintln(os.Stderr, "usage: assistant rawcapture <seconds> <dir>")
+		fmt.Fprintln(os.Stderr, "usage: jarvis rawcapture <seconds> <dir>")
 		return 2
 	}
 	seconds, err := strconv.Atoi(args[0])

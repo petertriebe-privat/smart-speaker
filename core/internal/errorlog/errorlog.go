@@ -1,7 +1,7 @@
 // Package errorlog: errors worth reading later, kept on the data partition with the time, as
 // devices/atoms3r/src/system/error_log.cpp. The runtime log lives in RAM and is gone after a reboot
 // (and the device once hung without anyone knowing why). Failed sessions, broken-off calls,
-// hardware that does not answer, every start. "assistant ctl errors" prints it. The file is cut to
+// hardware that does not answer, every start. "jarvis ctl errors" prints it. The file is cut to
 // its newer half beyond maxBytes.
 package errorlog
 

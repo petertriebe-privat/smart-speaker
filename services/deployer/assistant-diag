@@ -1,5 +1,0 @@
-#!/bin/sh
-# The server agent's forced command on the Raspberry Pi (authorized_keys of the user agent, #124): the
-# command it sent goes as one argument to the read-only diagnostics, run as assistant-deploy (the
-# user with the speakers' keys; sudoers allows exactly this).
-exec sudo -n -u assistant-deploy /usr/bin/python3 /usr/local/lib/assistant-diag/assistant_diag.py "${SSH_ORIGINAL_COMMAND:-help}"

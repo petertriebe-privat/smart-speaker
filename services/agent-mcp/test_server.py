@@ -52,7 +52,7 @@ async def main():
     assert "never push to main" in s.started[0][1]["initial_message"]["content"][0]["text"]
     # a new feature comes back as a proposal with questions before anything is built (#131)
     assert "first only the proposal" in s.started[0][1]["initial_message"]["content"][0]["text"]
-    assert len(s.DELEGATE) <= 600, "the assistant cuts tool descriptions at 600 characters"
+    assert len(s.DELEGATE) <= 600, "Jarvis cuts tool descriptions at 600 characters"
     # unasked, the result goes to Telegram only; a speaker only when named (27.10.2026)
     assert s.started[0][1]["tags"]["notify"] == "message" and out.endswith("comes by Telegram."), out
     out = await s.delegate_task("Check the disks", notify="speak", room="Küche", scope="research")
