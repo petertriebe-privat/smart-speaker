@@ -1,0 +1,17 @@
+dependencies:
+  idf: '>=4.4'
+description: Generates TensorFlow micro spectrogram features from audio samples
+files:
+  exclude:
+  - .claude/**
+  - .github/**
+  - .vscode/**
+license: Apache-2.0
+maintainers:
+- Kevin Ahrendt <kevin.ahrendt@openhomefoundation.org>
+repository: git://github.com/esphome-libs/esp-micro-speech-features.git
+repository_info:
+  commit_sha: 351c4c69530f5a802da5433581c4863afadf0a00
+  path: .
+url: https://github.com/kahrendt/ESPMicroSpeechFeatures
+version: 1.2.3

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+// The corner card keeps its layout (440 px wide) in a window half that size (Overlay.SCALE): a
+// quarter of the area, it was too large on the TVs (29.10.2026).
+if (/mode=overlay/.test(location.search)) document.querySelector("meta[name=viewport]").content = "width=440";
+// The phone: no pinch zoom (assistant.js fits the HUD to the screen itself).
+else if (/talk=1/.test(location.search)) document.querySelector("meta[name=viewport]").content =
+  "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+</script>
+<link rel="stylesheet" href="assistant.css">
+</head>
+<body>
+<script src="assistant3d.js"></script>
+<script src="assistant.js"></script>
+</body>
+</html>

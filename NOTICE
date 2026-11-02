@@ -1,0 +1,51 @@
+This repository contains third-party work under its own licenses. Everything else: see LICENSE.
+
+Included in the repository
+--------------------------
+
+- devices/atoms3r/models/hey_jarvis.tflite and hey_jarvis.json,
+  core/internal/wakeword/hey_jarvis.tflite and hey_jarvis.json
+  "Hey Jarvis" microWakeWord model (v2) by Kevin Ahrendt, from
+  https://github.com/esphome/micro-wake-word-models — Apache License 2.0.
+  devices/atoms3r/include/wake_model.h is generated from it by models/make_model_header.py.
+
+- devices/atoms3r/lib/esp-tflite-micro, devices/atoms3r/lib/esp-nn,
+  devices/atoms3r/lib/esp-micro-speech-features
+  Espressif's ports of TensorFlow Lite Micro and its helpers — Apache License 2.0
+  (the LICENSE file in each folder). core/internal/wakeword runs the same kind of model in Go,
+  written after TensorFlow Lite Micro's kernels and microfrontend (Apache License 2.0).
+
+- devices/atoms3r/src/services/ca_certs.cpp and devices/atoms3r/data/cert/x509_crt_bundle.bin
+  contain public root certificates of certificate authorities (the Mozilla CA list as shipped
+  with ESP-IDF).
+
+- devices/android/shared/src/main/assets/fonts/Rajdhani-*.ttf
+  Rajdhani by the Indian Type Foundry — SIL Open Font License 1.1 (OFL.txt next to them).
+
+- devices/android/shared/src/main/cpp/speexdsp
+  The echo canceller and preprocessor of speexdsp 1.2.1 (Xiph.org Foundation, Jean-Marc Valin
+  and others) — BSD 3-Clause (COPYING in that folder).
+
+- devices/android/gradle/wrapper/gradle-wrapper.jar, gradlew, gradlew.bat
+  Gradle Wrapper by Gradle Inc. — Apache License 2.0.
+
+- devices/echo/tools/librespot-ipv4.patch
+  A patch for librespot (https://github.com/librespot-org/librespot) — MIT License, as librespot.
+
+- The Echo Dot 2's mixer sequences and LED layout in core/internal/audio/dot.go and
+  core/internal/leds/dot.go follow EchoLocal by ygelfand
+  (https://github.com/ygelfand/echolocal) — MIT License.
+
+Used at build time (not in the repository)
+------------------------------------------
+
+- Go modules of core/ (core/go.mod): github.com/coder/websocket (ISC License),
+  github.com/godbus/dbus/v5 (BSD 2-Clause), golang.org/x/crypto/x509roots/fallback
+  (BSD 3-Clause; Mozilla's root certificates).
+- librespot (MIT), built for the Echos by devices/echo/tools/build-librespot.sh.
+- The M5's PlatformIO libraries (devices/atoms3r/platformio.ini: M5Unified, M5Echo-Pyramid and
+  the others listed there) and the Android libraries (devices/android/*/build.gradle*), under
+  their own licenses.
+
+The Echo hardware work builds on EchoRoot and u-boot-echo (André Zwing), amonet (xyz, k4y0z,
+R0rt1z2) and the other research credited in README.md.

@@ -1,0 +1,14 @@
+{
+  "name": "esp-nn",
+  "version": "1.1.2",
+  "description": "Espressif optimized neural network kernels (vendored from the ESP component registry, unmodified sources)",
+  "license": "Apache-2.0",
+  "frameworks": "*",
+  "platforms": "espressif32",
+  "build": {
+    "srcDir": "src",
+    "includeDir": "include",
+    "srcFilter": ["+<**/*.c>", "+<**/*.S>", "-<convolution/esp_nn_conv_esp32p4.c>"],
+    "flags": ["-Isrc/common", "-DCONFIG_IDF_TARGET_ESP32S3=1", "-mlongcalls", "-fno-unroll-loops", "-O2", "-Wno-unused-function"]
+  }
+}

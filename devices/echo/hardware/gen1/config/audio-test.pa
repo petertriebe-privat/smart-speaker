@@ -1,0 +1,6 @@
+# Diagnostic RAM-only server. Exactly one server may own QSpeakerIn.shm.
+# Requires the original DSP proxy, audioCtrl, queues and a RAM cookie first.
+load-module module-lab126-sink rate=48000 channels=2 channel_map=front-left,front-right file="/QSpeakerIn.shm" powerfile="/BPlaybackAvgPower.shm" fragment_usecs=16000 minimum_full_fragments=3 static_output_latency_usecs=136000
+load-module module-lab126-audiod fileCmd="/AudiodCmd.shm"
+load-module module-native-protocol-unix socket=/mnt/pulse-native auth-anonymous=1 auth-cookie=/mnt/pulse-cookie
+set-default-sink lab126-sink

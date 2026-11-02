@@ -1,0 +1,15 @@
+The Echo's kernel (2.6.37) has no IPv6: the discovery server's dual stack socket fails with
+"Address family not supported". Fall back to IPv4.
+--- a/discovery/src/server.rs
++++ b/discovery/src/server.rs
+@@ -292,7 +292,9 @@
+-        let listener = match TcpListener::bind(address) {
++        let listener = match TcpListener::bind(address)
++            .or_else(|_| TcpListener::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), *port)))
++        {
+             Ok(listener) => listener,
+             Err(e) => {
+                 warn!("Discovery server failed to start: {e}");
+                 return Err(e.into());
+             }
+         };

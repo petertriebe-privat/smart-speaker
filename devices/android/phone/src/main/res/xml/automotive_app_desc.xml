@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Auto: the assistant as a Car App Library app (templates), car/AssistantCarService -->
+<automotiveApp>
+    <uses name="template" />
+</automotiveApp>

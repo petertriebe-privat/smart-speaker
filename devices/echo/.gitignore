@@ -1,0 +1,16 @@
+# Device identities, serial logs, firmware images, dumps and runtime state.
+/local/
+/build/
+/dist/
+__pycache__/
+*.pyc
+*.img
+*.img.xz
+*.bin
+*.log
+*.elf
+*.o
+*.wav
+.env
+.env.*
+!.env.example

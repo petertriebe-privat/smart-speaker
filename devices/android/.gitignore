@@ -1,0 +1,9 @@
+.gradle/
+build/
+local.properties
+*.apk
+# the core, built by tools/install.sh from core/
+firetv/src/main/jniLibs/
+phone/src/main/jniLibs/
+# CMake build of the echo canceller
+phone/.cxx/

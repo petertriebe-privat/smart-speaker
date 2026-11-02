@@ -1,0 +1,6 @@
+// The Android apps of the assistant: firetv (the Fire TV app) and phone (#75) on the shared library (HUD,
+// hologram, cards, full screen, overlay).
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+    id 'com.android.library' version '8.7.3' apply false
+}

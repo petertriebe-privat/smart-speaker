@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <title>Echo Gen 1 debug pad field and wire colours</title>
+  <rect width="760" height="470" fill="#ffffff"/>
+  <text x="20" y="32" font-size="18" font-weight="bold" fill="#1a1a1a">Echo Gen 1: debug pad field (bottom of the main board)</text>
+  <text x="20" y="54" fill="#444">Orientation: label "B" top left, "C" bottom left, "TP90" below the field.</text>
+  <text x="20" y="72" fill="#444">Rows r1-r4 from the top, columns c1-c5 from the left.</text>
+
+  <text x="40" y="96" font-weight="bold" fill="#1a1a1a">B</text>
+  <text x="40" y="418" font-weight="bold" fill="#1a1a1a">C</text>
+  <text x="300" y="455" font-weight="bold" fill="#1a1a1a">TP90</text>
+
+  <!-- column headers -->
+  <g fill="#666" text-anchor="middle" transform="translate(0 4)">
+    <text x="130" y="88">c1</text><text x="250" y="88">c2</text><text x="370" y="88">c3</text><text x="490" y="88">c4</text><text x="610" y="88">c5</text>
+  </g>
+  <g fill="#666" text-anchor="end">
+    <text x="78" y="133">r1</text><text x="78" y="213">r2</text><text x="78" y="293">r3</text><text x="78" y="373">r4</text>
+  </g>
+
+  <!-- pads: circle + wire colour ring + label -->
+  <g text-anchor="middle">
+    <!-- r1 -->
+    <circle cx="130" cy="128" r="22" fill="#d9b44a" stroke="#000000" stroke-width="7"/>
+    <text x="130" y="168" fill="#1a1a1a">GND</text>
+    <circle cx="250" cy="128" r="22" fill="#d9b44a" stroke="#2e9e44" stroke-width="7"/>
+    <text x="250" y="168" fill="#1a1a1a">SD D0</text>
+    <circle cx="370" cy="128" r="22" fill="#d9b44a" stroke="#f08a1c" stroke-width="7"/>
+    <text x="370" y="168" fill="#1a1a1a">SD CMD</text>
+    <circle cx="490" cy="128" r="22" fill="#d9b44a" stroke="#d11f1f" stroke-width="3" stroke-dasharray="5 4"/>
+    <text x="490" y="168" fill="#d11f1f" font-weight="bold">+15 V</text>
+    <circle cx="610" cy="128" r="22" fill="#d9b44a" stroke="#d11f1f" stroke-width="3" stroke-dasharray="5 4"/>
+    <text x="610" y="168" fill="#d11f1f" font-weight="bold">+15 V</text>
+    <!-- r2 -->
+    <circle cx="130" cy="208" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="130" y="248" fill="#1a1a1a">GND</text>
+    <circle cx="250" cy="208" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="250" y="248" fill="#888">LED/Test</text>
+    <text x="370" y="213" fill="#aaa">no pad</text>
+    <circle cx="490" cy="208" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="490" y="248" fill="#1a1a1a">GND</text>
+    <circle cx="610" cy="208" r="22" fill="#d9b44a" stroke="#bbbbbb" stroke-width="7"/>
+    <circle cx="610" cy="208" r="26" fill="none" stroke="#777" stroke-width="1"/>
+    <text x="610" y="248" fill="#1a1a1a">UART RX</text>
+    <!-- r3 -->
+    <circle cx="130" cy="288" r="22" fill="#d9b44a" stroke="#7a5a2a" stroke-width="7"/>
+    <text x="130" y="328" fill="#1a1a1a">SD CLK</text>
+    <circle cx="250" cy="288" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="250" y="328" fill="#888">LED/Test</text>
+    <text x="370" y="293" fill="#aaa">no pad</text>
+    <circle cx="490" cy="288" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="490" y="328" fill="#1a1a1a">GND</text>
+    <circle cx="610" cy="288" r="22" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="610" y="328" fill="#888">Reset</text>
+    <!-- r4 -->
+    <circle cx="130" cy="368" r="22" fill="#d9b44a" stroke="#d11f1f" stroke-width="7"/>
+    <text x="130" y="408" fill="#1a1a1a">SD PWR</text>
+    <circle cx="250" cy="368" r="22" fill="#d9b44a" stroke="#8a3fc4" stroke-width="7"/>
+    <text x="250" y="408" fill="#1a1a1a">SD D2</text>
+    <circle cx="370" cy="368" r="22" fill="#d9b44a" stroke="#2a63d4" stroke-width="7"/>
+    <text x="370" y="408" fill="#1a1a1a">SD D1</text>
+    <circle cx="490" cy="368" r="22" fill="#d9b44a" stroke="#808080" stroke-width="7"/>
+    <text x="490" y="408" fill="#1a1a1a">SD D3</text>
+    <circle cx="610" cy="368" r="22" fill="#d9b44a" stroke="#e8c800" stroke-width="7"/>
+    <text x="610" y="408" fill="#1a1a1a">UART TX</text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="13" fill="#1a1a1a">
+    <circle cx="676" cy="110" r="8" fill="#d9b44a" stroke="#2e9e44" stroke-width="4"/>
+    <text x="692" y="114">wired</text>
+    <circle cx="676" cy="140" r="8" fill="#d9b44a" stroke="#999" stroke-width="2"/>
+    <text x="692" y="144">unused</text>
+    <circle cx="676" cy="170" r="8" fill="#d9b44a" stroke="#d11f1f" stroke-width="2" stroke-dasharray="3 3"/>
+    <text x="692" y="174" fill="#d11f1f">never</text>
+    <text x="560" y="440" font-size="12" fill="#666">Ring colour = our wire colour</text>
+    <text x="560" y="455" font-size="12" fill="#666">(any colours work)</text>
+  </g>
+</svg>

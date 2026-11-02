@@ -1,0 +1,21 @@
+#!/bin/sh
+# BusyBox udhcpc callback. All generated state is in tmpfs.
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+case "$1" in
+  deconfig) ifconfig "$interface" 0.0.0.0 ;;
+  bound|renew)
+    ifconfig "$interface" "$ip" netmask "${subnet:-255.255.255.0}" || exit 1
+    while route del default dev "$interface" 2>/dev/null; do :; done
+    for gateway in $router; do route add default gw "$gateway" dev "$interface" && break; done
+    # The service loop restores the route from here: roaming between mesh APs removed it
+    # while the lease stayed valid (16.10.2026).
+    printf '%s\n' $router > /mnt/echo-net/router
+    : > /var/run/resolv.conf
+    for server in $dns; do printf 'nameserver %s\n' "$server" >> /var/run/resolv.conf; done
+    # A public resolver after the router's: on 30.10.2026 the router's DNS timed out for an hour
+    # on every device, and with it GPT Live, the backend and Google.
+    printf 'nameserver 1.1.1.1\noptions timeout:2 attempts:2\n' >> /var/run/resolv.conf
+    printf '%s\n' "$ip" > /mnt/echo-net/address
+    ;;
+esac
+exit 0

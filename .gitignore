@@ -1,0 +1,6 @@
+# Local tool configuration (MCP servers with private endpoints)
+.mcp.json
+__pycache__/
+
+# The household's own persona (shared/prompts/persona.h explains it)
+shared/prompts/persona_local.h

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <title>Echo Gen 1 development wiring: SD adapter, USB-UART and 3.3 V supply</title>
+  <defs>
+    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><circle cx="5" cy="5" r="4" fill="#1a1a1a"/></marker>
+  </defs>
+  <rect width="760" height="420" fill="#ffffff"/>
+  <text x="20" y="32" font-size="18" font-weight="bold" fill="#1a1a1a">Wiring for development (Echo Gen 1)</text>
+
+  <!-- Echo -->
+  <rect x="270" y="60" width="220" height="300" rx="10" fill="#f3f3f3" stroke="#555" stroke-width="2"/>
+  <text x="380" y="86" text-anchor="middle" font-weight="bold" fill="#1a1a1a">Echo Gen 1</text>
+  <text x="475" y="112" text-anchor="end" font-size="13" fill="#1a1a1a">power jack</text>
+  <text x="285" y="330" font-size="12" fill="#666">(signals on the bottom</text>
+  <text x="285" y="346" font-size="12" fill="#666">debug pad field)</text>
+  <g fill="#1a1a1a" font-size="13">
+    <text x="285" y="132">SD D0 D1 D2 D3</text>
+    <text x="285" y="150">SD CMD, SD CLK</text>
+    <text x="285" y="175">SD PWR</text>
+    <text x="285" y="215">GND</text>
+    <text x="285" y="260">UART TX</text>
+    <text x="285" y="285">UART RX</text>
+  </g>
+
+  <!-- SD adapter -->
+  <rect x="20" y="90" width="180" height="70" rx="8" fill="#eef4ff" stroke="#2a63d4" stroke-width="2"/>
+  <text x="110" y="118" text-anchor="middle" font-weight="bold" fill="#1a1a1a">SD adapter</text>
+  <text x="110" y="140" text-anchor="middle" font-size="12" fill="#444">with EchoRoot microSD</text>
+  <path d="M 200 125 L 280 125" stroke="#2a63d4" stroke-width="3"/>
+  <text x="240" y="117" text-anchor="middle" font-size="12" fill="#2a63d4">6 data</text>
+
+  <!-- 3.3 V module -->
+  <rect x="20" y="180" width="180" height="70" rx="8" fill="#fff1f1" stroke="#d11f1f" stroke-width="2"/>
+  <text x="110" y="208" text-anchor="middle" font-weight="bold" fill="#1a1a1a">3.3 V module</text>
+  <text x="110" y="230" text-anchor="middle" font-size="12" fill="#444">adjustable, USB powered</text>
+  <path d="M 200 200 L 280 172" stroke="#d11f1f" stroke-width="3"/>
+  <path d="M 110 180 L 110 160" stroke="#d11f1f" stroke-width="3"/>
+  <text x="140" y="174" font-size="12" fill="#d11f1f">+ to SD pin 4</text>
+  <path d="M 200 230 L 280 212" stroke="#000" stroke-width="3"/>
+  <text x="236" y="248" text-anchor="middle" font-size="12" fill="#1a1a1a">− to GND</text>
+
+  <!-- USB-UART -->
+  <rect x="560" y="230" width="180" height="80" rx="8" fill="#f2fbf2" stroke="#2e9e44" stroke-width="2"/>
+  <text x="650" y="258" text-anchor="middle" font-weight="bold" fill="#1a1a1a">USB-UART</text>
+  <text x="650" y="278" text-anchor="middle" font-size="12" fill="#444">level jumper 1V8</text>
+  <text x="650" y="296" text-anchor="middle" font-size="12" fill="#444">VCC, DTR, CTS free</text>
+  <path d="M 490 256 L 560 286" stroke="#e8c800" stroke-width="3"/>
+  <path d="M 490 281 L 560 261" stroke="#bbbbbb" stroke-width="3"/>
+  <text x="525" y="236" text-anchor="middle" font-size="12" fill="#1a1a1a">TX → RXD</text>
+  <text x="525" y="320" text-anchor="middle" font-size="12" fill="#1a1a1a">RX ← TXD</text>
+  <path d="M 490 211 L 600 211 L 600 230" stroke="#000" stroke-width="3" fill="none"/>
+  <text x="560" y="204" text-anchor="middle" font-size="12" fill="#1a1a1a">GND</text>
+  <rect x="620" y="330" width="60" height="26" rx="4" fill="#ffffff" stroke="#555"/>
+  <text x="650" y="348" text-anchor="middle" font-size="12" fill="#1a1a1a">PC USB</text>
+  <path d="M 650 310 L 650 330" stroke="#555" stroke-width="2"/>
+
+  <!-- Echo PSU -->
+  <rect x="560" y="80" width="180" height="56" rx="8" fill="#f7f7f7" stroke="#555" stroke-width="2"/>
+  <text x="650" y="104" text-anchor="middle" font-weight="bold" fill="#1a1a1a">Original Echo</text>
+  <text x="650" y="122" text-anchor="middle" font-weight="bold" fill="#1a1a1a">power supply</text>
+  <path d="M 560 108 L 490 108" stroke="#555" stroke-width="3" fill="none"/>
+
+  <!-- footer -->
+  <text x="20" y="385" fill="#1a1a1a">Power on: 3.3 V first, then the Echo supply. Change wiring only with both off. One common ground for all parts.</text>
+  <text x="20" y="405" fill="#666" font-size="12">After the persistent install (WiFi + SSH) the SD adapter and the 3.3 V module are no longer needed; keep the UART for rescue.</text>
+</svg>

@@ -1,0 +1,56 @@
+#!/bin/busybox.static sh
+# Own Linux PID 1 entry point; keep the unit's verified kernel and device trees.
+BB=/bin/busybox.static
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export HOME=/root
+$BB mount -t proc proc /proc
+$BB mount -t sysfs sysfs /sys
+$BB mount -t tmpfs -o mode=0755 tmpfs /dev
+$BB mkdir -p /dev/pts /run /tmp /data
+$BB mount -t devpts devpts /dev/pts
+$BB mount -t tmpfs tmpfs /run
+$BB mount -t tmpfs tmpfs /tmp
+$BB mdev -s
+$BB mknod -m 600 /dev/mmcblk0p16 b 179 16 2>/dev/null
+$BB mknod -m 600 /dev/mmcblk0p12 b 179 12 2>/dev/null
+$BB mknod -m 600 /dev/mmcblk0p8 b 179 8 2>/dev/null
+$BB mount -t ext4 -o noatime /dev/mmcblk0p16 /data
+BASE=/data/echo-dot-dev
+if [ ! -s "$BASE/private/authorized_keys" ] || [ ! -s "$BASE/firmware/WMT_SOC.cfg" ]; then
+    echo 'echo-dot-dev: persistent configuration unavailable' > /dev/kmsg
+fi
+$BB mkdir -p "$BASE/services" "$BASE/bin" /run/echo-dot-dev
+echo echo-dot-dev > /proc/sys/kernel/hostname
+[ ! -e /sys/fs/selinux/enforce ] || echo 0 > /sys/fs/selinux/enforce
+
+# Rearm recovery boot, so a power cycle returns to this Linux image.
+printf 'boot-recovery' | $BB dd of=/dev/mmcblk0p8 bs=32 count=1 conv=notrunc,sync 2>/dev/null
+$BB sync
+
+# USB CDC console is independent of WLAN. Its baud setting does not set USB bulk throughput.
+g=/sys/class/android_usb/android0
+if [ -d "$g" ]; then
+    echo 1 > /sys/devices/platform/mt_usb/cmode
+    echo 0 > "$g/enable"
+    # Avoid Google's ADB PID: Windows otherwise reuses WinUSB for the CDC console.
+    echo 1d6b > "$g/idVendor"
+    echo 0104 > "$g/idProduct"
+    echo EchoDev > "$g/iManufacturer"
+    echo 'Echo Dot Development' > "$g/iProduct"
+    serial=$($BB sed -n 's/.*androidboot.serialno=\([^ ]*\).*/\1/p' /proc/cmdline)
+    [ -z "$serial" ] || echo "$serial" > "$g/iSerial"
+    echo 1 > "$g/f_acm/instances"
+    echo acm > "$g/functions"
+    echo 02 > "$g/bDeviceClass"
+    echo 1 > "$g/enable"
+fi
+$BB mdev -s
+
+# Only the first installation is a trial. A PC must confirm SSH before its deadline.
+if [ -e "$BASE/boot-trial" ]; then
+    ( $BB sleep 240
+      if [ -e "$BASE/boot-trial" ]; then
+          /usr/local/sbin/echo-dot-to-twrp > "$BASE/trial-rollback.log" 2>&1
+      fi ) &
+fi
+exec /bin/busybox.static init
