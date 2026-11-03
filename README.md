@@ -49,7 +49,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 - Wake word on the device ("Hey Jarvis" built in, microWakeWord; or an own model trained on the household's voices,
   [tools/wakeword](tools/wakeword/)) or the action button. After the wake word the light shows at
   once, no cue plays; the user goes on talking right after the wake word. The device takes the first
-  words itself and decides before GPT Live gets any audio: no words, or words not meant for
+  words itself and decides before GPT Live gets any audio: no words (an empty transcription
+  too), or words not meant for
   the assistant (the TV, people in the room; asked of the Decisions API), end silently; a quick command
   runs without GPT Live; only the rest goes to GPT Live, with the recording. GPT Live connects
   ahead meanwhile, without audio.
@@ -199,8 +200,11 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   background and it comes back by itself with the result. The hologram plays along under the
   fingers: a violet plasma filament to each finger as in a plasma ball, it charges until it explodes, it turns with a swipe, a double tap sends
   a shockwave.
-  In the car: the assistant on the Android Auto screen (its state and words, Sprechen / Unterbrechen /
-  Beenden), and the wake word heard while Android Auto is connected.
+  In the car: the HUD live on the Android Auto screen, the hologram moving in its state's colour
+  with the turn's words or the card it showed in full size, beside a small panel with Sprechen /
+  Unterbrechen / Beenden (older cars: rows with a picture of the card); and the wake word heard
+  while Android Auto is connected: the music pauses, a short tone says the car's microphone
+  listens, and a start nobody speaks to ends unnoticed.
   Away from home on mobile data too, without a VPN: the house's services over the home gateway
   (the Pi) and the VPS, with a client certificate per phone ([services/home-gateway](services/home-gateway/README.md)).
 - The Echo's ring as a music display *(Echo)*.

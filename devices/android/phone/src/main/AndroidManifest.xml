@@ -21,6 +21,9 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Android Auto: the screen's surface (the live HUD in the car) -->
+    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
+    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
 
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
@@ -36,7 +39,8 @@
 
     <application
         android:label="Jarvis"
-        android:icon="@drawable/icon"
+        android:icon="@mipmap/ic_jarvis_app"
+        android:roundIcon="@mipmap/ic_jarvis_app"
         android:extractNativeLibs="true"
         android:usesCleartextTraffic="true">
 
@@ -62,6 +66,8 @@
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
                 <category android:name="androidx.car.app.category.IOT" />
+                <!-- a weather app may draw on the screen's surface: the HUD live (car/CarSurface) -->
+                <category android:name="androidx.car.app.category.WEATHER" />
             </intent-filter>
         </service>
         <meta-data

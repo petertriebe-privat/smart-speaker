@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -412,6 +413,17 @@ func (d *device) transcribeCommand(pcm []int16, gen int) {
 	text, err := openai.TranscribeHint(ctx, wav(pcm, audio.MicRate), "command.wav", prompts.Text("QUICK_TRANSCRIBE_HINT"))
 	if err != nil {
 		log.Printf("[Quick] transcription: %v", err)
+		d.capture.mu.Lock()
+		wake := d.capture.req.Wake
+		d.capture.mu.Unlock()
+		// No words after the wake word: nobody spoke to him (music or noise set it off); the
+		// device listens on and ends unnoticed when it stays quiet. It went to GPT Live as a
+		// failure, which greeted every false start in the car (#75, 03.11.2026). After the button
+		// GPT Live still hears it itself.
+		if wake && errors.Is(err, openai.ErrNothing) {
+			d.keepQuickClip(pcm, "")
+			return
+		}
 		if d.current(gen) {
 			d.connectLive("", "the transcription failed") // GPT Live hears it itself
 		}

@@ -386,6 +386,7 @@ public final class AudioBridge {
                 rec = new AudioRecord(source, MIC_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                         Math.max(min, MIC_RATE));
                 rec.startRecording();
+                if (comm && car) cue();
                 micFrames = 0;
                 open = am == null || talk;
                 Log.i(Hud.TAG, (am == null ? "remote microphone" : comm ? "phone microphone over the headset"
@@ -414,6 +415,22 @@ public final class AudioBridge {
                 if (rec != null) rec.release();
                 if (comm) route(false);
             }
+        }
+    }
+
+    // cue: a short tone in the car once its microphone listens. After "Jarvis" the music pauses and
+    // the call path opens; the user waited for a sign and said nothing, and a start without words
+    // ends unnoticed (#75, 03.11.2026).
+    private void cue() {
+        try {
+            android.media.ToneGenerator t = new android.media.ToneGenerator(AudioManager.STREAM_VOICE_CALL, 70);
+            t.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150);
+            new Thread(() -> {
+                sleep(400);
+                t.release();
+            }).start();
+        } catch (Exception e) {
+            Log.w(Hud.TAG, "cue: " + e);
         }
     }
 

@@ -102,6 +102,18 @@ phone ──HTTPS + client cert──▶ VPS (public, port 443) ──WireGuard 
   would keep Bluetooth HFP open (the car shows a call, music in call quality). Likely the phone's
   own microphone listens for the wake word, and the conversation then uses the car's microphone.
   First thing to measure: hit and false rates with engine noise and music, battery per hour.
+- **Measured in the car (02.–03.11.2026):** with music the phone's microphone clips (peak 32768);
+  the wake word fired on music and real calls alike at 0.86–0.99. Transcribing the 3 s before a
+  detection to confirm it was tried offline on all 41 saved hits: at home real ones read the
+  wake word, but every clipped car clip read empty, real or false, so it would reject real calls
+  and was not built. The false starts all went to GPT Live because the first words' empty
+  transcription counted as a failure; since 03.11.2026 it counts as no words (capture.go): a
+  false start is a pause of the music for ~4 s, ended unnoticed. So that a real call does not
+  run into that silence, the app plays a short tone in the car once its microphone listens
+  (AudioBridge.cue). Noise the transcription turns into a made-up sentence (an Italian one,
+  rated 0.70 "meant for the assistant") opened GPT Live too: QUICK_ADDRESSED_QUESTION now names
+  song lyrics and text that is not plain German or makes no sense (that sentence: 0.00; "Was
+  ist mein nächster Termin?" 0.96).
 - **Next to "Hey Google":** both listen at once (Google through its DSP, the assistant through the CPU).
   To measure that neither blocks the other's microphone.
 - At home the phone has no wake word (the Echos listen there).

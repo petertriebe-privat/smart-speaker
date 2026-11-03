@@ -690,8 +690,9 @@ constexpr const char* QUICK_INTENT_INSTRUCTIONS =
 constexpr const char* QUICK_ADDRESSED_QUESTION =
     "These words were said right after the wake word of a voice assistant called " ASSISTANT_NAME " (German speech "
     "transcript). Is this a complete request, question or command that someone directed at the voice "
-    "assistant? Answer false for fragments, conversation between people, TV or radio speech, or words that "
-    "do not ask the assistant for anything.";
+    "assistant? Answer false for fragments, conversation between people, TV or radio speech, song lyrics, "
+    "words that do not ask the assistant for anything, and text that is not plain German or makes no sense "
+    "(the transcription makes up words from music and noise).";
 
 // The initiative's weighing (#82, the Echo's internal/initiative; Decisions API): the input is a
 // candidate Jarvis found himself, the user's reactions to that kind so far, the user's rules and

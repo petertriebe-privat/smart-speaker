@@ -223,7 +223,7 @@
  "PRINTER_PATH": "/ipp/print",
  "PRINTER_PORT": 631,
  "PRINTER_WAIT_MS": 180000,
- "QUICK_ADDRESSED_QUESTION": "These words were said right after the wake word of a voice assistant called {{ASSISTANT_NAME}} (German speech transcript). Is this a complete request, question or command that someone directed at the voice assistant? Answer false for fragments, conversation between people, TV or radio speech, or words that do not ask the assistant for anything.",
+ "QUICK_ADDRESSED_QUESTION": "These words were said right after the wake word of a voice assistant called {{ASSISTANT_NAME}} (German speech transcript). Is this a complete request, question or command that someone directed at the voice assistant? Answer false for fragments, conversation between people, TV or radio speech, song lyrics, words that do not ask the assistant for anything, and text that is not plain German or makes no sense (the transcription makes up words from music and noise).",
  "QUICK_HOLD_AUDIO_MS": 6000,
  "QUICK_HOLD_MAX_MS": 8000,
  "QUICK_HOME_TIMEOUT_MS": 3000,

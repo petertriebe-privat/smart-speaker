@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- the HUD's ground (the background of jarvis.css), behind the icon's hologram -->
+    <color name="jarvis_ground">#050608</color>
+</resources>

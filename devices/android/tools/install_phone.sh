@@ -50,7 +50,10 @@ fi
 apk="$here/phone/build/outputs/apk/debug/phone-debug.apk"
 apk=$(cygpath -w "$apk" 2>/dev/null || echo "$apk")
 
-$adb install -r "$apk"
+# Installed as from the Play Store: Android Auto lists no car app without an installer, "unknown
+# sources" in its developer settings notwithstanding (the Fire TV's home screen did the same,
+# install.sh). The Home Assistant app, from the store, showed in the car; Jarvis did not.
+$adb install -r -i com.android.vending "$apk"
 $adb shell pm grant $pkg android.permission.RECORD_AUDIO
 $adb shell pm grant $pkg android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 # The phone's tools (#75, PhoneTools): calls, contacts, SMS; drawing over other apps is Android's

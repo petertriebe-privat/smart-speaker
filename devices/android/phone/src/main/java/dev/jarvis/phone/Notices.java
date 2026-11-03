@@ -40,8 +40,13 @@ final class Notices {
         PendingIntent car = CarPendingIntent.getCarApp(ctx, id,
                 new Intent(Intent.ACTION_VIEW).setComponent(new ComponentName(ctx, JarvisCarService.class)),
                 PendingIntent.FLAG_IMMUTABLE);
+        // Jarvis' hologram as the large icon (the phone and the car's banner), his orb in one
+        // colour as the small one (a microphone stood there before)
+        android.graphics.Bitmap face = android.graphics.BitmapFactory.decodeResource(ctx.getResources(), R.drawable.icon);
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL)
-                .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                .setSmallIcon(R.drawable.ic_jarvis)
+                .setLargeIcon(face)
+                .setColor(0xFFFF9A1F) // the HUD's amber
                 .setContentTitle(title)
                 .setContentText(text)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
@@ -52,7 +57,8 @@ final class Notices {
                 .extend(new CarAppExtender.Builder()
                         .setContentTitle(title)
                         .setContentText(text.length() > 200 ? text.substring(0, 200) + " …" : text)
-                        .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                        .setSmallIcon(R.drawable.ic_jarvis)
+                        .setLargeIcon(face)
                         .setImportance(android.app.NotificationManager.IMPORTANCE_HIGH)
                         .setContentIntent(car)
                         .build());

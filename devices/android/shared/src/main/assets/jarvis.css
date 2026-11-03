@@ -262,6 +262,12 @@ body.fullscreen { background: var(--bg); height: 100vh; }
 body.fullscreen main { padding-left: 640px; transition: padding 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
 body.fullscreen .hud.wide main { padding-left: 380px; }
 body.fullscreen .hud.solo main { padding-left: 0; }
+/* Android Auto's picture (CAR in jarvis.js): the card or the hologram alone, no unfolding */
+body.car .hud .avatar, body.car .hud .bar { display: none; }
+body.car main, body.car .hud.wide main { padding-left: 0; }
+body.car .frame.cast { animation: none; }
+body.car.fullscreen.portrait main, body.car.fullscreen.portrait .hud.wide main { padding: 24px 0; align-items: center; }
+body.car.portrait .hud { padding-top: 30px; }
 @keyframes cast { from { opacity: 0; transform: scaleX(0.05) scaleY(0.3); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
 body.fullscreen .frame.cast { transform-origin: 0 50%; animation: cast 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .bar { display: flex; align-items: center; gap: 18px; font: 600 15px var(--hud); letter-spacing: 0.24em;

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -21,6 +22,9 @@ var base = "https://api.openai.com" // a test server in tests (SetBase)
 
 // SetBase: the API's address (tests).
 func SetBase(url string) { base = url }
+
+// ErrNothing: the transcription found no words in the audio (silence, noise, music).
+var ErrNothing = errors.New("nothing understandable in the voice note")
 
 var (
 	APIKey string
@@ -170,7 +174,7 @@ func TranscribeHint(ctx context.Context, audio []byte, filename, hint string) (s
 	}
 	text := strings.TrimSpace(out.Text)
 	if text == "" {
-		return "", fmt.Errorf("nothing understandable in the voice note")
+		return "", ErrNothing
 	}
 	return text, nil
 }

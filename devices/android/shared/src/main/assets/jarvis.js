@@ -7,6 +7,9 @@
 var FULL = location.search.indexOf("mode=fullscreen") >= 0;
 // TALK: the phone app (devices/android/phone): Jarvis' button at the bottom of the HUD.
 var TALK = location.search.indexOf("talk=1") >= 0;
+// CAR: pictures for Android Auto (the phone app's car/CardRenderer.java): the card or the hologram
+// alone, without the HUD's bars and avatar; the app cuts the picture to carRect().
+var CAR = location.search.indexOf("car=1") >= 0;
 // A full-screen card stays until back, the next card or a clear (no running time shown; the app
 // closes a forgotten one after 30 min, FullscreenActivity); the corner's card 20 s.
 var DEFAULT_SECONDS = FULL ? 0 : 20;
@@ -462,6 +465,7 @@ function buildPage() {
   leftBar = add(add(bottom, h("div", "left")), h("i"));
   add(bottom, h("span", "", "Sys · Online"));
   root = hud;
+  if (CAR) document.body.classList.add("car");
   if (TALK) {
     document.body.classList.add("talk");
     orbPlay();
@@ -477,17 +481,37 @@ function buildPage() {
 
 // fit scales the 1920 x 1080 HUD to the window; again on every card (the WebView may not know its
 // size yet when the page loads).
-var fitted = "";
+var fitted = "", carBox = null;
 function fit() {
   var w = document.documentElement.clientWidth || innerWidth, hgt = document.documentElement.clientHeight || innerHeight;
+  var x = 0, y = 0;
+  if (carBox) { x = carBox[0]; y = carBox[1]; w = carBox[2]; hgt = carBox[3]; }
   if (!FULL || !root || !w || !hgt) return;
-  var portrait = hgt > w;
+  // upright, or in the car's free part beside its panel (often near square) the phone's layout
+  var portrait = hgt > w || (CAR && w < hgt * 1.5);
   document.body.classList.toggle("portrait", portrait);
   root.style.height = portrait ? Math.round(1080 * hgt / w) + "px" : "";
-  var scale = "scale(" + (portrait ? w / 1080 : Math.min(w / 1920, hgt / 1080)).toFixed(4) + ")";
+  var s = portrait ? w / 1080 : Math.min(w / 1920, hgt / 1080);
+  if (carBox && !portrait) { x += (w - 1920 * s) / 2; y += (hgt - 1080 * s) / 2; } // centred in the car's free part
+  var scale = (x || y ? "translate(" + x.toFixed(1) + "px, " + y.toFixed(1) + "px) " : "") + "scale(" + s.toFixed(4) + ")";
   if (scale !== fitted) console.log("hud " + w + "x" + hgt + " " + scale);
   fitted = scale;
   root.style.transform = scale;
+}
+
+// carArea: the part of the car's screen beside Android Auto's panel, in CSS pixels (the phone app's
+// car/CarSurface.java); the HUD fits itself into it.
+function carArea(x, y, w, h) {
+  carBox = [x, y, w, h];
+  fit();
+}
+
+// carRect: where the car's picture is on the screen, in CSS pixels: the card, else the hologram.
+function carRect() {
+  var el = document.querySelector("main .frame:not(.stage)") || document.querySelector("main .status .holo");
+  if (!el) return null;
+  var r = el.getBoundingClientRect();
+  return [r.left, r.top, r.width, r.height];
 }
 
 // --- Playing with the orb (the phone) --------------------------------------------------------

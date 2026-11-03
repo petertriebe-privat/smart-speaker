@@ -73,7 +73,7 @@ public class PhoneService extends Service implements MqttCallbackExtended {
                 PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(this, "jarvis").setContentTitle("Jarvis")
                 .setContentText("Tippen öffnet Jarvis").setContentIntent(open)
-                .setSmallIcon(android.R.drawable.ic_btn_speak_now).build();
+                .setSmallIcon(R.drawable.ic_jarvis).setColor(0xFFFF9A1F).build();
         int types = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             types |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -266,7 +266,9 @@ public class PhoneService extends Service implements MqttCallbackExtended {
             Log.w(TAG, "bad card: " + e);
             return;
         }
-        if ("status".equals(card.optString("kind"))) CarState.status(card); // the car's screen
+        // the car's screen: his state and words, and every card as a picture
+        if ("status".equals(card.optString("kind"))) CarState.status(card);
+        else if (!"web".equals(card.optString("mode"))) CarState.show(card);
         // a notification (notify_phone, research_later): on the phone and the car's screen; a
         // tap opens the card. With the console in front the card shows there at once.
         if (card.optBoolean("push") && !FullscreenActivity.consoleOpen()) {
