@@ -1,9 +1,9 @@
 # The assistant on an Android phone: design
 
-The plan for the phone app (issue #75): the design, what was checked in the code, and what must be
-measured on the phone before it is relied on. Built so far: step 1 (01.11.2026, the app in
-`devices/android/phone`, [its README](../../android/README.md#the-phone-app)), not yet tried on a
-phone.
+The phone app (issue #75): the design, the decisions and what was measured. Built since
+01.11.2026 and in daily use on the owner's phone, at home and in the car: the app in
+`devices/android/phone` ([its README](../../android/README.md#the-phone-app)); the state of each
+step is under [Steps](#steps).
 
 ## UI (decided 01.11.2026)
 
@@ -99,9 +99,9 @@ phone ──HTTPS + client cert──▶ VPS (public, port 443) ──WireGuard 
   microWakeWord model through LiteRT (`core/internal/wakeword` is the reference; "Jarvis" alone
   needs the household's own model from #61).
 - **Which microphone listens in the car:** listening permanently through the car's microphone
-  would keep Bluetooth HFP open (the car shows a call, music in call quality). Likely the phone's
-  own microphone listens for the wake word, and the conversation then uses the car's microphone.
-  First thing to measure: hit and false rates with engine noise and music, battery per hour.
+  would keep Bluetooth HFP open (the car shows a call, music in call quality). So the phone's
+  own microphone listens for the wake word, and the conversation then uses the car's microphone
+  (built so, 01.11.2026).
 - **Measured in the car (02.–03.11.2026):** with music the phone's microphone clips (peak 32768);
   the wake word fired on music and real calls alike at 0.86–0.99. Transcribing the 3 s before a
   detection to confirm it was tried offline on all 41 saved hits: at home real ones read the
@@ -120,12 +120,27 @@ phone ──HTTPS + client cert──▶ VPS (public, port 443) ──WireGuard 
 
 ## Android Auto
 
-- An app on the Car App Library (category IoT or a messaging style app; there is no assistant
-  category for third parties). Templates only: a status (listening, speaking), a list of the last
-  answers, buttons ("Talk to the assistant", quick actions). Navigation apps alone may draw freely, so
-  the Fire TV cards appear in a simple form.
-- `CarAudioRecord` gives the car's microphone while the app is open on the car screen.
-- Sideloaded: Android Auto's developer setting "unknown sources" must be on, once.
+- An app on the Car App Library 1.4. There is no assistant category for third parties; the app
+  declares IoT and weather. Weather apps may draw on the car screen's surface
+  (`MapWithContentTemplate`, car API 7+, permissions `ACCESS_SURFACE` and `MAP_TEMPLATES`): the
+  HUD runs live there (`car/CarSurface.java`), the hologram moving in its state's colour with the
+  turn's words, or the last card in full size until the next question. Beside it Android Auto
+  keeps a panel it sizes and places itself (the state and Sprechen / Unterbrechen / Beenden);
+  a full screen without it would need the navigation category (`NavigationTemplate`), which was
+  not taken: the car could then offer the assistant for navigation and clash with Google Maps
+  (owner, 03.11.2026). Cars below API 7 get a `PaneTemplate` with rows and a picture of the card
+  rendered off screen (`CardRenderer.java`).
+- The car's microphone: `CarAudioRecord` gives it only while the app is in front on the car
+  screen, so it cannot listen for the wake word while Maps or Spotify is shown. The phone's own
+  microphone listens for the wake word; the conversation then runs over the car's hands-free
+  (the call path), the music paused.
+- Sideloaded: Android Auto's developer setting "unknown sources" must be on, once, and the app
+  must be installed with the Play Store as installer (`install_phone.sh` does,
+  `-i com.android.vending`): installed plainly, Android Auto listed no app and showed no
+  notification (02.11.2026).
+- Tested on the PC with the Desktop Head Unit (`<Android SDK>/extras/google/auto`, Android
+  Auto's developer setting "start head unit server", `adb forward tcp:5277 tcp:5277`,
+  `desktop-head-unit.exe -a -i hybrid`; its console takes `tap x y` and `screenshot <file>`).
 - Car features:
   - "Navigiere nach …": `CarContext.startCarApp(ACTION_NAVIGATE, geo:…)` starts Google Maps'
     navigation on the car screen;
@@ -174,9 +189,9 @@ question to GPT Live first; a live camera picture later if it proves useful.
 ## Steps
 
 1. Phone module with `core/`, the board, the assistant's button in the app (HA, Spotify, Google work as on
-   the stick). Built 01.11.2026; to try on the phone: the core starts (seccomp, DNS, certificates
-   on arm64), the button, the echo cancellation on the loudspeaker, battery with the core running
-   all day in the home's Wi-Fi (heartbeat, mirror pulls), Android 12+'s limits on child processes.
+   the stick). Built and in use since 01.11.2026: the core on arm64, the button, our own echo
+   canceller on the loudspeaker (SpeexDSP), battery (the core 0.29 s of CPU a minute with the
+   screen off, 02.11.2026).
 2. Mobile peer mode and the mTLS endpoint (VPS, Pi, the assistant): state copy, writes, revoked
    certificate refused. Built 01.11.2026 (`services/home-gateway`, `core/internal/hometunnel`):
    the broker, HA and the primary's calls over the gateway at home and away; away, the primary's
@@ -187,11 +202,12 @@ question to GPT Live first; a live camera picture later if it proves useful.
    01.11.2026 (`phone_navigate`, `phone_call`, `phone_sms`, `phone_messages`, `phone_reply`,
    `phone_media`, `phone_open_app`, `phone_alarm`); `phone_messages` checked through the core.
    WhatsApp to someone without a waiting notification needs level 3 (accessibility).
-4. Android Auto app with its UI and the car's microphone. Built 01.11.2026, not yet tried in a
-   car: the car screen (state, words, Sprechen / Unterbrechen / Beenden), "the assistant" while Android
-   Auto is connected (the phone's microphone; the conversation over the car's hands-free). Not
-   yet: CarAudioRecord, navigation, calls and music as phone tools (step 3).
-5. Wake word while the car is connected: hit and false rates, battery, next to "Hey Google".
+4. Android Auto app. Built 01.11.2026, in the car since 02.11.2026; the HUD live on the car
+   screen since 03.11.2026 (above), tested in the Desktop Head Unit. Navigation, calls and music
+   come from the phone tools (step 3). `CarAudioRecord` is not used (above).
+5. Wake word while the car is connected: in use; false starts with music measured and quietened
+   (Activation, 03.11.2026). Open: better hits under music need car clips in the wake word
+   training (#61); "Hey Google" next to it not yet measured.
 6. Camera, then level 3 (accessibility).
 
 ## Open questions

@@ -135,11 +135,17 @@ over the home gateway, in the LAN or through the VPS ([services/home-gateway](..
 Install (USB debugging on, the phone connected or paired for wireless debugging):
 
 ```sh
-devices/android/tools/install_phone.sh [serial] [--room <name>] [--name <name>]
+devices/android/tools/install_phone.sh [serial] [--room <name>] [--name <name>] [--device <name>]
 ```
 
+`--device` pushes the phone's certificate for the way home (`services/home-gateway/make_certs.sh`).
+From a worktree without `devices/echo/local/` the environment names another checkout's files:
+`JARVIS_SECRETS` (its `secrets.json`), `HOME_GATEWAY_LOCAL` (its `home-gateway` folder),
+`JARVIS_WAKEMODEL` (a folder with the household's wake word model).
+
 The script builds the core for arm64 (`phone/src/main/jniLibs`, not in git) and the debug APK,
-installs it, grants the microphone and puts the household's secrets into the app's private files
+installs it with the Play Store as installer (Android Auto lists sideloaded apps only so), grants
+the microphone, contacts, calls, SMS, the overlay and the notification listener, and puts the household's secrets into the app's private files
 without the landline's (`SIP_*`: the phone does not ring for the FritzBox; the app reads its MQTT
 broker from them too, no password on an `am start` line: adbd writes those into the phone's log),
 gives the screen's name and starts the service (`SetupActivity`, in front: a microphone service may
@@ -217,6 +223,31 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   (`tool_choice`), it once wrote the call as text (`{"task": …}`), which is taken as the call.
 - A card stays above a video Jarvis started only in the corner: the full screen is used only while
   it is in front itself (`FullscreenActivity.visible`); a trailer played behind it before.
+
+### The phone and Android Auto
+
+- The phone's call path (`VOICE_COMMUNICATION`) cancels its own echo but sounds like a phone call;
+  a level gate cut the user off at Jarvis' echo peaks (0.7–1.0 of full scale). Our own echo
+  canceller (SpeexDSP 1.2.1 `mdf.c` and `preprocess.c`, BSD, through the NDK) takes his voice off
+  the plain microphone, its reference timed with the `AudioTrack` and `AudioRecord` timestamps.
+  The native library is linked with `-z max-page-size=16384` (Android 15's 16 KB pages).
+- `adb shell cat` of a binary file breaks it (line endings); `adb exec-out` does not.
+- Android Auto lists a sideloaded app only with the Play Store as its installer
+  (`adb install -i com.android.vending`), and shows its notifications only then.
+- Android Auto keeps an app's icon in a cache: a new icon showed after the next connection. A
+  square picture as icon got a white disc around it; an adaptive icon (the hologram on the HUD's
+  dark ground) has none.
+- A notification's tap with the app's plain launch intent only brought the running console to
+  the front; with its own action and data the card arrives (`Notices.java`).
+- Templates only for an IoT app; a weather app may draw on the car screen's surface (the HUD
+  live, `CarSurface.java`, mobile.md). A WebView on a private `VirtualDisplay` (a `Presentation`)
+  renders into the car's `Surface` directly; in an `ImageReader` a still page sends no new frames,
+  so `CardRenderer` keeps the last one. The first frame is black for ~3 s while WebGL starts.
+- Desktop Head Unit: after a lost link the phone's adbd can keep the old forward open, the next
+  unit gets no video ("Don't have video focus"); `adb tcpip 5555` restarts adbd, and the head unit
+  server in Android Auto must be stopped and started again.
+- In the car with music the phone's microphone clips (peak 32768); a transcription of the wake
+  word's clip reads empty there, real or false (mobile.md, Activation).
 
 ## Open
 
