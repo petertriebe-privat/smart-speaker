@@ -2,7 +2,7 @@
 // on the M5: play anything on any Spotify Connect device (Echos, phones, ...), control playback,
 // manage playlists and the library, read top tracks and history. Needs Premium. One account per
 // person: the admin's (SPOTIFY_REFRESH_TOKEN) and others (SPOTIFY_ACCOUNTS), refresh tokens from
-// scripts/spotify_auth.py; whoever talks uses their own, else the admin's. Development Mode
+// tools/spotify_auth.py; whoever talks uses their own, else the admin's. Development Mode
 // (since 2026-03): no recommendations, related artists, artist top tracks, audio features or
 // Spotify's own playlists.
 //
@@ -168,7 +168,7 @@ func (s *Service) session(caller, wanted string) (session, string) {
 		out.label = s.people.Name(person)
 	}
 	if out.refresh == "" {
-		return session{}, "Error: " + s.people.Name(person) + " has no Spotify account linked yet (scripts/spotify_auth.py --other, " +
+		return session{}, "Error: " + s.people.Name(person) + " has no Spotify account linked yet (tools/spotify_auth.py --other, " +
 			"then SPOTIFY_ACCOUNTS in secrets.h)."
 	}
 	return out, ""

@@ -8,7 +8,7 @@
 // The user's Google account: calendars (all shown in Google Calendar; writing in their own) and
 // contacts (read only), over the Calendar and People REST APIs. Only events in the user's own
 // calendars marked busy take their time; holidays and subscribed calendars are information.
-// OAuth 2.0 with a refresh token from scripts/google_auth.py
+// OAuth 2.0 with a refresh token from tools/google_auth.py
 // (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN in secrets.h); the access
 // token is fetched when needed and kept until shortly before it expires (1 h).
 // Tools (all slow, in the registry's worker): list_events, find_free_time, create_event, update_event,

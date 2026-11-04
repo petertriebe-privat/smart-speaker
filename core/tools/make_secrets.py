@@ -1,19 +1,19 @@
-"""Convert the M5 project's include/secrets.h into the Echo's private JSON config.
+"""Convert the household's local/secrets.h (every device's private values) into JSON.
 
-Writes devices/echo/local/assistant/secrets.json (git-ignored). Never prints values.
+Writes local/secrets.json (git-ignored). Never prints values.
 Usage: py -3 tools/make_secrets.py
 """
 import json
 import os
 import re
 
-from extract_prompts import M5, REPO, parse, strip_comments
+from extract_prompts import LOCAL, parse, strip_comments
 
-OUT = os.path.join(REPO, 'devices', 'echo', 'local', 'assistant', 'secrets.json')
+OUT = os.path.join(LOCAL, 'secrets.json')
 
 
 def main():
-    path = os.path.join(M5, 'secrets.h')
+    path = os.path.join(LOCAL, 'secrets.h')
     known = parse(path, {})
     # Macros that are no single string or number (brace lists such as SPOTIFY_ACCOUNTS,
     # PHONE_CALLERS, WATCHED_MAILBOXES): their raw text, comments removed; the Go side parses it.

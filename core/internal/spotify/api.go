@@ -225,7 +225,7 @@ func (s *Service) authorizeLocked(refresh string, entry *accessToken) string {
 	var parsed any
 	if status != 200 || json.Unmarshal(reply, &parsed) != nil || str(parsed, "access_token") == "" {
 		if status == 400 && bytes.Contains(reply, []byte("invalid_grant")) {
-			return "Error: the Spotify login expired or was revoked; scripts/spotify_auth.py has to run once more."
+			return "Error: the Spotify login expired or was revoked; tools/spotify_auth.py has to run once more."
 		}
 		return "Error: Spotify login failed (" + errorText(status, reply, err) + ")"
 	}

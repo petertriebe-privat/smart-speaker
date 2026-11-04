@@ -8,7 +8,7 @@
 
 // Settings of the smart speaker. The model instructions are in shared/prompts/prompts.h; WiFi,
 // keys, passwords and everything about your household (names, addresses, hosts) in secrets.h
-// (copy secrets.h.example). The household defaults below only keep a build without them working.
+// (local/, copy local/secrets.h.example). The household defaults below only keep a build without them working.
 
 // --- Role in the household ----------------------------------------------------------
 // Standalone (no PEER_KEY): this device is the household's assistant and does everything itself.
@@ -427,7 +427,7 @@ constexpr size_t MAILSORT_RULE_MAX = 30;                 // rules per person
 constexpr int MAILSORT_SUGGEST_MIN = 10;                 // mails of a kind in a week before the digest suggests a rule
 constexpr int MAILSORT_SUGGEST_DAYS = 14;                // the same suggestion again after this
 
-// --- Spotify (services/spotify; SPOTIFY_* in secrets.h, tokens from scripts/spotify_auth.py) ---------
+// --- Spotify (services/spotify; SPOTIFY_* in secrets.h, tokens from tools/spotify_auth.py) ---------
 #ifndef SPOTIFY_CLIENT_ID
 #define SPOTIFY_CLIENT_ID ""
 #endif

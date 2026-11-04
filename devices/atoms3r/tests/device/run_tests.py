@@ -220,8 +220,8 @@ CHILD = "Regressionstest-Kind"
 
 
 def secret(name, default=""):
-    """A #define from include/secrets.h (the household's own values), else `default`."""
-    path = HERE.parent.parent / "include" / "secrets.h"
+    """A #define from local/secrets.h (the household's own values), else `default`."""
+    path = HERE.resolve().parents[3] / "local" / "secrets.h"
     text = path.read_text(encoding="utf-8") if path.exists() else ""
     match = re.search(rf'^#define {name}\s+"([^"]*)"', text, re.M)
     return match.group(1) if match else default
@@ -537,7 +537,7 @@ def google(suite, device):
     print("Google (calendar, contacts)")
     tools = [t.get("name") for t in device.dump_tools() or []]
     if "list_events" not in tools:
-        suite.check("Google logged in (GOOGLE_* in secrets.h, scripts/google_auth.py)", False)
+        suite.check("Google logged in (GOOGLE_* in secrets.h, tools/google_auth.py)", False)
         return
     today = device.tool("list_events", {"from": "", "to": ""}, 45)
     suite.check("list_events today", today is not None and "events" in today.lower(), str(today)[:160])

@@ -1,10 +1,10 @@
 """Converts a microWakeWord .tflite model into a C header (16-byte aligned array).
 
     python models/make_model_header.py models/hey_jarvis.tflite include/wake_model.h
-    python models/make_model_header.py jarvis.tflite include/wake_model_own.h 0.8 30000
+    python models/make_model_header.py ../../local/wakeword/jarvis.tflite ../../local/wake_model_own.h 0.8 30000
 
 The second form is the household's own model (#61, trained on their voices: never in the
-repository, include/wake_model_own.h is git-ignored); the firmware prefers it, with its cutoff and
+repository: local/, git-ignored); the firmware prefers it, with its cutoff and
 tensor arena (the manifest's tensor_arena_size).
 """
 import sys

@@ -25,7 +25,7 @@ import (
 
 const tokenURL = "https://oauth2.googleapis.com/token"
 
-// Scopes as SCOPES in devices/atoms3r/scripts/google_auth.py.
+// Scopes as SCOPES in tools/google_auth.py.
 var Scopes = []string{
 	"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly",
 	"https://www.googleapis.com/auth/contacts", "https://www.googleapis.com/auth/drive.file",
@@ -34,10 +34,10 @@ var Scopes = []string{
 
 // ErrExpired: the login has to be renewed by the admin.
 var ErrExpired = errors.New("Error: the Google login has expired or was revoked; the admin has to log in again " +
-	"(devices/atoms3r/scripts/google_auth.py, then deploy the secrets to the Echo).")
+	"(tools/google_auth.py, then deploy the secrets to the Echo).")
 
 type Credentials struct {
-	ClientID, ClientSecret       string // installed-app client (scripts/google_auth.py)
+	ClientID, ClientSecret       string // installed-app client (tools/google_auth.py)
 	WebClientID, WebClientSecret string // web client (login renewal through the relay)
 	RefreshToken                 string
 }
@@ -161,7 +161,7 @@ func (a *Account) accessToken(ctx context.Context, refresh string) (string, erro
 				return "", a.expiredError()
 			}
 			return "", errors.New("Error: this mailbox's Google login has expired; its owner has to log in again " +
-				"(scripts/google_auth.py --gmail-only).")
+				"(tools/google_auth.py --gmail-only).")
 		}
 		return "", fmt.Errorf("Error: Google login failed (%s)", errorText(resp.StatusCode, body))
 	}

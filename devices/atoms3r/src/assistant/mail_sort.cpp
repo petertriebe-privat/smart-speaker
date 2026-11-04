@@ -8,7 +8,7 @@
 //
 // IMAP: SELECT and UID MOVE in the owner's mailbox (services/mail, moveOther); the Message-ID
 // finds a mail again after it moved. Gmail: labels for folders (users.labels), batchModify for
-// the inbox label, trash / untrash; needs the scope gmail.modify (scripts/google_auth.py).
+// the inbox label, trash / untrash; needs the scope gmail.modify (tools/google_auth.py).
 
 #include <algorithm>
 #include <map>
@@ -61,7 +61,7 @@ String gmailError(int status, const String& error)
 {
     if (status == 403)
         return "Error: the assistant may only read this Gmail so far. The owner has to allow changes once: "
-               "scripts/google_auth.py again (scope gmail.modify), then the new token into secrets.h.";
+               "tools/google_auth.py again (scope gmail.modify), then the new token into secrets.h.";
     return error.length() ? error : "Error: Gmail answered " + String(status);
 }
 

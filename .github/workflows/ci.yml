@@ -50,8 +50,8 @@ jobs:
           fi
           touches() { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -qE "$1"; }
           out() { if touches "$2"; then echo "$1=true"; else echo "$1=false"; fi >> "$GITHUB_OUTPUT"; }
-          out go '^(core/|shared/prompts/)'
-          out m5 '^(devices/atoms3r/|shared/prompts/)'
+          out go '^(core/|shared/prompts/|local/)'
+          out m5 '^(devices/atoms3r/|shared/prompts/|local/)'
           out android '^devices/android/'
           out python '\.py$|^ruff\.toml$|^services/'
           out shell '\.(sh|script)$|^services/deployer/jarvis-diag$'
@@ -126,7 +126,7 @@ jobs:
       - run: pip install platformio==6.2.0
       - name: build
         run: |
-          cp include/secrets.h.example include/secrets.h
+          cp ../../local/secrets.h.example ../../local/secrets.h
           pio run -e atoms3r
       - name: cppcheck
         run: pio check -e atoms3r --fail-on-defect=low

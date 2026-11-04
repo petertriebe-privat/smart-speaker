@@ -9,7 +9,7 @@
 // The assistant's files in the user's Google Drive: a visible folder "Jarvis" with the
 // backups (core.json, people.json, tasks.json) and subfolders for the memory's archive ("Themen",
 // "Gespräche"). Scope drive.file: The assistant sees only the files it made itself (or that
-// scripts/migrate_archive.py made with the same OAuth client). Drive keeps older versions of a
+// tools/migrate_archive.py made with the same OAuth client). Drive keeps older versions of a
 // file (revisions). Folder ids and the backups' file ids are kept in /drive.json. Blocks for
 // seconds; call it from a background task holding the TLS gate, or from a slow tool.
 namespace drive {

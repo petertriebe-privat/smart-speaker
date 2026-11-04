@@ -20,7 +20,7 @@
 // pinned. The sample phrases stay German: the model follows them closely.
 
 // This is the default character, Jarvis. A household that wants another one (another name in
-// ASSISTANT_NAME, another style) puts the same constants into shared/prompts/persona_local.h
+// ASSISTANT_NAME, another style) puts the same constants into local/persona_local.h
 // (git-ignored), which the M5 uses instead of the block below; the Echo reads them from
 // persona.json in its state directory (core/tools/extract_prompts.py --persona writes it).
 

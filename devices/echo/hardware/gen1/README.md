@@ -287,7 +287,7 @@ there, otherwise plain `ssh`/`scp`. It runs `go vet` and `go test`, builds the b
 with the scripts to a stage directory in RAM, then runs `install-assistant.sh` on the Echo. That
 script writes only below `/usr/local/echo-dev`; init, bootloader and partitions stay as they are.
 The service loop restarts the assistant within seconds. Secrets come from the git-ignored
-`devices/atoms3r/include/secrets.h` (copy `secrets.h.example`; one file for both device types)
+`local/secrets.h` (copy `secrets.h.example`; one file for both device types)
 and are generated into `private/jarvis-secrets.json` (mode 0600).
 
 **Per-device settings.** If `devices/echo/local/devices/<host>.json` exists, it is installed as

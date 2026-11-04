@@ -237,7 +237,7 @@ func (s *Service) musicLibrary(args map[string]any, ctx tools.Context) string {
 		doc, errText := s.getJSON(sess, path)
 		if errText != "" {
 			if strings.Contains(errText, "scope") {
-				errText += " (scripts/spotify_auth.py has to run once more for followed artists)"
+				errText += " (tools/spotify_auth.py has to run once more for followed artists)"
 			}
 			return errText
 		}
@@ -307,7 +307,7 @@ func (s *Service) musicLibrary(args map[string]any, ctx tools.Context) string {
 	}
 	errText = s.do(sess, method, "/me/library?uris="+urlEncode(uri), nil)
 	if strings.Contains(errText, "scope") {
-		errText += " (scripts/spotify_auth.py has to run once more for following artists)"
+		errText += " (tools/spotify_auth.py has to run once more for following artists)"
 	}
 	if errText != "" {
 		return errText

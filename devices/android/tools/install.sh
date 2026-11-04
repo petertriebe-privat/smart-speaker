@@ -9,7 +9,7 @@
 #
 # The stick needs ADB debugging on (Settings > My Fire TV > Developer options); the first
 # connection asks on the TV to allow this computer. The secrets (MQTT broker, and with --core all
-# of them) come from devices/echo/local/assistant/secrets.json (core/tools/make_secrets.py).
+# of them) come from local/secrets.json (core/tools/make_secrets.py).
 # Environment: ANDROID_HOME (default E:\Android\sdk), JAVA_HOME_17: a JDK 17 (default E:\Android\jdk17),
 # SKIP_BUILD=1 to install the last build.
 set -e
@@ -29,7 +29,7 @@ if [ -z "$host" ] || [ -z "$room" ]; then
 fi
 here=$(cd "$(dirname "$0")/.." && pwd)
 repo=$(cd "$here/../.." && pwd)
-secrets="$repo/devices/echo/local/assistant/secrets.json"
+secrets="$repo/local/secrets.json"
 secrets_w=$(cygpath -w "$secrets" 2>/dev/null || echo "$secrets") # Windows Python in Git Bash
 export ANDROID_HOME=${ANDROID_HOME:-'E:\Android\sdk'}
 export JAVA_HOME=${JAVA_HOME_17:-'E:\Android\jdk17'}

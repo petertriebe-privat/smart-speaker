@@ -29,7 +29,7 @@ phone (core: internal/hometunnel) ── TLS + client certificate ──▶ home
 | `vps-jarvis-mobile.conf.tmpl` | nginx `stream` on the VPS: the public port to the gateway over WireGuard |
 | `install.sh [pi\|vps]` | Renders both from `gateway.env`, copies the certificates, `nginx -t`, reload; a failed check restores the old file. On the VPS it installs `libnginx-mod-stream` and adds a `stream` block to `nginx.conf` once |
 
-The household's values live in `devices/echo/local/home-gateway/` (git-ignored): `gateway.env`
+The household's values live in `local/home-gateway/` (git-ignored): `gateway.env`
 (`PORT`, `GATEWAY_LAN`, `GATEWAY_WG`, `VPS_HOST`, `ECHOS` with the primary first, `DEVICES`,
 `PI_SSH`, `VPS_SSH`) and the certificates. The phone gets its certificate and `HOME_ENDPOINTS`
 from `devices/android/tools/install_phone.sh --device <name>`.
@@ -37,7 +37,7 @@ from `devices/android/tools/install_phone.sh --device <name>`.
 ## Set up
 
 ```sh
-services/home-gateway/make_certs.sh devices/echo/local/home-gateway phone-<name>
+services/home-gateway/make_certs.sh local/home-gateway phone-<name>
 services/home-gateway/install.sh            # the gateway and the VPS
 devices/android/tools/install_phone.sh <serial> --device phone-<name>
 ```

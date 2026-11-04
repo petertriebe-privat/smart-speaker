@@ -66,7 +66,8 @@ Use an OpenAI project key with a spending limit.
 ## Setup
 
 1. Install [PlatformIO](https://platformio.org/) (VS Code extension or CLI).
-2. Copy `include/secrets.h.example` to `include/secrets.h` and fill in at least WiFi and the
+2. Copy `local/secrets.h.example` to `local/secrets.h` (at the repository's top, shared by every
+   device: [local/README.md](../../local/README.md)) and fill in at least WiFi and the
    OpenAI key. Every block in that file explains itself; `secrets.h` is ignored by git.
    - **Name:** `ASSISTANT_NAME` in `secrets.h` (default "Jarvis", defined in
      [shared/prompts/assistant_name.h](../../shared/prompts/assistant_name.h)); the Echo gets the same value from the
@@ -75,10 +76,10 @@ Use an OpenAI project key with a spending limit.
      `<slug>_task`, `<slug>_conversation`, `binary_sensor.<slug>_presence`. Further switches: `JARVIS_INBOUND`,
      `JARVIS_WAKE_WORD`, `JARVIS_PHONE_NUMBER`.
    - **Persona:** [shared/prompts/persona.h](../../shared/prompts/persona.h) holds the default, Jarvis (a composed,
-     politely formal British butler with a bone-dry wit). Another character goes into `shared/prompts/persona_local.h`
+     politely formal British butler with a bone-dry wit). Another character goes into `local/persona_local.h`
      (git-ignored, same constants: `PERSONA_CORE`, `PERSONA_LEVELS`, `PERSONA_MAX_LEVEL`, `PERSONA_LIMITS`, `PERSONA_CHILD`),
      which the M5 build uses instead. The Echo reads the same constants from `persona.json` in its state directory,
-     written by `py -3 core/tools/extract_prompts.py --persona` (by default to `devices/echo/local/assistant/persona.json`).
+     written by `py -3 core/tools/extract_prompts.py --persona` (by default to `local/persona.json`).
 3. Optional services:
    - **Home Assistant:** enable the *Model Context Protocol Server* integration, create a
      long-lived token, set `HA_URL` / `HA_TOKEN`.
@@ -96,12 +97,12 @@ Use an OpenAI project key with a spending limit.
      [src/services/ca_certs.cpp](src/services/ca_certs.cpp) with your provider's root certificate.
    - **Private mailboxes to watch:** `WATCHED_MAILBOXES`, one entry per mailbox and person (IMAP at
      the same provider root as the assistant's mailbox, or Gmail with the `gmail.readonly` scope of
-     `scripts/google_auth.py`). Who gets notices on which channel: `update_person` (`notify`).
+     `tools/google_auth.py`). Who gets notices on which channel: `update_person` (`notify`).
    - **Google:** follow [docs/google.md](docs/google.md) (Cloud project, APIs,
-     `scripts/google_auth.py`, API keys).
+     `tools/google_auth.py`, API keys).
    - **Spotify:** an app at developer.spotify.com/dashboard (Web API, redirect URI
      `http://127.0.0.1:8888/callback`), `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET`, then
-     `python scripts/spotify_auth.py` for your account. Other people: add their Spotify e-mail under
+     `python tools/spotify_auth.py` for your account. Other people: add their Spotify e-mail under
      *User Management*, run the script with `--other` logged in as them and add the token to
      `SPOTIFY_ACCOUNTS`. `SPOTIFY_ROOM_SPEAKERS`: the Spotify devices in the assistant's room.
 4. Optional settings in [include/config.h](include/config.h): `LOCATION`, time zone, voice,
@@ -163,7 +164,7 @@ More in [docs/architecture.md](docs/architecture.md) (design, measurements, less
 ## Project layout
 
 ```
-include/        config.h (settings), secrets.h.example, ca_certs.h, wake_model.h
+include/        config.h (settings), ca_certs.h, wake_model.h (secrets.h: ../../local/)
                 (persona.h and prompts.h are in ../../shared/prompts/)
 src/main.cpp    setup() and loop(): wires the modules together
 src/audio/      codec streaming, echo canceller (off), wake word, volume
@@ -175,7 +176,7 @@ src/services/   Home Assistant, Google (calendar, contacts, Drive, Tasks, Sheets
 src/ui/         display, LEDs, touch, status
 src/system/     board, network, serial console, error log, helpers
 tests/device/   regression tests over USB serial (run_tests.py) and the tool contract
-scripts/        library patches, Google login, archive migration
+scripts/        library patches, CA bundle, git revision (logins: ../../tools/)
 lib/, models/   TFLite Micro and the "Hey Jarvis" model (third party, Apache 2.0)
 ```
 
@@ -197,7 +198,7 @@ lib/, models/   TFLite Micro and the "Hey Jarvis" model (third party, Apache 2.0
 
 Conversations go to OpenAI; memory backups, the archive and tables go to your own Google Drive
 (scope `drive.file`: the assistant only sees files it created). Keys and household data stay in
-`include/secrets.h`. Model instructions treat e-mails, documents, web pages and video contents as
+`local/secrets.h`. Model instructions treat e-mails, documents, web pages and video contents as
 data, never as instructions; mail commands are only accepted from household members whose mail
 the provider verified (DMARC).
 

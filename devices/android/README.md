@@ -91,7 +91,7 @@ The script builds the core for ARMv7 into the APK (`firetv/src/main/jniLibs`, no
 the debug APK, installs it, grants the overlay permission (`appops set dev.jarvis.screen
 SYSTEM_ALERT_WINDOW allow`: Fire OS has no settings page for it) and gives the app the broker and
 its room. With `--core` it also grants the microphone and puts the household's secrets
-(`devices/echo/local/assistant/secrets.json`) into the app's private files (`run-as`, the debug
+(`local/secrets.json`) into the app's private files (`run-as`, the debug
 build). The first ADB connection from a computer asks on the TV to allow it ("always allow"). The
 room must be the one Jarvis knows (the HA area of the stick, the speakers' `room`); the stick's
 Jarvis is called "Jarvis TV <room>" apart from the room's Echo.
@@ -139,9 +139,9 @@ devices/android/tools/install_phone.sh [serial] [--room <name>] [--name <name>] 
 ```
 
 `--device` pushes the phone's certificate for the way home (`services/home-gateway/make_certs.sh`).
-From a worktree without `devices/echo/local/` the environment names another checkout's files:
+From a worktree without `local/` the environment names another checkout's files:
 `JARVIS_SECRETS` (its `secrets.json`), `HOME_GATEWAY_LOCAL` (its `home-gateway` folder),
-`JARVIS_WAKEMODEL` (a folder with the household's wake word model).
+`JARVIS_WAKEMODEL` (a folder with the household's wake word model; default `local/wakeword`).
 
 The script builds the core for arm64 (`phone/src/main/jniLibs`, not in git) and the debug APK,
 installs it with the Play Store as installer (Android Auto lists sideloaded apps only so), grants

@@ -82,7 +82,7 @@ phone ──HTTPS + client cert──▶ VPS (public, port 443) ──WireGuard 
   copy, push writes, run a shared tool, hand over a transcript. It never opens a microphone and
   never streams audio.
 - The household's host names stay out of the repository: the app gets the endpoint, the CA and its
-  certificate from the install script, like the other secrets (`devices/echo/local/`,
+  certificate from the install script, like the other secrets (`local/`,
   git-ignored).
 - Advantages over Tailscale on the phone: no VPN slot taken (Android allows only one), no VPN
   symbol, nothing running between requests. Cost: a public port on the VPS, protected by the

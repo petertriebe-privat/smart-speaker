@@ -42,9 +42,9 @@ and need `drive.readonly`, i.e. read access to the whole Drive.
    **In production** (in *Testing* refresh tokens expire after 7 days). Google shows "unverified
    app" during the login; continue via *Advanced*.
 2. Credentials → Create credentials → OAuth client ID → type **Desktop app**; download the JSON.
-3. On the PC: `python scripts/google_auth.py path/to/client_secret_….json`. It opens the browser
+3. On the PC: `python tools/google_auth.py path/to/client_secret_….json`. It opens the browser
    (tick all permissions), gets a refresh token, checks every API and writes `GOOGLE_CLIENT_ID`,
-   `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN` into `include/secrets.h`. Flash again.
+   `GOOGLE_CLIENT_SECRET` and `GOOGLE_REFRESH_TOKEN` into `local/secrets.h`. Flash again.
 
 ### Renewing the login without the PC
 
@@ -80,14 +80,14 @@ script again whenever a new scope is added.
 The assistant reads a Gmail inbox when it is listed in `WATCHED_MAILBOXES` with host `"gmail"`
 (assistant/mail_watch, issue #37): the admin's with secret `""` (the token above), another
 person's with their own refresh token. For that, add their Google account as a test user of the
-consent screen and run `python scripts/google_auth.py --gmail-only client_secret_….json` while
+consent screen and run `python tools/google_auth.py --gmail-only client_secret_….json` while
 logged in as them: it asks only for `gmail.readonly`, writes nothing and prints the token for
 their entry. `gmail.readonly` cannot change or delete anything; sorting into labels and the
 trash (a later stage) will need `gmail.modify`, which still cannot delete for good.
 
 ### Token for the task agent
 
-`python scripts/google_auth.py --agent OUTFILE` (the assistant's client from `secrets.h`, or a client
+`python tools/google_auth.py --agent OUTFILE` (the assistant's client from `secrets.h`, or a client
 JSON as second argument) asks for `drive.file`, `gmail.modify` (read and sort; the MCP server
 refuses trash and spam), `calendar.readonly` and `contacts.readonly` only and writes client id, secret and refresh token as JSON to `OUTFILE`; that
 file goes to the agent's server (`/run/secrets/google.json`), nowhere else. Its own token, so it
@@ -138,5 +138,5 @@ where the TV's account left a video, so `play_video` seeks to the start a few se
 ## Moving an old mailbox archive
 
 Versions before the Drive archive kept dossiers and transcripts as mails.
-`scripts/migrate_archive.py` copies them into Drive (`--dry-run` first); it skips what is there
+`tools/migrate_archive.py` copies them into Drive (`--dry-run` first); it skips what is there
 already, so it can run again.

@@ -57,9 +57,10 @@ else
 fi
 PY="py -3"
 command -v py >/dev/null 2>&1 || PY=python3
-OUT="$ALEXA/local/assistant" # as make_secrets.py and build-librespot.sh (neutral names, #68)
+OUT="$ALEXA/local/assistant" # the Echo's builds, as build-librespot.sh (neutral names, #68)
 mkdir -p "$OUT"
-CORE=$(cd "$ALEXA/../../core" && pwd) # Jarvis' Go program, shared with the Fire TV (core/)
+REPO=$(cd "$ALEXA/../.." && pwd)
+CORE="$REPO/core" # Jarvis' Go program, shared with the Fire TV (core/)
 cd "$CORE"
 if [ -n "${JARVIS_BIN:-}" ]; then
     cp "$JARVIS_BIN" "$OUT/jarvis" # built, vetted and tested by the CI
@@ -99,7 +100,7 @@ for arg in "$@"; do
     case $arg in
     --secrets)
         $PY tools/make_secrets.py >/dev/null
-        FILES="$FILES $OUT/secrets.json" ;;
+        FILES="$FILES $REPO/local/secrets.json" ;; # every device's private values (local/README.md)
     --librespot) # 12 MB: only when it changed (tools/build-librespot.sh)
         FILES="$FILES $OUT/librespot" ;;
     --tailscale) # 69 MB, more than the tmpfs stage holds: staged on the data partition (#46)

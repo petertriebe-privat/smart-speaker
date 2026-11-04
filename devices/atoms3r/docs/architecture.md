@@ -208,7 +208,7 @@ Google services [google.md](google.md); for the planned Android app [mobile.md](
   `/quota.json`): a short answer plus 5 sources with up to 600 characters each. OpenAI's hosted
   `web_search` costs $10 per 1,000 calls plus the search content as input tokens; without a key it
   is still used. api.tavily.com runs on AWS (Amazon Root CA 1, RSA, so the ECDHE-RSA suites fit).
-  What OpenAI bills, by line item and day: `scripts/openai_costs.py` (needs an admin key).
+  What OpenAI bills, by line item and day: `tools/openai_costs.py` (needs an admin key).
 - People: an admin plus household members with their own profiles, rights (`Private` tools are
   the admin's accounts), blocked tools, humour level and a child flag. Only the admin is
   configured; members are registered by voice from the admin's contacts (`add_person`). That
@@ -476,7 +476,7 @@ Google services [google.md](google.md); for the planned Android app [mobile.md](
   with a bearer token per server. The credentials stay in that service, outside the agent's
   container: a mail that talks the agent round can make it read, not steal the token. General,
   so any MCP client can use them (also Claude Code on the PC). Google uses its own token from
-  `scripts/google_auth.py --agent`; `drive.file` shows it exactly the files of the assistant's app, so
+  `tools/google_auth.py --agent`; `drive.file` shows it exactly the files of the assistant's app, so
   results put into `<Name>/Dateien` are in the assistant's file store at once (`send_file`, printing).
   Before that (10.–11.10.) a command line tool with the tokens inside the container (`gtool`).
   Git pushes need the GitHub token in the container anyway. MCP servers entered in OpenHands (e.g. GitHub, Tavily for web research) reach the ACP

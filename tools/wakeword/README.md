@@ -38,7 +38,7 @@ docker stats wakeword-v1        # memory and CPU
 ```
 
 Household voices never go into the repository: the recordings live on the Echo
-(`/mnt/data/jarvis/voices/`), in `devices/echo/local/wakeword/recordings/` (git-ignored) and in the work
+(`/mnt/data/jarvis/voices/`), in `local/wakeword/recordings/` (git-ignored) and in the work
 directory `E:/wakeword-work` outside the repository. The trained model is kept out of the
 repository too (it is trained on them). The augmentation datasets have mixed licences: models
 trained with them are for personal, non-commercial use.
@@ -75,7 +75,7 @@ On the Echo, the person in the room: `jarvis ctl enroll <person> guided` (eight 
 the assistant announces each; `guided <part>` goes on after an interruption). Then on the PC:
 
 ```sh
-cd devices/echo/local/wakeword/recordings
+cd local/wakeword/recordings
 ssh -F ../../ssh/config echo-dev 'cd /mnt/data/jarvis/voices && tar cf - <person>' | tar xf -
 venv/Scripts/python.exe tools/wakeword/cut_takes.py <recordings> E:/wakeword-work/real
 ```
@@ -177,7 +177,7 @@ TotalVirtualMemorySize - FreeVirtualMemory): leave the WSL limit (16 GB) free.
 # clips and conversation records of every device (Echo: /mnt/data/jarvis, Dot: /data/jarvis)
 ssh -F devices/echo/local/ssh/config echo-dev 'cd /mnt/data/jarvis/wake && tar cf - .' | tar xf - -C E:/wakeword-work/clips/echo-dev
 ssh -F devices/echo/local/ssh/config echo-dev 'cat /mnt/data/jarvis/memory/sessions.jsonl' > E:/wakeword-work/sessions/echo-dev.jsonl
-python harvest.py E:/wakeword-work "devices/atoms3r/include/secrets.h" 5 <sessions.jsonl,...> <clips_dir> ...
+python harvest.py E:/wakeword-work "local/secrets.h" 5 <sessions.jsonl,...> <clips_dir> ...
 # decide every clip in hard/review.csv (clip,verdict: positive|negative|skip -> hard/verdicts.csv), run again
 # TV in the room, nobody says "Jarvis": jarvis rawcapture 600 /mnt/data/jarvis/raw/tv-<date>, then
 python cut_tv.py E:/wakeword-work <micsout.wav>

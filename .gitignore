@@ -1,6 +1,9 @@
 # Local tool configuration (MCP servers with private endpoints)
 .mcp.json
 __pycache__/
+.ruff_cache/
 
-# The household's own persona (shared/prompts/persona.h explains it)
-shared/prompts/persona_local.h
+# The household's own values for every device (local/README.md): only the templates are tracked
+/local/*
+!/local/README.md
+!/local/*.example

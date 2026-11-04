@@ -1,11 +1,11 @@
 """One-time Spotify OAuth consent for the assistant (player, devices, playlists, library; issue #39).
 
 Usage:
-    python scripts/spotify_auth.py            the admin's account: writes SPOTIFY_REFRESH_TOKEN
-    python scripts/spotify_auth.py --other    another person's account: prints the refresh token
+    python tools/spotify_auth.py            the admin's account: writes SPOTIFY_REFRESH_TOKEN
+    python tools/spotify_auth.py --other    another person's account: prints the refresh token
                                               for their SPOTIFY_ACCOUNTS entry, writes nothing
 
-Reads SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET from include/secrets.h, opens the browser for
+Reads SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET from local/secrets.h, opens the browser for
 consent (redirect http://127.0.0.1:8888/callback, registered in the app's settings), exchanges
 the code for a refresh token and checks it against the devices and playlists endpoints.
 For --other, log in with that person's Spotify account (a user of the app under User
@@ -42,7 +42,7 @@ SCOPES = [
 ]
 PORT = 8888
 REDIRECT = f"http://127.0.0.1:{PORT}/callback"
-SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "include", "secrets.h")
+SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "local", "secrets.h")
 
 
 def read_secret(text, name):
@@ -107,7 +107,7 @@ def main():
         text = f.read()
     client_id, client_secret = read_secret(text, "SPOTIFY_CLIENT_ID"), read_secret(text, "SPOTIFY_CLIENT_SECRET")
     if not client_id or not client_secret:
-        sys.exit("SPOTIFY_CLIENT_ID und SPOTIFY_CLIENT_SECRET zuerst in include/secrets.h eintragen.")
+        sys.exit("SPOTIFY_CLIENT_ID und SPOTIFY_CLIENT_SECRET zuerst in local/secrets.h eintragen.")
 
     state = secrets.token_urlsafe(16)
     server, result = wait_for_code(state)

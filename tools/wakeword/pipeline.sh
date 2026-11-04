@@ -28,7 +28,7 @@ LOG="$WORK/$NAME.log"
         -v "$WORK:/work" -v "$(cygpath -m "$HERE"):/tools" jarvis-wakeword \
         python /tools/train.py /work "$NAME" "$STEPS" $MODE $DONE
     echo "== $(date) evaluate"
-    $PY "$HERE/evaluate.py" "$WORK/models/$NAME/jarvis.tflite" "$REPO/devices/echo/local/wakeword/recordings" \
+    $PY "$HERE/evaluate.py" "$WORK/models/$NAME/jarvis.tflite" "$REPO/local/wakeword/recordings" \
         "$WORK/real/takes.csv" "$REPO/core"
     echo "== $(date) done"
 } > "$LOG" 2>&1

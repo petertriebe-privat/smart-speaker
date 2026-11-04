@@ -72,11 +72,11 @@ today (only from the owner's PC; a way without the PC is #131):
 - The code reads it with `secrets.String("NAME")`; without it the feature answers
   `not_configured`. A key is the switch: no extra `..._ENABLED` flag.
 - Add `#define NAME "..."` with a placeholder and a one-line comment (where to get the value) to
-  `devices/atoms3r/include/secrets.h.example` in the pull request.
+  `local/secrets.h.example` in the pull request.
 - The owner's steps, to put in the report as they are, with the real NAME and where he gets the
   value:
   1. Get the value (exact portal, page, field).
-  2. On the PC, open `devices/atoms3r/include/secrets.h` and add the line
+  2. On the PC, open `local/secrets.h` and add the line
      `#define NAME "<value>"`.
   3. In Git Bash in the repository: `sh devices/echo/tools/deploy.sh --all --secrets`
      (the Fire TV sticks with their own Jarvis: `devices/android/tools/install.sh <host> <room> --core`).

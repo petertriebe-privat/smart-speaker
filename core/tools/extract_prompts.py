@@ -17,6 +17,7 @@ CORE = os.path.dirname(HERE)
 REPO = os.path.normpath(os.path.join(CORE, '..'))  # core/ is at the repository's top
 M5 = os.path.join(REPO, 'devices', 'atoms3r', 'include')
 SHARED = os.path.join(REPO, 'shared', 'prompts')
+LOCAL = os.path.join(REPO, 'local')  # the household's own values, git-ignored (local/README.md)
 OUT = os.path.join(CORE, 'internal', 'prompts', 'prompts.json')
 
 ESCAPES = {'n': '\n', 't': '\t', '"': '"', '\\': '\\', "'": "'", '0': '\0', 'r': '\r'}
@@ -169,8 +170,8 @@ def write_persona(src, out):
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--persona':
         # --persona [persona_local.h [persona.json]]
-        src = sys.argv[2] if len(sys.argv) > 2 else os.path.join(SHARED, 'persona_local.h')
-        out = sys.argv[3] if len(sys.argv) > 3 else os.path.join(REPO, 'devices', 'echo', 'local', 'assistant', 'persona.json')
+        src = sys.argv[2] if len(sys.argv) > 2 else os.path.join(LOCAL, 'persona_local.h')
+        out = sys.argv[3] if len(sys.argv) > 3 else os.path.join(LOCAL, 'persona.json')
         write_persona(src, out)
         return
     known = {NAME: PLACEHOLDER}
@@ -180,7 +181,7 @@ def main():
     known.pop(NAME, None)
     # Household values never go into this tracked file: drop every name secrets.h may define
     # (config.h has fallbacks for some of them). They come from the private config on the device.
-    example = open(os.path.join(M5, 'secrets.h.example'), encoding='utf-8').read()
+    example = open(os.path.join(LOCAL, 'secrets.h.example'), encoding='utf-8').read()
     for secret in re.findall(r'#define\s+([A-Z_][A-Z0-9_]*)', example):
         known.pop(secret, None)
     for name in [k for k in known if re.search(r'(SECRET|TOKEN|PASSWORD|_KEY|EMAIL|OWNER|PHONE_NUMBER|HOST|REGISTRAR)', k)]:

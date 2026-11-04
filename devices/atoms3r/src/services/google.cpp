@@ -212,7 +212,7 @@ bool authorizeLocked(Token& entry, String& error)
     const char* expired = renewable()
         ? "Error: the Google login has expired. The assistant sends the admin a link to log in again (Telegram); Google "
           "works again once he has used it. Tell the user so; there is nothing else to do."
-        : "Error: the Google login has expired or was revoked; the admin has to run scripts/google_auth.py on the "
+        : "Error: the Google login has expired or was revoked; the admin has to run tools/google_auth.py on the "
           "PC and flash the device again.";
     if (entry.refresh.isEmpty()) {  // web client only, never logged in
         loginNeeded = true;
@@ -235,7 +235,7 @@ bool authorizeLocked(Token& entry, String& error)
             if (own) loginNeeded = true;
             error = own ? expired
                         : "Error: this mailbox's Google login has expired; its owner has to log in again "
-                          "(scripts/google_auth.py --gmail-only).";
+                          "(tools/google_auth.py --gmail-only).";
         } else {
             error = "Error: Google login failed (" + errorText(status, reply) + ")";
         }
@@ -281,7 +281,7 @@ int call(const char* method, const char* host, const String& path, const String&
 // (useless without the client secret and the verifier, both only here) and keeps the refresh
 // token in NVS. State and verifier are in NVS too, so a link survives a restart.
 
-// As SCOPES in scripts/google_auth.py.
+// As SCOPES in tools/google_auth.py.
 const char* const SCOPES[] = {
     "https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/contacts",        "https://www.googleapis.com/auth/drive.file",

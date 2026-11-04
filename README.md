@@ -17,22 +17,24 @@ device or on several that work together as one assistant.
 | The assistant's Go program, running on the Echos, the Fire TV and the phone | [core](core/) |
 | Persona and prompts, one source for every device | [shared/prompts](shared/prompts/) |
 | Servers next to the devices (MCP servers, agent, WhatsApp relay, deployer, home gateway) | [services](services/) |
-| Wake word training | [tools/wakeword](tools/wakeword/) |
+| Wake word training, Google and Spotify login, cost report | [tools](tools/) |
+| The household's own values for every device (git-ignored; templates and how-to) | [local](local/) |
 
 ## Your own assistant
 
 The assistant is what the household makes of it:
 
-- **Name:** `ASSISTANT_NAME` in the household's secrets (`devices/atoms3r/include/secrets.h`, which
-  `tools/make_secrets.py` also turns into the Echo's `jarvis-secrets.json`); default "Jarvis".
+- **Name:** `ASSISTANT_NAME` in the household's secrets (`local/secrets.h`, which
+  `core/tools/make_secrets.py` turns into `local/secrets.json` for the Echos, the Fire TV and the
+  phone); default "Jarvis".
   The Home Assistant events and entities carry the name's lower-case slug (`<slug>_announce`,
   `<slug>_task`, `<slug>_conversation`, `binary_sensor.<slug>_presence`); the MQTT topics are
   `jarvis/...`. Paths, the binary (`jarvis ctl`), the apps (`dev.jarvis.*`) and the secrets
   switches (`JARVIS_*`) keep the name "jarvis" whatever the assistant is called.
 - **Persona:** `shared/prompts/persona.h` is Jarvis, the default: a composed, politely formal
   British butler with a bone-dry wit, after the films. Another character goes into
-  `shared/prompts/persona_local.h` (git-ignored, the same constants), used by the M5 build instead. For the Echo,
-  `py -3 core/tools/extract_prompts.py --persona` writes `devices/echo/local/assistant/persona.json`,
+  `local/persona_local.h` (git-ignored, the same constants), used by the M5 build instead. For the Echo,
+  `py -3 core/tools/extract_prompts.py --persona` writes `local/persona.json`,
   which goes to the Echo's state directory as `persona.json`.
 - **Wake word:** the built-in model is "Hey Jarvis" (microWakeWord by Kevin Ahrendt / esphome). An
   own model is set with `wake_model` in the device settings and trained with

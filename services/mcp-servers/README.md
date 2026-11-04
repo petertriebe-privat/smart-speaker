@@ -16,7 +16,7 @@ only gets the tokens of the servers it may use.
 |---|---|
 | `MCP_TOKEN_IMAP`, `MCP_TOKEN_GOOGLE`, `MCP_TOKEN_N8N` | bearer token per server; a server without token is off |
 | `IMAP_ACCOUNTS_FILE` | JSON file (default `/run/secrets/imap.json`): `{"name": {"host": "imap.example.com", "user": "...", "password": "...", "port": 993, "allow_move": false}}`; a file because env files mangle `$` and ` #` in passwords |
-| `GOOGLE_CREDENTIALS` | path of `{client_id, client_secret, refresh_token}` (`devices/atoms3r/scripts/google_auth.py --agent`) |
+| `GOOGLE_CREDENTIALS` | path of `{client_id, client_secret, refresh_token}` (`tools/google_auth.py --agent`) |
 | `GOOGLE_DRIVE_FOLDER`, `GOOGLE_DRIVE_SOURCE` | the one Drive folder (`Parent/Child`), the `appProperties.source` of written files |
 | `N8N_URL`, `N8N_API_KEY` | n8n instance and its API key (Settings → n8n API) |
 | `HOST`, `PORT` | default `127.0.0.1:8120` |

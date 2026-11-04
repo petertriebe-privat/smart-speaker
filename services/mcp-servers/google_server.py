@@ -2,7 +2,7 @@
 calendars and contacts (read).
 
 GOOGLE_CREDENTIALS: path of a JSON {client_id, client_secret, refresh_token}, e.g. from
-scripts/google_auth.py --agent (scopes gmail.modify, drive.file, calendar.readonly,
+tools/google_auth.py --agent (scopes gmail.modify, drive.file, calendar.readonly,
 contacts.readonly; with gmail.readonly only the label tools fail). Drive access is limited to GOOGLE_DRIVE_FOLDER ("Parent/Child", the first
 part found anywhere); files written get appProperties.source = GOOGLE_DRIVE_SOURCE.
 """

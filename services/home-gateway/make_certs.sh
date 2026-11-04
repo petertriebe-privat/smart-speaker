@@ -5,7 +5,7 @@
 #
 #   services/home-gateway/make_certs.sh <dir> <device>...
 #
-# <dir> e.g. devices/echo/local/home-gateway (git-ignored). Existing files are kept: a new device
+# <dir> e.g. local/home-gateway (git-ignored). Existing files are kept: a new device
 # gets its certificate from the same CA. Revoking a device takes its name off DEVICES in
 # gateway.env and installs the gateway again (install.sh), no new CA needed.
 set -e

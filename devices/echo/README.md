@@ -27,7 +27,7 @@ local/           git-ignored: SSH profiles, WiFi, keys, device settings, persona
 
 On the Echo the program lives in `/usr/local/echo-dev/jarvis/jarvis` (the Dot:
 `/data/echo-dot-dev/jarvis/jarvis`), its state in `/mnt/data/jarvis`, its secrets in
-`jarvis-secrets.json` (made by `tools/make_secrets.py` from `devices/atoms3r/include/secrets.h`)
+`jarvis-secrets.json` (made by `tools/make_secrets.py` from `local/secrets.h`)
 and it is started by `services/jarvis.sh`. The command line tool is `jarvis ctl …`
 (`jarvis rawcapture …` records raw microphones). An own wake word model goes to
 `/mnt/data/jarvis/wakemodel/` (see [tools/wakeword](../../tools/wakeword/README.md)).
@@ -49,7 +49,7 @@ A merge into `main` can deploy on every Echo through a CI job on a Raspberry Pi
 repository yet.
 
 For a household's own persona, run `py -3 core/tools/extract_prompts.py --persona`: it writes
-`local/assistant/persona.json`, which the deploy puts into the Echo's state directory as
+`local/persona.json`, which the deploy puts into the Echo's state directory as
 `persona.json`.
 
 ## Documents

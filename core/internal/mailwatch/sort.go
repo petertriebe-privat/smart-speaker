@@ -62,7 +62,7 @@ func findFolder(folders []mail.Folder, name string) *mail.Folder {
 func gmailError(status int, err error) error {
 	if status == 403 {
 		return errors.New("Error: The assistant may only read this Gmail so far. The owner has to allow changes once: " +
-			"scripts/google_auth.py again (scope gmail.modify), then the new token into secrets.h.")
+			"tools/google_auth.py again (scope gmail.modify), then the new token into secrets.h.")
 	}
 	if err != nil {
 		return err

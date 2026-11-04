@@ -1,13 +1,13 @@
 """One-time Google OAuth consent for the assistant (calendar, contacts, Drive, Tasks, Gmail sorting).
 
 Usage:
-    python scripts/google_auth.py path/to/client_secret_XXXX.json
-    python scripts/google_auth.py --gmail-only path/to/client_secret_XXXX.json
-    python scripts/google_auth.py --agent OUTFILE [path/to/client_secret_XXXX.json]
+    python tools/google_auth.py path/to/client_secret_XXXX.json
+    python tools/google_auth.py --gmail-only path/to/client_secret_XXXX.json
+    python tools/google_auth.py --agent OUTFILE [path/to/client_secret_XXXX.json]
 
 Opens the browser for consent (loopback redirect on 127.0.0.1), exchanges the code
 for a refresh token, checks it against the Calendar, People, Drive, Tasks and Gmail APIs and writes
-GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REFRESH_TOKEN into include/secrets.h.
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REFRESH_TOKEN into local/secrets.h.
 
 --gmail-only: for another person's Gmail that the assistant watches (WATCHED_MAILBOXES). Asks only for
 their mail (gmail.modify: read, labels, trash; it cannot delete for good), writes nothing and
@@ -49,7 +49,7 @@ AGENT_SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/contacts.readonly",
 ]
-SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "include", "secrets.h")
+SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "local", "secrets.h")
 
 
 def load_client(path):

@@ -15,7 +15,10 @@ shared/prompts/      persona.h, prompts.h, assistant_name.h: one source for ever
                      prompts.json, made by core/tools/extract_prompts.py)
 services/            servers next to the devices: deployer, home-gateway, mcp-servers, agent-mcp,
                      whatsapp-relay
-tools/               cross-device tools (wake word training, github-settings.sh for the repository)
+tools/               cross-device tools (wake word training, Google and Spotify login, OpenAI costs,
+                     archive migration, github-settings.sh for the repository)
+local/               git-ignored: the household's own values for every device (secrets.h, persona,
+                     wake word, home gateway); only README.md and the *.example templates are tracked
 ```
 
 - Open work, ideas and bugs: GitHub issues (`gh issue list`), not a file in the repo.
@@ -25,8 +28,9 @@ tools/               cross-device tools (wake word training, github-settings.sh 
   there, not in commit messages only.
 - The repository is public: no household data (names, addresses, phone numbers, e-mail addresses,
   IPs, specific calendars or devices) in code, prompts, tests, docs or commit messages. Household
-  values belong in the git-ignored `devices/atoms3r/include/secrets.h`,
-  `shared/prompts/persona_local.h` and `devices/echo/local/`; behaviour must come from generic data.
+  values belong in the git-ignored `local/` (every device: `secrets.h`, `persona_local.h`, the
+  wake word, the home gateway; `local/README.md`) and `devices/echo/local/` (the Echos only: SSH
+  profiles, device files, builds); behaviour must come from generic data.
 
 ## The assistant's name
 

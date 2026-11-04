@@ -152,7 +152,7 @@ bool authorizeLocked(Token& entry, String& error)
     JsonDocument parsed;
     if (status != 200 || deserializeJson(parsed, reply.data, reply.size) || !parsed["access_token"].is<const char*>()) {
         if (status == 400 && reply.data && strstr(reinterpret_cast<const char*>(reply.data), "invalid_grant"))
-            error = "Error: the Spotify login expired or was revoked; scripts/spotify_auth.py has to run once more.";
+            error = "Error: the Spotify login expired or was revoked; tools/spotify_auth.py has to run once more.";
         else
             error = "Error: Spotify login failed (" + errorText(status, reply) + ")";
         return false;
@@ -287,7 +287,7 @@ bool session(const tools::Context& context, const String& wanted, Session& out, 
     out.person = person;
     out.label = person == people::admin() ? "" : people::name(person);
     if (out.refresh.isEmpty()) {
-        error = "Error: " + people::name(person) + " has no Spotify account linked yet (scripts/spotify_auth.py --other, "
+        error = "Error: " + people::name(person) + " has no Spotify account linked yet (tools/spotify_auth.py --other, "
                 "then SPOTIFY_ACCOUNTS in secrets.h).";
         return false;
     }
@@ -1109,7 +1109,7 @@ String musicLibrary(JsonObjectConst arguments, const tools::Context& context)
         if (type == "artist") path = "/me/following?type=artist&limit=20";
         if (type == "playlist") return "Error: playlists come from music_playlist list";
         if (!apiJson(s, path, doc, error)) {
-            if (error.indexOf("scope") >= 0) error += " (scripts/spotify_auth.py has to run once more for followed artists)";
+            if (error.indexOf("scope") >= 0) error += " (tools/spotify_auth.py has to run once more for followed artists)";
             return error;
         }
         JsonObjectConst page = type == "artist" ? doc["artists"].as<JsonObjectConst>() : doc.as<JsonObjectConst>();
@@ -1153,7 +1153,7 @@ String musicLibrary(JsonObjectConst arguments, const tools::Context& context)
     }
     if (action != "like" && action != "unlike") return "Error: action is like, unlike, check or list";
     error = apiDo(s, action == "like" ? "PUT" : "DELETE", "/me/library?uris=" + urlEncode(uri));
-    if (error.indexOf("scope") >= 0) error += " (scripts/spotify_auth.py has to run once more for following artists)";
+    if (error.indexOf("scope") >= 0) error += " (tools/spotify_auth.py has to run once more for following artists)";
     return error.length() ? error : (action == "like" ? "Saved to the library: " : "Removed from the library: ") + line + suffix(s);
 }
 

@@ -13,7 +13,7 @@
 #
 # The phone needs USB debugging on (Settings > Developer options), connected by USB or paired
 # for wireless debugging; with several devices give the serial (adb devices). The secrets come from
-# devices/echo/local/assistant/secrets.json (core/tools/make_secrets.py).
+# local/secrets.json (core/tools/make_secrets.py).
 # Environment: ANDROID_HOME (default E:\Android\sdk), JAVA_HOME_17: a JDK 17 (default E:\Android\jdk17),
 # SKIP_BUILD=1 to install the last build.
 set -e
@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
 done
 here=$(cd "$(dirname "$0")/.." && pwd)
 repo=$(cd "$here/../.." && pwd)
-secrets=${JARVIS_SECRETS:-"$repo/devices/echo/local/assistant/secrets.json"} # another checkout's (a worktree has none)
+secrets=${JARVIS_SECRETS:-"$repo/local/secrets.json"} # another checkout's (a worktree has none)
 secrets_w=$(cygpath -w "$secrets" 2>/dev/null || echo "$secrets") # Windows Python in Git Bash
 export ANDROID_HOME=${ANDROID_HOME:-'E:\Android\sdk'}
 export JAVA_HOME=${JAVA_HOME_17:-'E:\Android\jdk17'}
@@ -66,7 +66,7 @@ $adb shell cmd notification allow_listener $pkg/$pkg.MessageListener
 # build); the copy in /data/local/tmp lives only for the moment of the transfer.
 # The way home (#75, services/home-gateway): with --device the phone's certificate goes along and
 # HOME_ENDPOINTS into its secrets: the gateway in the LAN first, then the VPS.
-gateway=${HOME_GATEWAY_LOCAL:-"$repo/devices/echo/local/home-gateway"}
+gateway=${HOME_GATEWAY_LOCAL:-"$repo/local/home-gateway"}
 endpoints=
 if [ -n "$device" ]; then
     . "$gateway/gateway.env"
@@ -84,9 +84,10 @@ MSYS_NO_PATHCONV=1 $adb push "$tmp_w" /data/local/tmp/jarvis-secrets.json >/dev/
 rm -f "$tmp"
 MSYS_NO_PATHCONV=1 $adb shell "cat /data/local/tmp/jarvis-secrets.json | run-as $pkg sh -c 'mkdir -p files && cat > files/secrets.json && chmod 600 files/secrets.json'; rm /data/local/tmp/jarvis-secrets.json"
 # The household's wake word model ("Jarvis", tools/wakeword: jarvis.tflite and jarvis.json, e.g.
-# copied from an Echo's /mnt/data/jarvis/wakemodel) when JARVIS_WAKEMODEL names its folder;
+# copied from an Echo's /mnt/data/jarvis/wakemodel) from local/wakeword or the folder JARVIS_WAKEMODEL names;
 # without it the built-in "Hey Jarvis" listens.
-if [ -n "$JARVIS_WAKEMODEL" ]; then
+JARVIS_WAKEMODEL=${JARVIS_WAKEMODEL:-"$repo/local/wakeword"}
+if [ -f "$JARVIS_WAKEMODEL/jarvis.tflite" ]; then
     for f in jarvis.tflite jarvis.json; do
         MSYS_NO_PATHCONV=1 $adb push "$(cygpath -w "$JARVIS_WAKEMODEL/$f" 2>/dev/null || echo "$JARVIS_WAKEMODEL/$f")" /data/local/tmp/$f >/dev/null
         MSYS_NO_PATHCONV=1 $adb shell "cat /data/local/tmp/$f | run-as $pkg sh -c 'mkdir -p files/state/wakemodel && cat > files/state/wakemodel/$f'; rm /data/local/tmp/$f"

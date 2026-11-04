@@ -3,7 +3,7 @@
 #
 #   services/home-gateway/install.sh [pi|vps]   (both without an argument)
 #
-# Reads devices/echo/local/home-gateway/gateway.env (git-ignored; the household's values):
+# Reads local/home-gateway/gateway.env (git-ignored; the household's values):
 #   PORT=47443                    the port on the gateway and on the VPS
 #   GATEWAY_WG=10.x.x.x           the gateway's address on the WireGuard link (the VPS forwards there)
 #   ECHOS="192.168.x.a 192.168.x.b"  the Echos' addresses, the primary first
@@ -14,7 +14,7 @@
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 repo=$(cd "$here/../.." && pwd)
-local=${HOME_GATEWAY_LOCAL:-"$repo/devices/echo/local/home-gateway"} # another checkout's (a worktree has none)
+local=${HOME_GATEWAY_LOCAL:-"$repo/local/home-gateway"} # another checkout's (a worktree has none)
 . "$local/gateway.env"
 what=${1:-both}
 tmp=$(mktemp -d)

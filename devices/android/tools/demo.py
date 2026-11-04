@@ -1,7 +1,7 @@
 """Show the sample cards (tools/samples.json) on a Jarvis screen, one after the other.
 
 Usage: python devices/android/tools/demo.py <room id> [sample name ...]
-Needs paho-mqtt (pip install paho-mqtt) and the broker from devices/echo/local/assistant/secrets.json.
+Needs paho-mqtt (pip install paho-mqtt) and the broker from local/secrets.json.
 Each card stays as long as its "show" seconds; the overlay cards appear above whatever runs.
 """
 import json

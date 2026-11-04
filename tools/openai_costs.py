@@ -1,11 +1,11 @@
 """What OpenAI billed in the last days: by project, by line item and by day.
 
-Reads OPENAI_ADMIN_KEY from include/secrets.h (platform.openai.com -> Settings -> Organization ->
+Reads OPENAI_ADMIN_KEY from local/secrets.h (platform.openai.com -> Settings -> Organization ->
 Admin keys; the normal API key may not read costs) and asks OpenAI's Costs API
 (GET /v1/organization/costs). The output is German: the user reads it.
 
-    python scripts/openai_costs.py            # last 30 days
-    python scripts/openai_costs.py --days 7
+    python tools/openai_costs.py            # last 30 days
+    python tools/openai_costs.py --days 7
 """
 
 import argparse
@@ -20,7 +20,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "include", "secrets.h")
+SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "local", "secrets.h")
 API = "https://api.openai.com/v1/organization/"
 SHOWN = 0.005  # smaller amounts are left out of the lists
 
@@ -71,7 +71,7 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")  # umlauts also when piped (Windows defaults to cp1252)
     key = secret("OPENAI_ADMIN_KEY")
     if not key:
-        sys.exit("OPENAI_ADMIN_KEY zuerst in include/secrets.h eintragen (OpenAI -> Organization -> Admin keys).")
+        sys.exit("OPENAI_ADMIN_KEY zuerst in local/secrets.h eintragen (OpenAI -> Organization -> Admin keys).")
 
     by_item, by_day = collections.Counter(), collections.Counter()
     by_project = collections.defaultdict(collections.Counter)

@@ -1,15 +1,15 @@
 """Moves the assistant's memory archive from the mailbox to Google Drive.
 
 Usage:
-    python scripts/migrate_archive.py            # copy what is missing in Drive
-    python scripts/migrate_archive.py --dry-run  # only show what it would copy
+    python tools/migrate_archive.py            # copy what is missing in Drive
+    python tools/migrate_archive.py --dry-run  # only show what it would copy
 
 Reads every mail of the IMAP folders <name>-Themen (topic dossiers) and <name>-Gespraeche
 (conversations) with MAIL_ADDRESS / MAIL_PASSWORD, and writes each as a text file into Drive:
 <name>/Themen and <name>/Gespräche (<name>: ASSISTANT_NAME, "Jarvis" by default), named like the mail's subject, with the same appProperties
 the device uses to find them again (topic = the key in "[...]", at = "YYYY-MM-DD HH:MM").
 Files already in Drive are skipped, so it can run again. The mails stay in the mailbox.
-Uses the device's Google login (GOOGLE_* in include/secrets.h, scope drive.file: the device sees
+Uses the device's Google login (GOOGLE_* in local/secrets.h, scope drive.file: the device sees
 these files because they are made with the same OAuth client). Standard library only.
 """
 
@@ -25,7 +25,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "include", "secrets.h")
+SECRETS_H = os.path.join(os.path.dirname(__file__), "..", "local", "secrets.h")
 # mailbox folder after the name -> (Drive subfolder, appProperty)
 FOLDERS = {"-Themen": ("Themen", "topic"), "-Gespraeche": ("Gespräche", "at")}
 FOLDER_MIME = "application/vnd.google-apps.folder"

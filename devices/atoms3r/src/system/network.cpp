@@ -10,7 +10,7 @@
 #if __has_include("secrets.h")
 #include "secrets.h"
 #else
-#error "Copy include/secrets.h.example to include/secrets.h and fill in WiFi and API key"
+#error "Copy local/secrets.h.example to local/secrets.h and fill in WiFi and API key"
 #endif
 
 namespace network {
