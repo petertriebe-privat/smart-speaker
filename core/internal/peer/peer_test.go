@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -103,13 +104,30 @@ func freePort(t *testing.T) int {
 	return c.LocalAddr().(*net.UDPAddr).Port
 }
 
+// testPeer: a device whose level and conversation the test changes while it runs (its hooks
+// are set before Run: the device's goroutines read them).
+type testPeer struct {
+	*Service
+	level     atomic.Int64
+	busy      atomic.Bool
+	outvoiced chan string
+}
+
+func newTestPeer(name string, port, other int) *testPeer {
+	p := &testPeer{Service: New(testKey, port, []string{"127.0.0.1:" + strconv.Itoa(other)}),
+		outvoiced: make(chan string, 4)}
+	p.Name = name
+	p.Level = func(from, to time.Time) float64 { return float64(p.level.Load()) }
+	p.Busy = p.busy.Load
+	p.Outvoiced = func(why string) { p.outvoiced <- why }
+	return p
+}
+
 // pair: two devices on loopback that see each other.
-func pair(t *testing.T) (*Service, *Service) {
+func pair(t *testing.T) (*testPeer, *testPeer) {
 	t.Helper()
 	pa, pb := freePort(t), freePort(t)
-	a := New(testKey, pa, []string{"127.0.0.1:" + strconv.Itoa(pb)})
-	b := New(testKey, pb, []string{"127.0.0.1:" + strconv.Itoa(pa)})
-	a.Name, b.Name = "a", "b"
+	a, b := newTestPeer("a", pa, pb), newTestPeer("b", pb, pa)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 	go a.Run(ctx)
@@ -129,8 +147,8 @@ func pair(t *testing.T) (*Service, *Service) {
 
 func TestTwoDevicesAgree(t *testing.T) {
 	a, b := pair(t)
-	a.Level = func(from, to time.Time) float64 { return 400 }
-	b.Level = func(from, to time.Time) float64 { return 150 }
+	a.level.Store(400)
+	b.level.Store(150)
 	at := time.Now()
 	var wg sync.WaitGroup
 	var wonA, wonB bool
@@ -146,10 +164,9 @@ func TestTwoDevicesAgree(t *testing.T) {
 // A device whose model detects later (the M5, ~1 s) and heard the words louder still takes them.
 func TestLateLouderClaimTakesIt(t *testing.T) {
 	a, b := pair(t)
-	a.Level = func(from, to time.Time) float64 { return 300 }
-	b.Level = func(from, to time.Time) float64 { return 900 }
-	outvoiced := make(chan string, 1)
-	a.Outvoiced = func(why string) { outvoiced <- why }
+	a.level.Store(300)
+	b.level.Store(900)
+	outvoiced := a.outvoiced
 	at := time.Now()
 	if won, why := a.Claim(0.9, at); !won {
 		t.Fatalf("a alone in the window must answer: %s", why)
@@ -165,8 +182,8 @@ func TestLateLouderClaimTakesIt(t *testing.T) {
 	case <-time.After(2 * time.Second):
 		t.Error("a kept the words against a louder late claim")
 	}
-	b.Level = func(from, to time.Time) float64 { return 100 } // quieter and late: nothing changes
-	time.Sleep(2 * sameWake)                                  // other words (b's claim was dated 0.9 s ahead)
+	b.level.Store(100)       // quieter and late: nothing changes
+	time.Sleep(2 * sameWake) // other words (b's claim was dated 0.9 s ahead)
 	if won, _ := a.Claim(0.9, time.Now()); !won {
 		t.Fatal("a must answer")
 	}
@@ -180,13 +197,13 @@ func TestLateLouderClaimTakesIt(t *testing.T) {
 
 func TestConversationKeepsTheUser(t *testing.T) {
 	a, b := pair(t)
-	a.Level = func(from, to time.Time) float64 { return 200 }
-	b.Level = func(from, to time.Time) float64 { return 600 } // the user stands at b
-	b.Busy = func() bool { return true }
+	a.level.Store(200)
+	b.level.Store(600) // the user stands at b
+	b.busy.Store(true)
 	if won, why := a.Claim(0.9, time.Now()); won {
 		t.Errorf("a answered while the user talks to b: %s", why)
 	}
-	b.Level = func(from, to time.Time) float64 { return 50 } // b's conversation is elsewhere
+	b.level.Store(50) // b's conversation is elsewhere
 	if won, why := a.Claim(0.9, time.Now()); !won {
 		t.Errorf("a must answer when the user stands at a: %s", why)
 	}

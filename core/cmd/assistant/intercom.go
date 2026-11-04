@@ -128,8 +128,10 @@ func (d *device) openIntercom(session uint32, key []byte, with peer.Peer) error 
 	}
 	ic := &intercom{link: link, with: with, since: time.Now(), sp: phone.NewSpeakerphone(), up: &phone.MicResampler{},
 		lastIn: time.Now()}
-	link.OnPCM = func(pcm []int16) { d.intercomIn(ic, pcm) }
-	link.OnEnd = func() { d.endIntercom(false, with.Name+" ended it") }
+	link.Handle(peer.AudioHandlers{
+		OnPCM: func(pcm []int16) { d.intercomIn(ic, pcm) },
+		OnEnd: func() { d.endIntercom(false, with.Name+" ended it") },
+	})
 	icMu.Lock()
 	icNow = ic
 	icMu.Unlock()

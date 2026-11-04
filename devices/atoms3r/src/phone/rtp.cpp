@@ -320,6 +320,7 @@ bool start(IPAddress remote, uint16_t port, uint8_t payload, int dtmf)
     running = true;
     bool create = false;
     taskENTER_CRITICAL(&taskMux);
+    // cppcheck-suppress duplicateConditionalAssign ; create only says whether this call started it
     if (!taskRunning) taskRunning = create = true;
     taskEXIT_CRITICAL(&taskMux);
     // Above the main loop (priority 2, main.cpp): the 20 ms voice packets must not wait.

@@ -100,25 +100,44 @@ func (f *fakeSCO) Stop() {
 	f.mu.Unlock()
 }
 
-func mobileHarness(t *testing.T) (*harness, *fakeHF, *[]*fakeSCO, *[]string) {
+// spoken: what the phone said through Say (in its own goroutine), read under the lock.
+type spoken struct {
+	mu    sync.Mutex
+	texts []string
+}
+
+func (s *spoken) add(text string) {
+	s.mu.Lock()
+	s.texts = append(s.texts, text)
+	s.mu.Unlock()
+}
+
+func (s *spoken) count() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.texts)
+}
+
+func (s *spoken) at(i int) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.texts[i]
+}
+
+func mobileHarness(t *testing.T) (*harness, *fakeHF, *[]*fakeSCO, *spoken) {
 	t.Helper()
 	h := newHarness(t, nil)
 	hf := &fakeHF{modem: hfModem{Path: "/hfp/adapter_phone"}}
 	var lines []*fakeSCO
-	var said []string
-	var mu sync.Mutex
+	said := &spoken{}
 	h.p.hf = hf
 	h.p.newSCO = func() scoLine {
 		line := &fakeSCO{}
 		lines = append(lines, line)
 		return line
 	}
-	h.p.deps.Say = func(text string) {
-		mu.Lock()
-		said = append(said, text)
-		mu.Unlock()
-	}
-	return h, hf, &lines, &said
+	h.p.deps.Say = said.add
+	return h, hf, &lines, said
 }
 
 func TestMobileCallRingsIsAnsweredAndEnds(t *testing.T) {
@@ -149,9 +168,9 @@ func TestMobileCallRingsIsAnsweredAndEnds(t *testing.T) {
 		t.Fatal("not ringing")
 	}
 	waitFor(t, "the ring tones", func() bool { return h.speaker.toneCount() >= 2 })
-	waitFor(t, "the caller announced", func() bool { return len(*said) == 1 })
-	if !strings.Contains((*said)[0], "Handy") {
-		t.Errorf("announced %q", (*said)[0])
+	waitFor(t, "the caller announced", func() bool { return said.count() == 1 })
+	if !strings.Contains(said.at(0), "Handy") {
+		t.Errorf("announced %q", said.at(0))
 	}
 	if len(*lines) != 0 {
 		t.Fatal("call audio opened while it rings")
@@ -214,7 +233,7 @@ func TestMobileRingLeavesAConversationAlone(t *testing.T) {
 	hf.set(hfCall{Path: "/hfp/adapter_phone/voicecall01", State: "incoming"})
 	h.p.pollMobile(time.Now())
 	time.Sleep(50 * time.Millisecond)
-	if h.speaker.toneCount() != 0 || len(*said) != 0 {
+	if h.speaker.toneCount() != 0 || said.count() != 0 {
 		t.Error("rang into a conversation at the speaker")
 	}
 	if !h.p.MobileRinging() {

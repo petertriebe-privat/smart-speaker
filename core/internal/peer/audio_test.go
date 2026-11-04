@@ -21,9 +21,11 @@ func TestAudioLink(t *testing.T) {
 	got := make(chan []int16, 4)
 	tones := make(chan float64, 1)
 	ended := make(chan bool, 1)
-	lb.OnPCM = func(pcm []int16) { got <- pcm }
-	lb.OnTone = func(freq float64, ms int, amp float64) { tones <- freq }
-	lb.OnEnd = func() { ended <- true }
+	lb.Handle(AudioHandlers{
+		OnPCM:  func(pcm []int16) { got <- pcm },
+		OnTone: func(freq float64, ms int, amp float64) { tones <- freq },
+		OnEnd:  func() { ended <- true },
+	})
 	frame := []int16{1, -2, 32767, -32768}
 	la.SendPCM(frame)
 	select {

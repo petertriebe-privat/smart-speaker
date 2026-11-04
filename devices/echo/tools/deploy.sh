@@ -39,14 +39,14 @@ HOST=${ECHO_HOST:-echo-dev}
 CFG="$ALEXA/local/ssh/config"
 DOTCFG="$ALEXA/local/dot-ssh/config"
 DOT=
-if [ -f "$DOTCFG" ] && grep -q "^Host $HOST[[:space:]]*$" "$DOTCFG"; then
+if [ -f "$DOTCFG" ] && grep -q "^Host ${HOST}[[:space:]]*$" "$DOTCFG"; then
     # The Echo Dot 2 (hardware/dot2/tools, devices/echo/hardware/dot2/docs/21-echo-dot-linux-ssh.md): own Linux, own profile.
     DOT=1
     # MSYS_NO_PATHCONV below (remote paths stay as they are): the profile as a Windows path
     w=$(cygpath -m "$DOTCFG")
     SSH="/c/Windows/System32/OpenSSH/ssh.exe -F $w"
     SCP="/c/Windows/System32/OpenSSH/scp.exe -F $w"
-elif [ -f "$CFG" ] && grep -q "^Host $HOST[[:space:]]*$" "$CFG"; then
+elif [ -f "$CFG" ] && grep -q "^Host ${HOST}[[:space:]]*$" "$CFG"; then
     SSH="/c/Windows/System32/OpenSSH/ssh.exe -F $CFG"
     SCP="/c/Windows/System32/OpenSSH/scp.exe -F $CFG"
 else

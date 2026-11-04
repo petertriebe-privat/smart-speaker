@@ -127,7 +127,7 @@ class FireTV:
             back = ""
             if good and (self.builds / f"{good}.apk").exists():
                 ok = self.install(sticks[name], self.builds / f"{good}.apk", None) is None
-                back = f", zurückgerollt auf {good[:12]}" if ok else f", Zurückrollen ging AUCH schief"
+                back = f", zurückgerollt auf {good[:12]}" if ok else ", Zurückrollen ging AUCH schief"
             lines.append(f"Fire TV {name}: fehlgeschlagen ({why}){back}.")
         if offline:
             lines.append(f"Nicht erreichbar, nicht aktualisiert: {', '.join(offline)}.")

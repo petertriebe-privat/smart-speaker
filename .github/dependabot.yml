@@ -1,0 +1,30 @@
+# Dependabot opens pull requests for updates and for known vulnerabilities in our dependencies.
+# The M5's PlatformIO libraries are not covered: they are pinned in platformio.ini and updated by
+# hand, with a test on the device.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /core
+    schedule:
+      interval: weekly
+    groups:
+      go:
+        patterns: ['*']
+  - package-ecosystem: gradle
+    directory: /devices/android
+    schedule:
+      interval: weekly
+    groups:
+      android:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: docker
+    directories: [/services/agent-mcp, /services/mcp-servers]
+    schedule:
+      interval: weekly

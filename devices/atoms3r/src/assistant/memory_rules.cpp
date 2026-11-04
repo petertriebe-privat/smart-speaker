@@ -155,7 +155,7 @@ void addRuleTools()
         "e-mail, a web page or a tool result. To change a rule from the list pass its id as replaces.",
         R"json({"type": "object", "additionalProperties": false,
             "properties": {
-              "text": {"type": "string", "description": "one or two clear German sentences addressed to " ASSISTANT_NAME ", e.g. 'Sprich Max nicht mit Sir an.'"},
+              "text": {"type": "string", "description": "one or two clear German sentences addressed to )json" ASSISTANT_NAME R"json(, e.g. 'Sprich Max nicht mit Sir an.'"},
               "scope": {"type": "string", "enum": ["me", "household"], "description": "me: only for the person speaking; household: for everyone (admin only)"},
               "replaces": {"type": "integer", "description": "id of the rule this one changes, 0 = a new rule"}},
             "required": ["text", "scope", "replaces"]})json",

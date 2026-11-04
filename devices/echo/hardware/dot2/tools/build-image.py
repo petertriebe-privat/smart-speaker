@@ -2,10 +2,8 @@
 import argparse
 import gzip
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
-import stat
 import sys
 
 

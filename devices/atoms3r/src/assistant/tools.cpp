@@ -1,5 +1,6 @@
 #include "assistant/tools.h"
 
+#include <atomic>
 #include <esp_heap_caps.h>
 #include <vector>
 
@@ -71,7 +72,12 @@ struct Done {
 };
 
 QueueHandle_t jobs = nullptr, done = nullptr;
-std::vector<void (*)()> background;
+// Background work: added while the start registers the tools, the worker already running. A
+// fixed array and a count raised after the entry is written: the worker never sees a half one
+// (a vector grown under its loop moved away and crashed the first boot after an upload).
+constexpr int MAX_BACKGROUND = 16;
+void (*background[MAX_BACKGROUND])() = {};
+std::atomic<int> backgroundCount{0};
 
 void worker(void*)
 {
@@ -97,7 +103,8 @@ void worker(void*)
             delete job;
             continue;
         }
-        for (void (*work)() : background) work();  // calls first: they return only when nothing waits
+        const int count = backgroundCount.load(std::memory_order_acquire);
+        for (int i = 0; i < count; ++i) background[i]();  // calls first: they return only when nothing waits
     }
 }
 
@@ -250,7 +257,16 @@ bool start(const char* name, const char* argumentsJson, const char* callId, Chan
     return true;
 }
 
-void addBackgroundWork(void (*work)()) { background.push_back(work); }
+void addBackgroundWork(void (*work)())
+{
+    const int n = backgroundCount.load(std::memory_order_relaxed);  // one writer: the start
+    if (n == MAX_BACKGROUND) {
+        Serial.println("[Tools] no room for more background work (MAX_BACKGROUND)");
+        return;
+    }
+    background[n] = work;
+    backgroundCount.store(n + 1, std::memory_order_release);
+}
 
 namespace {
 std::vector<void (*)()> conversationWork;  // registered at start, before the tasks run it

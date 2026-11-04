@@ -1,0 +1,3 @@
+# Who approves pull requests (the ruleset on main asks for one approval by a code owner). Add
+# reviewers here; they need write access to the repository for their approval to count.
+* @petertriebe-privat

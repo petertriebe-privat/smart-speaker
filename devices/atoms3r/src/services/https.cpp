@@ -10,9 +10,9 @@ bool Client::connect()
     client.stop();
     client.setCACert(caCert);
     const uint32_t start = millis();
-    const bool connected = client.connect(host, 443, 10000);
-    Serial.printf("[HTTPS] %s: %s in %lu ms\n", host, connected ? "connected" : "no connection", millis() - start);
-    return connected;
+    const bool ok = client.connect(host, 443, 10000);
+    Serial.printf("[HTTPS] %s: %s in %lu ms\n", host, ok ? "connected" : "no connection", millis() - start);
+    return ok;
 }
 
 // --- Pool of kept connections ---------------------------------------------------------------
@@ -62,7 +62,7 @@ Lease::Lease(const char* host, const char* caCert)
     }
     if (slot >= 0) slots[slot].busy = true;
     taskEXIT_CRITICAL(&poolMux);
-    for (Client* client : stale) delete client;  // stop() outside the critical section
+    for (Client* c : stale) delete c;  // stop() outside the critical section
     if (slot < 0) {
         used = temporary = new Client(host, caCert);
         return;

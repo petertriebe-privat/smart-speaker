@@ -174,6 +174,7 @@ final class JarvisScreen extends Screen implements DefaultLifecycleObserver {
 
     @NonNull
     @Override
+    @androidx.annotation.OptIn(markerClass = androidx.car.app.annotations.ExperimentalCarApi.class)
     public Template onGetTemplate() {
         AudioBridge audio = PhoneCore.audio(getCarContext());
         CarIcon icon = new CarIcon.Builder(IconCompat.createWithResource(getCarContext(), R.drawable.icon)).build();

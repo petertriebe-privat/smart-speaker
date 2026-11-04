@@ -9,6 +9,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -75,10 +76,11 @@ public class PhoneService extends Service implements MqttCallbackExtended {
                 .setContentText("Tippen öffnet Jarvis").setContentIntent(open)
                 .setSmallIcon(R.drawable.ic_jarvis).setColor(0xFFFF9A1F).build();
         int types = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            types |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
-        } else {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "no microphone permission: Jarvis cannot hear");
+        } else if (Build.VERSION.SDK_INT >= 30) {
+            // Android 10 has no microphone type: its foreground service may record without one
+            types |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
         }
         try {
             startForeground(1, n, types);

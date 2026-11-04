@@ -8,7 +8,6 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 export PATH
 LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/lib
 export LD_LIBRARY_PATH
-BASE=${ECHO_DEV_BASE:-/usr/local/echo-dev}
 RUN=/mnt/echo-audio
 BIN=/usr/local/bin
 MOD=/lib/modules/$(uname -r)

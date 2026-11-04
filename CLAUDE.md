@@ -62,6 +62,12 @@ The assistant runs on the Amazon Echos (`devices/echo/`, Go in `core/`), the Ato
   inject`. The M5: `pio run -e atoms3r`, the serial suite `devices/atoms3r/tests/device/run_tests.py`
   and the tool golden file. The services: their `test_*.py`. A new tool gets a test. Real GPT Live
   conversations and paid APIs only sparingly, after the free checks.
+- **CI.** `.github/workflows/ci.yml` runs every check that needs no device, for what a change
+  touches, on pull requests, pushes to `main` and by hand; `ci-ok` is the required check. Keep it
+  green: run the same tools before a push (gofmt, `staticcheck` with `core/staticcheck.conf`,
+  `ruff check .`, `shellcheck -S warning`, `gradlew lint`, `pio check -e atoms3r`). Lint
+  exceptions are made in the config with a reason, not by a baseline. No workflow ever runs on a
+  runner in the household for a pull request.
 - **Issues and docs.** Open work goes into GitHub issues; findings into the device's docs and,
   when the work is done, a comment on the issue. Every new, changed or removed feature also goes
   into the feature list of the root `README.md` (by area, *(Echo)* / *(M5)* where only one device

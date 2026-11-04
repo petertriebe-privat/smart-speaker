@@ -282,7 +282,7 @@ void addTools()
     tools::add(Tool{
         "list_files",
         "Lists the stored files (received over Telegram or WhatsApp, or written earlier with send_file), kept in "
-        "The assistant's Google Drive folder " ASSISTANT_NAME "/Dateien: name, type, size, date, where from. Newest first.",
+        "the assistant's Google Drive folder " ASSISTANT_NAME "/Dateien: name, type, size, date, where from. Newest first.",
         R"json({"type": "object", "additionalProperties": false, "properties": {}, "required": []})json",
         [](JsonObjectConst, const tools::Context&) { return listFiles(); }, tools::Slow, tools::Everywhere});
     tools::add(Tool{

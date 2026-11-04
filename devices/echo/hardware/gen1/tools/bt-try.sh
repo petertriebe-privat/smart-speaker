@@ -268,8 +268,10 @@ down() {
 	done
 	for name in ofonod bluetoothd abtfilt-hw3.0 hciattach; do
 		if running "$name"; then
+			# shellcheck disable=SC2046 # pidof prints one or more PIDs, each its own argument
 			kill $(pidof "$name") 2>/dev/null
 			sleep 1
+			# shellcheck disable=SC2046 # pidof prints one or more PIDs, each its own argument
 			running "$name" && kill -9 $(pidof "$name") 2>/dev/null
 		fi
 	done

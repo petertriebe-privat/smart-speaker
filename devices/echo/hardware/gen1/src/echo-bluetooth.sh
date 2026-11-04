@@ -54,7 +54,7 @@ attach() {
 	echo $((attempts + 1)) >"$STATE/attaches"
 	before=$(loss)
 	[ -w "$RESET" ] && { echo 0 >"$RESET"; usleep 20000; echo 1 >"$RESET"; usleep 100000; }
-	setsid /usr/sbin/hciattach -n /dev/ttyO2 ath3k 3000000 flow nosleep $(cat /proc/btmac) >>"$LOG" 2>&1 </dev/null &
+	setsid /usr/sbin/hciattach -n /dev/ttyO2 ath3k 3000000 flow nosleep "$(cat /proc/btmac)" >>"$LOG" 2>&1 </dev/null &
 	i=0
 	while [ $i -lt 20 ] && ! attached; do sleep 1; i=$((i + 1)); done
 	if ! attached; then
@@ -82,6 +82,7 @@ ensure() {
 	mkdir -p "$STATE"
 	[ -n "$(gateway)" ] || return 0 # the WiFi first: it is the only way to the device
 	if ! attached || ! running hciattach; then
+		# shellcheck disable=SC2046 # pidof prints one or more PIDs, each its own argument
 		running hciattach && kill $(pidof hciattach) 2>/dev/null
 		attach || return 1
 	fi
@@ -133,6 +134,7 @@ down() {
 		pulse unload-module "$module" 2>/dev/null
 	done
 	for name in ofonod bluetoothd abtfilt-hw3.0 hciattach; do
+		# shellcheck disable=SC2046 # pidof prints one or more PIDs, each its own argument
 		running "$name" && kill $(pidof "$name") 2>/dev/null
 	done
 	attached && hciconfig hci0 down >/dev/null 2>&1

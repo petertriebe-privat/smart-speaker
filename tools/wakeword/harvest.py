@@ -169,7 +169,7 @@ def main():
           f"labelled from it), {len(todo)} to transcribe", flush=True)
     key = api_key(secrets) if todo else ""
     with concurrent.futures.ThreadPoolExecutor(8) as pool:
-        for clip, text in zip(todo, pool.map(lambda c: transcribe(key, clips[c]), todo)):
+        for clip, text in zip(todo, pool.map(lambda c: transcribe(key, clips[c]), todo), strict=True):
             labels[clip] = text
     with open(labels_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, ["clip", "text"])

@@ -5,7 +5,6 @@ Usage: py -3 tools/make_test_speech.py "Wie spät ist es?" out.raw
 """
 import array
 import json
-import os
 import sys
 import urllib.request
 

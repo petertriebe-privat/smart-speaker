@@ -7,7 +7,7 @@ import json
 import os
 import re
 
-from extract_prompts import CORE, M5, REPO, parse, strip_comments
+from extract_prompts import M5, REPO, parse, strip_comments
 
 OUT = os.path.join(REPO, 'devices', 'echo', 'local', 'assistant', 'secrets.json')
 

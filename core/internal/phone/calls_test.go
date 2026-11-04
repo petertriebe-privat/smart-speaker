@@ -355,8 +355,8 @@ func TestGuestCallGetsAReport(t *testing.T) {
 	default:
 	}
 	h.p.mu.Lock()
-	h.p.mu.Unlock()
 	h.p.finished[r.Line.(*Line)] = finishedCall{ended: live.Ended{Request: r, Transcript: "Gegenüber: hallo"}, at: time.Now()}
+	h.p.mu.Unlock()
 	h.p.reportIfDue(time.Now())
 	select {
 	case run := <-h.runs:

@@ -1,0 +1,275 @@
+# Tests, lint and builds without hardware, on GitHub's runners (never on a runner in the
+# household): every pull request to main, every push to main, and by hand (Actions, "Run
+# workflow"). A pull request runs only the jobs for what it changes; a manual run and a change to
+# the workflows run everything. "ci-ok" sums the jobs up and is the one check a pull request
+# needs (a skipped job counts as passed). The tests that need a device stay with the owner: the
+# M5's serial suite and golden file, `jarvis ctl` on an Echo.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Which parts the change touches.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      go: ${{ steps.c.outputs.go }}
+      m5: ${{ steps.c.outputs.m5 }}
+      android: ${{ steps.c.outputs.android }}
+      python: ${{ steps.c.outputs.python }}
+      shell: ${{ steps.c.outputs.shell }}
+      relay: ${{ steps.c.outputs.relay }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: c
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          files=ALL
+          if [ "$EVENT" != workflow_dispatch ] && [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            files=$(git diff --name-only "$BASE...$HEAD")
+            printf '%s\n' "$files" | grep -q '^\.github/' && files=ALL
+          fi
+          touches() { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -qE "$1"; }
+          out() { if touches "$2"; then echo "$1=true"; else echo "$1=false"; fi >> "$GITHUB_OUTPUT"; }
+          out go '^(core/|shared/prompts/)'
+          out m5 '^(devices/atoms3r/|shared/prompts/)'
+          out android '^devices/android/'
+          out python '\.py$|^ruff\.toml$|^services/'
+          out shell '\.(sh|script)$|^services/deployer/jarvis-diag$'
+          out relay '^services/whatsapp-relay/'
+          cat "$GITHUB_OUTPUT"
+
+  # core/: the program on the Echos, the Fire TV stick and the phone.
+  go:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: core
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - name: prompts.json made from shared/prompts
+        run: |
+          python3 tools/extract_prompts.py
+          git diff --exit-code -- internal/prompts/prompts.json
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          [ -z "$unformatted" ] || { echo "not gofmt-formatted:"; echo "$unformatted"; exit 1; }
+      - name: vet
+        run: |
+          go vet ./...
+          GOOS=linux GOARCH=arm go vet ./...
+      - name: staticcheck
+        # installed for the runner, then pointed at both targets (go run would build it for ARM)
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@v0.8.2
+          "$(go env GOPATH)/bin/staticcheck" ./...
+          GOOS=linux GOARCH=arm "$(go env GOPATH)/bin/staticcheck" ./...
+      - name: test
+        run: go test -race ./...
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - name: build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -o /tmp/jarvis-armv7 ./cmd/assistant
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o /tmp/jarvis-arm64 ./cmd/assistant
+          ls -l /tmp/jarvis-armv7 /tmp/jarvis-arm64
+
+  # The M5 AtomS3R's firmware, with the example secrets.
+  m5:
+    needs: changes
+    if: needs.changes.outputs.m5 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: devices/atoms3r
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.platformio
+          key: platformio-${{ hashFiles('devices/atoms3r/platformio.ini') }}
+      - run: pip install platformio==6.2.0
+      - name: build
+        run: |
+          cp include/secrets.h.example include/secrets.h
+          pio run -e atoms3r
+      - name: cppcheck
+        run: pio check -e atoms3r --fail-on-defect=low
+
+  # The Android apps: lint (warnings are errors) and the debug builds.
+  android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: devices/android
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - name: NDK and CMake for the phone's echo canceller
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" >/dev/null
+      - name: lint and build
+        # through sh: gradlew is not executable in git (made on Windows)
+        run: sh ./gradlew --no-daemon lint assembleDebug
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-lint
+          path: devices/android/*/build/reports/lint-results-*.html
+          retention-days: 7
+
+  # The Python services and tools: ruff and the services' tests.
+  python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: pip install ruff==0.17.3 "mcp>=1.12,<2" "httpx>=0.27" "uvicorn>=0.30"
+      - name: ruff
+        run: ruff check --output-format github .
+      - name: tests
+        # unittest modules through unittest, the plain test scripts (agent-mcp) run as they are
+        run: |
+          git ls-files 'services/*/test_*.py' | while read -r test; do
+            echo "== $test"
+            dir=$(dirname "$test") file=$(basename "$test")
+            if grep -q '^import unittest' "$test"; then
+              (cd "$dir" && python -m unittest -v "${file%.py}") || exit 1
+            else
+              (cd "$dir" && python "$file") || exit 1
+            fi
+          done
+
+  # Shell scripts (the Echos run BusyBox sh, the Pi bash).
+  shell:
+    needs: changes
+    if: needs.changes.outputs.shell == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: shellcheck
+        run: git ls-files -z '*.sh' '*.script' services/deployer/jarvis-diag | xargs -0 shellcheck -S warning
+
+  # The WhatsApp relay (a Cloudflare worker): its syntax.
+  relay:
+    needs: changes
+    if: needs.changes.outputs.relay == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: syntax
+        run: |
+          cp services/whatsapp-relay/src/index.js "$RUNNER_TEMP/index.mjs"
+          node --check "$RUNNER_TEMP/index.mjs"
+
+  # Always: the workflows themselves, and no secrets in the change.
+  workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+      - name: actionlint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+      - name: gitleaks
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # the commits of the change (each one, not only the result), or the whole history
+          range=
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then range="$BASE..$HEAD"; fi
+          go run github.com/zricethezav/gitleaks/v8@v8.30.1 git --redact --no-banner ${range:+--log-opts="$range"}
+
+  # The one required check: every job above passed or was skipped.
+  ci-ok:
+    needs: [changes, go, m5, android, python, shell, relay, workflows, secrets]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in success|skipped) ;; *) exit 1 ;; esac
+          done

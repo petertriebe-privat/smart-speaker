@@ -61,7 +61,7 @@ final class Config {
     // topicId as mqtt.TopicID on the Echo: lower case, [a-z0-9_], umlauts spelled out.
     static String topicId(String name) {
         StringBuilder b = new StringBuilder();
-        for (char c : name.toLowerCase().toCharArray()) {
+        for (char c : name.toLowerCase(java.util.Locale.ROOT).toCharArray()) {
             if (c >= 'a' && c <= 'z' || c >= '0' && c <= '9') b.append(c);
             else if (c == 'ä') b.append("ae");
             else if (c == 'ö') b.append("oe");

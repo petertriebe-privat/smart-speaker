@@ -12,7 +12,6 @@ speaks. Usage over SSH:
 
 Offline test: python3 test_jarvis_diag.py
 """
-import json
 import re
 import shlex
 import subprocess

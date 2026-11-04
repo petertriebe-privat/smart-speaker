@@ -26,7 +26,7 @@ def header_text(value) -> str:
         return str(value)
 
 
-INVISIBLE = re.compile("[­͏​-‏⁠﻿]")  # preheader padding in newsletters
+INVISIBLE = re.compile("[\u00ad\u034f\u200b-\u200f\u2060\ufeff]")  # preheader padding in newsletters
 
 
 def tidy(text: str) -> str:

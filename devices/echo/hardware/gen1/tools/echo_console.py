@@ -1,5 +1,14 @@
 """Serial-reader control with acknowledgements; never prints transferred content."""
-import argparse, base64, gzip, hashlib, json, os, pathlib, re, time, uuid
+import argparse
+import base64
+import gzip
+import hashlib
+import json
+import os
+import pathlib
+import re
+import time
+import uuid
 ROOT = pathlib.Path(__file__).resolve().parents[3]  # devices/echo
 # ECHO_RUNTIME selects another device's reader directory (e.g. local/runtime-echo2).
 RUNTIME = pathlib.Path(os.environ.get('ECHO_RUNTIME', ROOT / 'local' / 'runtime'))

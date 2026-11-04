@@ -1,4 +1,6 @@
 #!/bin/sh
+# udhcpc passes interface, ip, subnet, router and dns in the environment.
+# shellcheck disable=SC2154
 case "$1" in
 deconfig)
     ip addr flush dev "$interface"

@@ -631,6 +631,8 @@ public final class AudioBridge {
                     case AudioDeviceInfo.TYPE_WIRED_HEADSET:
                     case AudioDeviceInfo.TYPE_USB_HEADSET:
                         return true;
+                    default:
+                        break;
                 }
             }
             return false;
@@ -641,6 +643,8 @@ public final class AudioBridge {
                 case AudioDeviceInfo.TYPE_WIRED_HEADSET:
                 case AudioDeviceInfo.TYPE_USB_HEADSET:
                     return true;
+                default:
+                    break;
             }
         }
         return false;
@@ -680,6 +684,8 @@ public final class AudioBridge {
                         break;
                     case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
                         speaker = d;
+                        break;
+                    default:
                         break;
                 }
             }

@@ -69,7 +69,7 @@ var TimeSynced bool
 
 // SyncTime sets the system clock via SNTP; tries the servers in turn.
 func SyncTime(servers ...string) (time.Time, error) {
-	var lastErr error = errors.New("no servers")
+	lastErr := errors.New("no servers")
 	for _, server := range servers {
 		t, err := sntp(server)
 		if err != nil {

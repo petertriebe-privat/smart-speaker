@@ -6,7 +6,6 @@ The upstream sources are pinned and recorded under local/dot2-tools/techo5-revie
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys

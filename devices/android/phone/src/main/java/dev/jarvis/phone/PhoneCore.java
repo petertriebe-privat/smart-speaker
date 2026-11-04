@@ -71,7 +71,10 @@ public final class PhoneCore {
         Map<String, String> env = new HashMap<>();
         env.put("JARVIS_BOARD", "phone");
         env.put("JARVIS_AUDIO", "127.0.0.1:" + AudioBridge.PORT);
-        env.put("JARVIS_ID", Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID));
+        // ANDROID_ID on purpose: the device's id for the core, the same after a reinstall
+        @android.annotation.SuppressLint("HardwareIds")
+        String id = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
+        env.put("JARVIS_ID", id);
         env.put("JARVIS_PACKAGE", ctx.getPackageName());
         env.put("JARVIS_DNS", dnsServers());
         // the current network's servers at every change (Wi-Fi, mobile data): read at each lookup

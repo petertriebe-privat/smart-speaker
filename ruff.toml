@@ -1,0 +1,14 @@
+# Python lint for the services and tools (CI job "python"). Errors and likely bugs, not style:
+# pyflakes, syntax and import errors, bugbear, pylint errors and the dangerous-character checks.
+target-version = "py311"
+line-length = 120
+# The Echo Gen 1's own Python is 2.7: the scripts that run on it (src/, bt-agent.py) are not
+# Python 3.
+extend-exclude = [
+  "devices/atoms3r/.pio",
+  "devices/echo/hardware/gen1/src",
+  "devices/echo/hardware/gen1/tools/bt-agent.py",
+]
+
+[lint]
+select = ["E4", "E9", "F", "B", "PLE"]

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The phone app takes the Fire TV app's resources (build.gradle); the TV banner comes along
+     unused, which lint need not report. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/banner" />

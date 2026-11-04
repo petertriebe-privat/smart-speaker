@@ -164,7 +164,6 @@ def main():
             sdir = os.path.join(rec, person, sd)
             if not os.path.isfile(os.path.join(sdir, "micsout.wav")):
                 continue
-            session = sd.rsplit("-", 2)[0]
             if os.path.exists(os.path.join(out, "positive", person, sd)):
                 continue
             beeps, takes = cut_session(sdir, person, sd, out, rows)

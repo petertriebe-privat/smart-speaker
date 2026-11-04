@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Android Lint for every module (lint finds this file in the parent folder). The apps are
+     sideloaded onto the household's own devices, never published in a store: the store and
+     launcher-design checks below do not apply. Everything else is an error (warningsAsErrors). -->
+<lint>
+    <!-- The Fire TV app targets Fire OS 8 (Android 11); the store's target rule does not apply. -->
+    <issue id="ExpiredTargetSdkVersion" severity="ignore" />
+    <!-- A new Android release would fail every build otherwise: raising targetSdk is a change of
+         its own, tested on the devices. -->
+    <issue id="OldTargetApi" severity="ignore" />
+    <!-- Library updates come as Dependabot pull requests, not as lint failures. -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <!-- Launcher icons: one design for the TV banner and the phone, no store listing. -->
+    <issue id="IconLauncherShape" severity="ignore" />
+    <issue id="IconMissingDensityFolder" severity="ignore" />
+    <issue id="MonochromeLauncherIcon" severity="ignore" />
+    <!-- The phone app's core is built for arm64 only; there is no Chromebook build. -->
+    <issue id="ChromeOsAbiSupport" severity="ignore" />
+</lint>

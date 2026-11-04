@@ -63,10 +63,12 @@ public class ScreenService extends Service implements MqttCallbackExtended {
         nm.createNotificationChannel(new NotificationChannel("screen", "Jarvis", NotificationManager.IMPORTANCE_MIN));
         Notification n = new Notification.Builder(this, "screen").setContentTitle("Jarvis")
                 .setSmallIcon(android.R.drawable.ic_dialog_info).build();
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= 30) {
             // the microphone type lets the core hear the remote while another app is in front
             startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
                     | ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else if (Build.VERSION.SDK_INT >= 29) {
+            startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
             startForeground(1, n);
         }

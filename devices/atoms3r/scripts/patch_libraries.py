@@ -24,7 +24,7 @@
 #   ECDHE-RSA suites, so servers send their RSA certificates (hardware-accelerated).
 Import("env")  # noqa: F821 (PlatformIO)
 
-import pathlib
+import pathlib  # noqa: E402 (after Import, which PlatformIO needs first)
 
 PATCHES = [  # (path, old, new, what); "framework:" = in the Arduino framework package
     ("WebSockets/src/WebSockets.h",

@@ -102,13 +102,6 @@ func randomHex() string {
 	return fmt.Sprintf("%08x", binary.BigEndian.Uint32(b[:]))
 }
 
-func statusText(status int, err error) string {
-	if err != nil {
-		return err.Error()
-	}
-	return fmt.Sprintf("HTTP %d", status)
-}
-
 // open trades the screen id for a lounge token and binds a session. "" or an error text.
 func (l *lounge) open(screen string) string {
 	l.rid = 1

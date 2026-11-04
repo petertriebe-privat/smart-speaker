@@ -126,7 +126,7 @@ def write_secrets(values):
         line = f'#define {name} "{value}"'
         pattern = re.compile(rf"^#define {name} .*$", re.M)
         if pattern.search(text):
-            text = pattern.sub(lambda _: line, text)
+            text = pattern.sub(lambda _, line=line: line, text)
         else:
             text = text.rstrip("\n") + "\n" + line + "\n"
     with open(path, "w", encoding="utf-8") as f:

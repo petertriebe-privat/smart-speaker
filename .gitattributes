@@ -1,0 +1,5 @@
+# Text files are stored with LF, whatever the checkout's platform: the scripts run on Linux (the
+# Echos, the Pi, CI). Windows batch files keep CRLF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf

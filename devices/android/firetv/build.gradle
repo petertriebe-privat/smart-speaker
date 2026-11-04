@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId 'dev.jarvis.screen'
-        minSdk 25          // Fire OS 6
+        minSdk 28          // Fire OS 7 (Android 9); Fire OS 6 (7.1) lacks startForegroundService
         targetSdk 30       // Fire OS 8 is Android 11; sideloaded, never in a store
         versionCode 1
         versionName '0.1'
@@ -24,7 +24,7 @@ android {
     }
 
     lint {
-        abortOnError false
+        warningsAsErrors true
     }
 }
 

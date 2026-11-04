@@ -1,4 +1,6 @@
 #!/bin/sh
+# udhcpc passes interface, ip, subnet, router and dns in the environment.
+# shellcheck disable=SC2154
 # BusyBox udhcpc callback. All generated state is in tmpfs.
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 case "$1" in

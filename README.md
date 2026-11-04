@@ -244,10 +244,16 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 
 ## Contributing
 
-Ideas and bug reports are welcome as issues. To change something, fork the repository and open a
-pull request; only the owner pushes to `main`. Workflows from a pull request run only after the
-owner approved them. Please keep household data (names, addresses, devices) out of everything you
-send: your own values belong in the git-ignored files described above.
+Ideas and bug reports are welcome as issues; security problems please privately (see
+[SECURITY.md](SECURITY.md)). To change something, fork the repository and open a pull request to
+`main`. It is merged when the checks pass and a code owner ([CODEOWNERS](.github/CODEOWNERS))
+approved it. The checks ([ci.yml](.github/workflows/ci.yml)) run only for the parts a pull request
+changes: Go (gofmt, vet, staticcheck, tests with the race detector, govulncheck, the ARM builds),
+the M5 firmware (build, cppcheck), the Android apps (lint, builds), Python (ruff, the services'
+tests), shell scripts (shellcheck), the workflows (actionlint) and a scan for secrets. Workflows
+from a fork's pull request run once the owner approved them. Please keep household data (names,
+addresses, devices) out of everything you send: your own values belong in the git-ignored files
+described above.
 
 ## Thank you
 

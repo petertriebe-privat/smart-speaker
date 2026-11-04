@@ -207,7 +207,7 @@
   {
    "type": "function",
    "name": "list_activities",
-   "description": "The assistant's activity log: who contacted it when, over which channel (speaker at home, phone call to or from the assistant, Telegram, e-mail, calls for the user, unknown callers), and what it was about, also calls without a conversation. Use it for questions like 'Hat Max heute angerufen und was wollte er?' or 'Was hat Anna gestern per Telegram gemacht?'. Newest first; open_conversation gives a transcript.",
+   "description": "The assistant's activity log: who contacted it when, over which channel (speaker at home, phone call to or from Jarvis, Telegram, e-mail, calls for the user, unknown callers), and what it was about, also calls without a conversation. Use it for questions like 'Hat Max heute angerufen und was wollte er?' or 'Was hat Anna gestern per Telegram gemacht?'. Newest first; open_conversation gives a transcript.",
    "parameters": {
     "type": "object",
     "additionalProperties": false,
@@ -388,7 +388,7 @@
   {
    "type": "function",
    "name": "add_person",
-   "description": "Registers a new member of the household so the assistant recognizes them by phone number, Telegram account or e-mail, e.g. 'gib Kontakt X frei': take name, numbers and e-mail address from find_contact. Only the admin may. First read all details out and get its yes. The person then gets a welcome e-mail with the ways to reach the assistant and a Telegram link that connects their account (telegram 0 until then).",
+   "description": "Registers a new member of the household so the assistant recognizes them by phone number, Telegram account or e-mail, e.g. 'gib Kontakt X frei': take name, numbers and e-mail address from find_contact. Only the admin may. First read all details out and get his yes. The person then gets a welcome e-mail with the ways to reach the assistant and a Telegram link that connects their account (telegram 0 until then).",
    "parameters": {
     "type": "object",
     "additionalProperties": false,

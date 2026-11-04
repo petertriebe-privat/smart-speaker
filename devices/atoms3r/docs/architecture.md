@@ -198,7 +198,11 @@ Google services [google.md](google.md); for the planned Android app [mobile.md](
   often found no contiguous internal RAM. Background work registered there runs only when no call
   waits, but a job already running would hold up a call: work that may run during a conversation
   (the mail check) goes through `tools::addConversationWork` instead, run by the Telegram/WhatsApp
-  task between its polls.
+  task between its polls. The worker already runs while the start registers the background work:
+  the list is a fixed array (`MAX_BACKGROUND`, 16) with an atomic count. It was a `std::vector`
+  until 2026-11-04; growing it under the worker's loop moved it away and the first boot after an
+  upload crashed often (IllegalInstruction at a garbage address, A8 in `tools::worker`), found by
+  the serial suite.
 - Web search ([services/websearch](../src/services/websearch.cpp)): with `TAVILY_API_KEY` the
   device asks Tavily itself (basic search, 1 credit, 1,000 free a month, counted as `tavily` in
   `/quota.json`): a short answer plus 5 sources with up to 600 characters each. OpenAI's hosted

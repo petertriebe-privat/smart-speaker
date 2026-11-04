@@ -30,20 +30,32 @@ const (
 	AudioEnd   = 'e'
 )
 
-// AudioLink: one direction pair with another device. Set the On* before frames arrive.
-type AudioLink struct {
-	Session uint32
+// AudioHandlers: what a link does with the frames it receives; nil ones are dropped.
+type AudioHandlers struct {
 	OnPCM   func(pcm []int16)
 	OnTone  func(freq float64, ms int, amp float64)
 	OnFlush func()
 	OnEnd   func()
+}
+
+// AudioLink: one direction pair with another device. Frames before Handle are dropped.
+type AudioLink struct {
+	Session uint32
 
 	s      *Service
 	key    []byte
 	remote *net.UDPAddr
 	mu     sync.Mutex
+	h      AudioHandlers // under mu: the receiving goroutine reads them
 	seq    uint32
 	last   uint32 // highest seq received
+}
+
+// Handle: the link's frames go to h from now on.
+func (l *AudioLink) Handle(h AudioHandlers) {
+	l.mu.Lock()
+	l.h = h
+	l.mu.Unlock()
 }
 
 type audioSocket struct {
@@ -55,7 +67,7 @@ type audioSocket struct {
 // AudioPort: where this device receives audio.
 func (s *Service) AudioPort() int { return s.port + 2 }
 
-// NewAudioLink: a link to host:port under key; frames for session go to its On* functions.
+// NewAudioLink: a link to host:port under key; frames for session go to its handlers (Handle).
 func (s *Service) NewAudioLink(session uint32, key []byte, host string, port int) (*AudioLink, error) {
 	if err := s.audioListen(); err != nil {
 		return nil, err
@@ -132,31 +144,32 @@ func (l *AudioLink) receive(data []byte) {
 		return // late or repeated
 	}
 	l.last = seq
+	h := l.h
 	l.mu.Unlock()
 	kind, payload := body[8], body[9:]
 	switch kind {
 	case AudioPCM:
-		if l.OnPCM != nil {
+		if h.OnPCM != nil {
 			pcm := make([]int16, len(payload)/2)
 			for i := range pcm {
 				pcm[i] = int16(binary.LittleEndian.Uint16(payload[2*i:]))
 			}
-			l.OnPCM(pcm)
+			h.OnPCM(pcm)
 		}
 	case AudioTone:
-		if l.OnTone != nil && len(payload) >= 10 {
+		if h.OnTone != nil && len(payload) >= 10 {
 			freq := math.Float32frombits(binary.LittleEndian.Uint32(payload))
 			ms := binary.LittleEndian.Uint16(payload[4:])
 			amp := math.Float32frombits(binary.LittleEndian.Uint32(payload[6:]))
-			l.OnTone(float64(freq), int(ms), float64(amp))
+			h.OnTone(float64(freq), int(ms), float64(amp))
 		}
 	case AudioFlush:
-		if l.OnFlush != nil {
-			l.OnFlush()
+		if h.OnFlush != nil {
+			h.OnFlush()
 		}
 	case AudioEnd:
-		if l.OnEnd != nil {
-			l.OnEnd()
+		if h.OnEnd != nil {
+			h.OnEnd()
 		}
 	}
 }

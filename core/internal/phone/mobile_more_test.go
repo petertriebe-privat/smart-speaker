@@ -203,9 +203,9 @@ func TestDialOverThePhoneFallsBackToTheLandline(t *testing.T) {
 	if wanted == nil || wanted.number != "07161123456" || !wanted.direct {
 		t.Fatalf("the landline did not take the call: %+v", wanted)
 	}
-	waitFor(t, "the notice", func() bool { return len(*said) == 1 })
-	if !strings.Contains((*said)[0], "Festnetz") {
-		t.Errorf("said %q", (*said)[0])
+	waitFor(t, "the notice", func() bool { return said.count() == 1 })
+	if !strings.Contains(said.at(0), "Festnetz") {
+		t.Errorf("said %q", said.at(0))
 	}
 }
 

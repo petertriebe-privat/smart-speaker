@@ -21,7 +21,9 @@ import dev.jarvis.shared.Hud;
 import java.lang.ref.WeakReference;
 
 // Android Auto (#75): Jarvis on the car's screen. A Car App Library app in the IoT category (there
-// is none for assistants); sideloaded, so any host is let in (Android Auto's "Unknown sources").
+// is none for assistants); sideloaded, so Android Auto's developer settings need "Unknown sources".
+// Only the car hosts the Car App Library knows (Android Auto, Android Automotive, the desktop head
+// unit) may bind it, not any app on the phone.
 // Opening it starts the phone's Jarvis if it does not run yet. While its session lives, navigation
 // goes to the car's navigation app (phone_navigate).
 public final class JarvisCarService extends CarAppService {
@@ -44,7 +46,9 @@ public final class JarvisCarService extends CarAppService {
     @NonNull
     @Override
     public HostValidator createHostValidator() {
-        return HostValidator.ALLOW_ALL_HOSTS_VALIDATOR;
+        return new HostValidator.Builder(getApplicationContext())
+                .addAllowedHosts(dev.jarvis.phone.R.array.car_hosts)
+                .build();
     }
 
     @NonNull

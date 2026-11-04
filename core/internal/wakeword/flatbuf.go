@@ -47,8 +47,6 @@ func (t table) u8(n int, def uint8) uint8 {
 
 func (t table) i8(n int, def int8) int8 { return int8(t.u8(n, uint8(def))) }
 
-func (t table) bool(n int) bool { return t.u8(n, 0) != 0 }
-
 // indirect: the position an offset field points to.
 func (t table) indirect(p int) int { return p + int(u32(t.b, p)) }
 

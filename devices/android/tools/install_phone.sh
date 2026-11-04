@@ -17,7 +17,7 @@
 # Environment: ANDROID_HOME (default E:\Android\sdk), JAVA_HOME_17: a JDK 17 (default E:\Android\jdk17),
 # SKIP_BUILD=1 to install the last build.
 set -e
-serial= room=Handy name= device=
+serial='' room=Handy name='' device=''
 while [ $# -gt 0 ]; do
     case $1 in
     --room) room=$2; shift ;;

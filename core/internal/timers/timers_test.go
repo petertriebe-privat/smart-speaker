@@ -62,8 +62,8 @@ func TestServiceRings(t *testing.T) {
 	if len(New().List()) != 2 {
 		t.Errorf("not kept in the state dir")
 	}
+	now = now.Add(11 * time.Minute) // before Run: its goroutine reads the clock
 	go s.Run()
-	now = now.Add(11 * time.Minute)
 	s.kick()
 	select {
 	case got := <-rang:

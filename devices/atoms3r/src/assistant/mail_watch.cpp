@@ -1174,7 +1174,7 @@ void addTools()
     tools::add(tools::Tool{
         "mail_news",
         "The person's watched private mailboxes by name and address, the mails the assistant sorted in them since it "
-        "watches them (category, whether he told them, a summary, deadlines, the folder he moved it to) and their "
+        "watches them (category, whether it told them, a summary, deadlines, the folder it moved it to) and their "
         "parcels on the way. For "
         "'hab ich wichtige Mails?', 'wo ist mein Paket?', 'welche Postfächer kennst du?' and briefings; anything "
         "older or a search by topic is search_private_mail. The assistant tells them about important mail on its own. "

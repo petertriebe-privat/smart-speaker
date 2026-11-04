@@ -122,17 +122,19 @@ func (d *device) joinCall(mode string) string {
 	if err != nil {
 		return "Error: " + err.Error()
 	}
-	link.OnPCM = func(pcm []int16) {
-		if d.speaker.Queued() < 300*time.Millisecond { // late audio is worth nothing
-			d.speaker.Queue(pcm)
-		}
-	}
-	link.OnTone = func(freq float64, ms int, amp float64) { d.speaker.Tone(freq, ms, amp) }
-	link.OnFlush = d.speaker.Flush
-	link.OnEnd = func() {
-		log.Print("[Room] the call at the other Echo is over")
-		d.leaveRoom()
-	}
+	link.Handle(peer.AudioHandlers{
+		OnPCM: func(pcm []int16) {
+			if d.speaker.Queued() < 300*time.Millisecond { // late audio is worth nothing
+				d.speaker.Queue(pcm)
+			}
+		},
+		OnTone:  func(freq float64, ms int, amp float64) { d.speaker.Tone(freq, ms, amp) },
+		OnFlush: d.speaker.Flush,
+		OnEnd: func() {
+			log.Print("[Room] the call at the other Echo is over")
+			d.leaveRoom()
+		},
+	})
 	roomMu.Lock()
 	hereRoom = &roomLink{link: link, at: *at, mode: mode}
 	roomMu.Unlock()
@@ -228,7 +230,7 @@ func (d *device) serveRoomJoin(body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	link.OnPCM = d.svc.phone.HearRemote
+	link.Handle(peer.AudioHandlers{OnPCM: d.svc.phone.HearRemote})
 	sp := phone.RemoteSpeaker(link.SendPCM, link.SendTone, func() { link.Send(peer.AudioFlush, nil) })
 	gone := func() {
 		log.Printf("[Room] the room is back from %s", q.From)

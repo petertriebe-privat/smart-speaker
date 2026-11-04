@@ -187,6 +187,7 @@ void audioTask(void*)
         const bool adapt = ECHO_CANCELLER && shouldAdapt();
         if (ECHO_CANCELLER) aec.process(mic24, ref24, out, BLOCK, adapt);
         else memcpy(out, mic24, sizeof(out));
+        // cppcheck-suppress knownConditionTrueFalse ; ECHO_CANCELLER is a build setting
         if (adapt && adaptedBlocks < WARMUP_BLOCKS) ++adaptedBlocks;
         aecMicros = uint32_t(esp_timer_get_time() - started);
         stats = aec.stats();

@@ -62,7 +62,7 @@ func (s *Service) smtpSend(rcpts []string, msg []byte) (err error) {
 	}
 	defer c.Close()
 	if ok, params := c.Extension("AUTH"); ok {
-		var auth smtp.Auth = smtp.PlainAuth("", s.address, s.password, s.smtpHost)
+		auth := smtp.PlainAuth("", s.address, s.password, s.smtpHost)
 		if !strings.Contains(strings.ToUpper(params), "PLAIN") && strings.Contains(strings.ToUpper(params), "LOGIN") {
 			auth = loginAuth{s.address, s.password}
 		}
