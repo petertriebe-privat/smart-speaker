@@ -1,13 +1,17 @@
 ---
 name: jarvis
-description: Analyse and improve Jarvis, the household's voice assistant (repository m5-stack; Echos and an M5 speaker). Use for any task about a Jarvis problem, bug, log, crash, a missing or changed feature, or "warum hat Jarvis ...": read every Echo's status and logs read-only with ssh jarvis-diag, find the cause in the code, fix it on a branch and open a pull request that the owner merges (the merge deploys it).
+description: Analyse and improve Jarvis, the household's voice assistant (repository smart-speaker; Echos and an M5 speaker). Use for any task about a Jarvis problem, bug, log, crash, a missing or changed feature, or "warum hat Jarvis ...": read every Echo's status and logs read-only with ssh jarvis-diag, find the cause in the code, fix it on a branch and open a pull request that the owner merges (the merge deploys it).
 ---
 
 # Jarvis: analyse, fix, pull request
 
 Jarvis runs on three Amazon Echos with their own Linux (Go program `core/`, ARMv7) and on an M5
-AtomS3R (C++, `devices/atoms3r/`). The repository is `m5-stack` under the owner's account; its
-`CLAUDE.md` is the rule book (layout, both devices, tests, docs): read it first in every task.
+AtomS3R (C++, `devices/atoms3r/`). The repository is `smart-speaker` under the owner's account;
+its `CLAUDE.md` is the rule book (layout, both devices, tests, docs): read it first in every task.
+
+**The repository is public.** Issues (a feature idea, a proposal, a bug, open work) go here with
+`gh issue create -R <owner>/smart-speaker`, in English, like pull requests and code: no household
+data (names, addresses, numbers, e-mail addresses, IPs, specific devices or calendars).
 
 ## 1. Look at the speakers (read-only)
 
@@ -36,7 +40,7 @@ check on the device.
 
 ## 2. Find the cause
 
-Clone or update the repository in `/projects/m5-stack` (`gh repo clone <owner>/m5-stack` with
+Clone or update the repository in `/projects/smart-speaker` (`gh repo clone <owner>/smart-speaker` with
 the token from the working environment; `git pull` on main). Find the code behind the log lines
 (`grep -rn` for the log text in `core/`), read the docs (`devices/echo/docs/16-assistant.md`,
 `devices/atoms3r/docs/`). State only what you verified; mark guesses as such.

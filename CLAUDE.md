@@ -21,7 +21,8 @@ local/               git-ignored: the household's own values for every device (s
                      wake word, home gateway); only README.md and the *.example templates are tracked
 ```
 
-- Open work, ideas and bugs: GitHub issues (`gh issue list`), not a file in the repo.
+- Open work, ideas and bugs: GitHub issues of this repository (`gh issue list`), not a file in
+  the repo and not the old private `m5-stack`. Issues are public: English, no household data.
 - Design, measurements and lessons learned: `devices/atoms3r/docs/` (`architecture.md`, `ram.md`,
   `google.md`), `devices/echo/docs/` (`16-assistant.md`, `17-bluetooth.md`, `18-several-echos.md`)
   and the hardware docs per Echo model. Update them after a change that matters; add new findings
