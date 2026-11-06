@@ -23,6 +23,13 @@ android {
         buildConfig true
     }
 
+    // the core (libjarvis.so) must lie as a file in nativeLibraryDir to run
+    packaging {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
     lint {
         warningsAsErrors true
     }
