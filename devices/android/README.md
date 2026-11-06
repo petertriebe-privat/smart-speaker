@@ -232,8 +232,11 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   the plain microphone, its reference timed with the `AudioTrack` and `AudioRecord` timestamps.
   The native library is linked with `-z max-page-size=16384` (Android 15's 16 KB pages).
 - `adb shell cat` of a binary file breaks it (line endings); `adb exec-out` does not.
-- Android Auto lists a sideloaded app only with the Play Store as its installer
-  (`adb install -i com.android.vending`), and shows its notifications only then.
+- In the Desktop Head Unit Android Auto lists a sideloaded app only with the Play Store as its
+  installer (`adb install -i com.android.vending`), and shows its notifications only then. A
+  real car refuses a sideloaded car app with any installer and "unknown sources" on
+  (`dumpsys activity service com.google.android.projection.gearhead`, `CarProjectionValidator`:
+  `PACKAGE_FAILED_ALL_CHECKS`): only apps from Google Play run there.
 - Android Auto keeps an app's icon in a cache: a new icon showed after the next connection. A
   square picture as icon got a white disc around it; an adaptive icon (the hologram on the HUD's
   dark ground) has none.
@@ -255,7 +258,8 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
 - In the car with music the phone's microphone clips (peak 32768); a transcription of the wake
   word's clip reads empty there, real or false (mobile.md, Activation).
 - Android Auto showed Jarvis in the Desktop Head Unit (developer mode) with every manifest variant
-  (IoT, weather, the map templates' permissions), but not in the car (05.11.2026, cause open).
+  (IoT, weather, the map templates' permissions), but not in the car: there only apps from
+  Google Play run (06.11.2026, see below; the idea of a small car app from Play: #5).
   "Launcher anpassen" in Android Auto's settings lists the apps of the last connection, so it
   says nothing about the car while the DHU was connected last. The flight recorder
   (`car/CarLog.java`) records the app's log while Android Auto is connected

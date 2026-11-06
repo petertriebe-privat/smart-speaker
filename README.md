@@ -205,7 +205,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   a shockwave.
   In the car: the HUD live on the Android Auto screen, the hologram moving in its state's colour
   with the turn's words or the card it showed in full size, beside a small panel with Sprechen /
-  Unterbrechen / Beenden (older cars: rows with a picture of the card); and the wake word heard
+  Unterbrechen / Beenden (older cars: rows with a picture of the card; so far in the Desktop Head
+  Unit only, a real car takes the app only from Google Play, #5); and the wake word heard
   while Android Auto is connected: the music pauses, a short tone says the car's microphone
   listens, and a start nobody speaks to ends unnoticed. A flight recorder keeps the app's log of
   each drive for debugging at home.

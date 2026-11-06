@@ -134,10 +134,12 @@ phone ──HTTPS + client cert──▶ VPS (public, port 443) ──WireGuard 
   screen, so it cannot listen for the wake word while Maps or Spotify is shown. The phone's own
   microphone listens for the wake word; the conversation then runs over the car's hands-free
   (the call path), the music paused.
-- Sideloaded: Android Auto's developer setting "unknown sources" must be on, once, and the app
-  must be installed with the Play Store as installer (`install_phone.sh` does,
-  `-i com.android.vending`): installed plainly, Android Auto listed no app and showed no
-  notification (02.11.2026).
+- Sideloaded, the car app runs only in the Desktop Head Unit: with Android Auto's developer
+  setting "unknown sources" on and the Play Store as installer (`install_phone.sh`,
+  `-i com.android.vending`) Android Auto listed it there and showed its notifications (02.11.2026).
+  A real car refuses it (`CarProjectionValidator`: `PACKAGE_FAILED_ALL_CHECKS`, 06.11.2026) with
+  any installer: there Android Auto takes apps from a trusted source only, Google Play. Parked;
+  the idea of a small car app from Play's internal test track: #5.
 - Tested on the PC with the Desktop Head Unit (`<Android SDK>/extras/google/auto`, Android
   Auto's developer setting "start head unit server", `adb forward tcp:5277 tcp:5277`,
   `desktop-head-unit.exe -a -i hybrid`; its console takes `tap x y` and `screenshot <file>`).
