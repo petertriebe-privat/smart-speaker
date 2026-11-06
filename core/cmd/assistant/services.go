@@ -519,6 +519,8 @@ func (d *device) addLiveTools() {
 	s.phone.AddTools(d.registry)
 	if board.Phone {
 		d.addPhoneTools() // navigation, calls, messages on the user's phone (phonetools.go)
+		// Music that does not start on the phone: the app tells why it may not (battery saver)
+		s.spotify.PhoneHint = func() string { return phoneToolCall("phone_power", map[string]any{}) }
 	}
 	d.addLaterTools() // notify_phone, research_later (later.go)
 	d.addRelayTool()

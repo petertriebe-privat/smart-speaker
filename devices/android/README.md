@@ -239,6 +239,12 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   dark ground) has none.
 - A notification's tap with the app's plain launch intent only brought the running console to
   the front; with its own action and data the card arrives (`Notices.java`).
+- Debugging away from home (in the car): Tailscale on the phone and the PC, then
+  `adb connect <the phone's Tailscale address>:5555` over mobile data: logs, tools
+  (`ctl tool`), a new build. ADB over the network (`adb tcpip 5555`) lasts until the phone
+  restarts; it is switched on again at home over USB or wireless debugging. Tailscale routes only
+  the tailnet's addresses, so wireless Android Auto (the car's own WiFi) is not touched; no exit
+  node, no "always-on VPN".
 - Templates only for an IoT app; a weather app may draw on the car screen's surface (the HUD
   live, `CarSurface.java`, mobile.md). A WebView on a private `VirtualDisplay` (a `Presentation`)
   renders into the car's `Surface` directly; in an `ImageReader` a still page sends no new frames,
@@ -248,6 +254,18 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   server in Android Auto must be stopped and started again.
 - In the car with music the phone's microphone clips (peak 32768); a transcription of the wake
   word's clip reads empty there, real or false (mobile.md, Activation).
+- Android Auto showed Jarvis in the Desktop Head Unit (developer mode) with every manifest variant
+  (IoT, weather, the map templates' permissions), but not in the car (05.11.2026, cause open).
+  "Launcher anpassen" in Android Auto's settings lists the apps of the last connection, so it
+  says nothing about the car while the DHU was connected last. The flight recorder
+  (`car/CarLog.java`) records the app's log while Android Auto is connected
+  (`files/run/car-logcat.txt`): "car app: Android Auto binds it" shows whether the car asked for
+  the app at all. Other apps' lines it cannot record: READ_LOGS, granted over ADB, asks the user
+  on the screen each time since Android 13 and is refused in the background.
+- The battery saver cuts apps in the background off from the network unless their battery use is
+  unrestricted: Spotify showed "Du bist offline", Spotify's Web API still answered "playing" to a
+  command for the phone. `play_music` now waits until a phone plays (`phonePlays`) and asks the
+  app why not (`phone_power`).
 
 ## Open
 

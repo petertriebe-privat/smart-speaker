@@ -18,6 +18,7 @@ import android.util.Log;
 
 import androidx.car.app.connection.CarConnection;
 
+import dev.jarvis.phone.car.CarLog;
 import dev.jarvis.phone.car.CarState;
 import dev.jarvis.shared.FullscreenActivity;
 import dev.jarvis.shared.Hud;
@@ -62,8 +63,12 @@ public class PhoneService extends Service implements MqttCallbackExtended {
         promote();
         main.post(watchDisplay);
         // In the car (Android Auto) the microphone listens for "Jarvis", the phone's screen off too.
-        new CarConnection(this).getType().observeForever(type ->
-                PhoneCore.audio(this).setCar(type == CarConnection.CONNECTION_TYPE_PROJECTION));
+        // While it is connected the car's log records (CarLog).
+        new CarConnection(this).getType().observeForever(type -> {
+            boolean car = type == CarConnection.CONNECTION_TYPE_PROJECTION;
+            PhoneCore.audio(this).setCar(car);
+            CarLog.connected(this, type, car);
+        });
     }
 
     // promote: the foreground service, with the microphone when Android allows it. Started at boot

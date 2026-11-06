@@ -176,6 +176,9 @@ func (s *Service) playMusic(args map[string]any, ctx tools.Context) string {
 	if status < 200 || status >= 300 {
 		return errText
 	}
+	if errText := s.phonePlays(sess, dev); errText != "" {
+		return errText
+	}
 	var extra string
 	if shuffle, ok := args["shuffle"].(bool); ok {
 		if failed := s.do(sess, "PUT", "/me/player/shuffle?state="+onOff(shuffle)+"&"+on, nil); failed != "" {
@@ -448,6 +451,29 @@ func (s *Service) snapshot(sess session) map[string]any {
 	}
 	body["uris"] = uris
 	return body
+}
+
+// phonePlays: a phone took the command and plays within a few seconds; else an error, with the
+// phone's hint when there is one. Spotify answered "playing" for a phone whose app had no network
+// (the battery saver, 06.11.2026) and the model told the user for minutes that it played.
+func (s *Service) phonePlays(sess session, dev *device) string {
+	if dev.typ != "Smartphone" {
+		return ""
+	}
+	for i := 0; i < 8; i++ {
+		time.Sleep(500 * time.Millisecond)
+		state, errText := s.getJSON(sess, "/me/player")
+		if errText == "" && flag(state, "is_playing") && str(state, "device", "id") == dev.id {
+			return ""
+		}
+	}
+	text := "Error: Spotify took the command, but " + dev.name + " does not play."
+	if s.PhoneHint != nil {
+		if hint := s.PhoneHint(); hint != "" && !strings.HasPrefix(hint, "Error") {
+			return text + " " + hint
+		}
+	}
+	return text + " Ask the user to open Spotify on it and look whether it is online."
 }
 
 // waitLocal: The assistant's own speaker plays within 3 s.
