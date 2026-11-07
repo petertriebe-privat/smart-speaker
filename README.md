@@ -240,7 +240,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 - The assistant improves itself with a safety net *(Echo)*: the server agent builds a fix or feature on a branch
   and opens a pull request, the CI tests it; the owner merges it and starts the deploy, which
   builds that commit and installs it from the Raspberry Pi on every Echo and Fire TV stick,
-  checks that the new version runs, rolls back when not, and reports it in Telegram
+  checks that the new version runs, rolls back when not, skips an Echo that is switched off and
+  reports it all in Telegram
   (`services/deployer`; the deploy workflow lives in the owner's private repository, so nothing
   in this public one can reach the home network).
   The server agent reads every Echo's status, logs and errors for the analysis, only reading and through the

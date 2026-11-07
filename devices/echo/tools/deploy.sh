@@ -26,13 +26,22 @@ if [ -z "${VERSION:-}" ]; then
 fi
 export VERSION
 if [ "${1:-}" = --all ]; then
+    # An Echo that cannot be reached (switched off, away) is skipped and reported, and gets the
+    # version with the next deploy; a reachable one that fails stops the run.
     shift
+    done_=0
     for f in "$ALEXA"/local/devices/*.json; do
         h=$(basename "$f" .json)
         echo "== $h"
-        ECHO_HOST=$h sh "$0" "$@" || exit 1
-        export CHECKED=1
+        rc=0
+        ECHO_HOST=$h sh "$0" "$@" || rc=$?
+        case $rc in
+            0) done_=$((done_ + 1)); export CHECKED=1 ;;
+            75) echo "$h: not reachable, skipped" ;;
+            *) exit 1 ;;
+        esac
     done
+    [ "$done_" -gt 0 ] || { echo "no Echo reachable" >&2; exit 1; }
     exit 0
 fi
 HOST=${ECHO_HOST:-echo-dev}
@@ -55,6 +64,9 @@ else
     # the deployer: no private profile here, the Dot is told by its own Linux
     $SSH -o ConnectTimeout=10 "$HOST" 'test -f /etc/echo-dot-dev-release' && DOT=1
 fi
+# Not reachable: exit 75 (EX_TEMPFAIL), before building and testing, so --all can skip the Echo.
+MSYS_NO_PATHCONV=1 $SSH -o ConnectTimeout=10 "$HOST" true 2>/dev/null ||
+    { echo "$HOST: not reachable" >&2; exit 75; }
 PY="py -3"
 command -v py >/dev/null 2>&1 || PY=python3
 OUT="$ALEXA/local/assistant" # the Echo's builds, as build-librespot.sh (neutral names, #68)
