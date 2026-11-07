@@ -1,0 +1,21 @@
+# The release store over HTTP for the home network (release_store.py serve, issue #15): the
+# devices fetch the signed index and releases from here. Read-only, as jarvis-deploy.
+[Unit]
+Description=Release store of the assistant (HTTP, home network)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=jarvis-deploy
+EnvironmentFile=-/etc/jarvis-deployer.env
+ExecStart=/usr/bin/python3 /opt/jarvis-deployer/release_store.py serve
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadOnlyPaths=/opt/jarvis-deployer
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

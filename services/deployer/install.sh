@@ -5,17 +5,21 @@
 # REPO is the private deploy repository: the runner refuses a repository anyone can read.
 # RUNNER_TOKEN only for the first run (a registration token, valid one hour:
 # gh api -X POST repos/<owner>/smart-speaker-deploy/actions/runners/registration-token --jq .token).
-# Creates the user jarvis-deploy, /opt/jarvis-deployer with deployer.py, the
-# environment file to fill in, and GitHub's self-hosted runner (label jarvis-deploy) as a service.
+# Creates the user jarvis-deploy, /opt/jarvis-deployer with deployer.py and the release store,
+# the environment file to fill in, GitHub's self-hosted runner (label jarvis-deploy) as a
+# service, the store's HTTP service (jarvis-releases) and the catch-up timer (jarvis-catch-up).
 set -eu
 SRC=$(cd "$(dirname "$0")" && pwd)
 HOME_DIR=/opt/jarvis-deployer
 ENV=/etc/jarvis-deployer.env
 id jarvis-deploy >/dev/null 2>&1 || useradd --system --create-home --home-dir "$HOME_DIR" --shell /bin/sh jarvis-deploy
-mkdir -p "$HOME_DIR/builds" "$HOME_DIR/local/devices" "$HOME_DIR/local/firetv" "$HOME_DIR/.ssh" "$HOME_DIR/.android"
+mkdir -p "$HOME_DIR/builds" "$HOME_DIR/releases" "$HOME_DIR/local/devices" "$HOME_DIR/local/firetv" "$HOME_DIR/.ssh" "$HOME_DIR/.android"
 # the copies the CI runs: a commit cannot change them
-install -m 755 "$SRC/deployer.py" "$HOME_DIR/deployer.py"
-install -m 755 "$SRC/firetv_deploy.py" "$HOME_DIR/firetv_deploy.py"
+for f in deployer.py firetv_deploy.py release.py release_store.py; do
+    install -m 755 "$SRC/$f" "$HOME_DIR/$f"
+done
+command -v openssl >/dev/null || apt-get install -y -qq openssl >/dev/null
+[ -f "$HOME_DIR/release-key.pub" ] || echo "missing: $HOME_DIR/release-key.pub, the owner's public release key (README.md)" >&2
 # The Fire TV sticks (#126): ADB and the signing tool; the PC's ~/.android/adbkey(.pub) and
 # debug.keystore go to $HOME_DIR/.android by hand (README.md).
 command -v adb >/dev/null && command -v apksigner >/dev/null || apt-get install -y -qq adb apksigner >/dev/null
@@ -23,6 +27,8 @@ if [ ! -f "$ENV" ]; then
     printf '%s\n' "# Jarvis' Telegram bot (sending only) and the owner's chat" \
         "TELEGRAM_BOT_TOKEN=" "TELEGRAM_CHAT_ID=" >"$ENV"
 fi
+# the public repository of the code: release links, and where the store fetches a listed release
+grep -q '^SOURCE_REPOSITORY=' "$ENV" || echo "SOURCE_REPOSITORY=" >>"$ENV"
 chown root:jarvis-deploy "$ENV"
 chmod 640 "$ENV"
 if [ ! -x "$HOME_DIR/runner/run.sh" ]; then
@@ -44,6 +50,14 @@ if [ ! -x "$HOME_DIR/runner/run.sh" ]; then
 fi
 chown -R jarvis-deploy:jarvis-deploy "$HOME_DIR"
 chmod 700 "$HOME_DIR/.ssh"
+# The release store for the home network (port RELEASE_PORT, 8380; never forwarded to the
+# internet) and the catch-up every 10 minutes (issue #15).
+for unit in jarvis-releases.service jarvis-catch-up.service jarvis-catch-up.timer; do
+    install -m 644 "$SRC/systemd/$unit" "/etc/systemd/system/$unit"
+done
+systemctl daemon-reload
+systemctl enable --now jarvis-releases.service jarvis-catch-up.timer >/dev/null
+systemctl restart jarvis-releases.service
 # Ultron's read-only diagnostics of the Echos (#124): ULTRON_KEY=<public key> once; the key may only
 # run jarvis-diag, which may only run the diagnostics as jarvis-deploy.
 mkdir -p /usr/local/lib/jarvis-diag

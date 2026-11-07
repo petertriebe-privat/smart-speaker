@@ -1,0 +1,14 @@
+{
+ "artifacts": [
+  {
+   "file": "echo-bundle.tar.gz",
+   "sha256": "6c07d4a78e51524934294cd551d5e396f753545b4c30786dd2518393425ecea9",
+   "size": 23
+  }
+ ],
+ "channel": "rel",
+ "commit": "0123456789ab",
+ "date": "2026-01-01T00:00:00Z",
+ "sequence": 1767225600,
+ "version": "v1.2.0"
+}

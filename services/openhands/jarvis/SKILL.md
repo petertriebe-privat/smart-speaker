@@ -1,6 +1,6 @@
 ---
 name: jarvis
-description: Analyse and improve Jarvis, the household's voice assistant (repository smart-speaker; Echos and an M5 speaker). Use for any task about a Jarvis problem, bug, log, crash, a missing or changed feature, or "warum hat Jarvis ...": read every Echo's status and logs read-only with ssh jarvis-diag, find the cause in the code, fix it on a branch and open a pull request that the owner merges (the merge deploys it).
+description: Analyse and improve Jarvis, the household's voice assistant (repository smart-speaker; Echos and an M5 speaker). Use for any task about a Jarvis problem, bug, log, crash, a missing or changed feature, or "warum hat Jarvis ...": read every Echo's status and logs read-only with ssh jarvis-diag, find the cause in the code, fix it on a branch and open a pull request that the owner merges (and later releases).
 ---
 
 # Jarvis: analyse, fix, pull request
@@ -21,7 +21,7 @@ The key can only run these commands; anything else is refused.
 | Command | What |
 |---|---|
 | `hosts` | the speakers: `dot-dev` (Echo Dot 2), `echo-dev` (main Echo), `echo2` |
-| `all status` | `ctl status` of each: `version=<commit>` (what runs), state, volume, mic level, clock |
+| `all status` | `ctl status` of each: `version=<release> commit=<commit>` (what runs), state, volume, mic level, clock |
 | `<host> log [N]` | the last N lines of Jarvis' log (default 200, at most 5000) |
 | `<host> grep TEXT [N]` | the last N log lines containing TEXT (a fixed string: letters, digits, spaces, `.:=/+,#@()[]-`) |
 | `<host> errors` | `ctl errors`: starts with uptime, failed conversations, self-test |
@@ -31,8 +31,8 @@ The key can only run these commands; anything else is refused.
 
 Log lines start with a tag: `[Jarvis]`, `[Live]` (the realtime conversation), `[Tool]`,
 `[Audio]`, `[Wake]`, `[Music]`, `[Failover]`, ... Times are local. The log is in RAM: after a
-reboot only `errors` and `health` reach further back. Compare `version=` with `git log` to know
-which code a speaker runs.
+reboot only `errors` and `health` reach further back. Compare `commit=` with `git log` (or `version=`
+with `git tag`) to know which code a speaker runs.
 
 The M5 cannot be reached from here (it only has a serial console at the owner's PC). For an M5
 problem: read the code and `devices/atoms3r/docs/`, and say in the report what the owner should
@@ -89,8 +89,9 @@ today (only from the owner's PC; a way without the PC is #131):
 ## Never
 
 Merge, push to main, deploy, or change, restart or log in to a speaker any other way, even if the
-task asks for it. The owner's merge deploys the change on every Echo: the Pi installs the CI's
-binary, checks that the new version runs and rolls back otherwise, and Telegram reports it. A
+task asks for it, and never create a tag or a GitHub release. After the merge the owner makes a
+release, which the Pi installs on every Echo: it checks that the new version runs and rolls back
+otherwise, and Telegram reports it. A
 change to the safety net itself (`.github/`, `services/deployer/`, `devices/echo/tools/deploy.sh`,
 the Echos' service loop and network scripts) only when the task asks for exactly that, and say
 so first in the pull request.

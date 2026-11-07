@@ -74,7 +74,7 @@ func (d *device) setupHADevice() {
 		return
 	}
 	started := time.Now()
-	ha := &hamqtt.Device{ID: haDeviceID(), Name: d.haName(), Model: board.Name(), Version: revision(),
+	ha := &hamqtt.Device{ID: haDeviceID(), Name: d.haName(), Model: board.Name(), Version: version,
 		SuggestedArea: cmp.Or(d.cfg.Settings.HAArea, d.cfg.Settings.Room)}
 	ha.Entities = []hamqtt.Entity{
 		{Component: "sensor", Key: "state", State: d.peerState, Config: map[string]any{"name": "Status",
@@ -110,7 +110,9 @@ func (d *device) setupHADevice() {
 		{Component: "sensor", Key: "wifi", State: wifiSignal, Config: map[string]any{"name": "WLAN-Signal",
 			"device_class": "signal_strength", "unit_of_measurement": "dBm", "state_class": "measurement",
 			"entity_category": "diagnostic"}},
-		{Component: "sensor", Key: "version", State: revision, Config: map[string]any{"name": "Version",
+		{Component: "sensor", Key: "version", State: func() string { return version }, Config: map[string]any{
+			"name": "Version", "icon": "mdi:tag-outline", "entity_category": "diagnostic"}},
+		{Component: "sensor", Key: "commit", State: buildCommit, Config: map[string]any{"name": "Commit",
 			"icon": "mdi:source-commit", "entity_category": "diagnostic"}},
 		{Component: "sensor", Key: "last_error", State: lastError, Config: map[string]any{"name": "Letzter Fehler",
 			"icon": "mdi:alert-circle-outline", "entity_category": "diagnostic"}},

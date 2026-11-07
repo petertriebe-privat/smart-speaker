@@ -13,18 +13,27 @@
 # settings, secrets and librespot, installed by hardware/dot2/tools/install-assistant.sh under /data/echo-dot-dev.
 #   tools/deploy.sh --all [...]  every Echo with a local/devices/<host>.json, one after the
 #                                       other (vet and tests once)
-# The binary carries its version (the commit, "-dirty" with local changes); after the restart the
-# script waits until ctl status reports it, and fails when it does not.
-# The deployer on the Raspberry Pi (services/deployer, #122) passes JARVIS_BIN and VERSION: the
-# CI's build of a commit on main, installed without building here; the Dot is found by its
-# release file when there is no local/dot-ssh/config.
+#   tools/deploy.sh --status     only the running assistant's ctl status line (exit 75: not
+#                                reachable)
+# The binary carries its version (built here: the commit, "-dirty" with local changes) and its
+# commit; after the restart the script waits until ctl status reports the version, and fails when
+# it does not.
+# The deployer on the Raspberry Pi (services/deployer) runs this script from a release's Echo
+# bundle (bundle.sh: this script, files.txt and the files it names, the binary) and passes
+# JARVIS_BIN, VERSION (v1.2.0) and COMMIT: installed without building here; the Dot is found by
+# its release file when there is no local/dot-ssh/config.
 set -eu
 ALEXA=$(cd "$(dirname "$0")/.." && pwd)
 if [ -z "${VERSION:-}" ]; then
     VERSION=$(git -C "$ALEXA" rev-parse --short=12 HEAD)
     git -C "$ALEXA/../.." diff --quiet HEAD -- core shared/prompts || VERSION=$VERSION-dirty
 fi
-export VERSION
+[ -n "${COMMIT:-}" ] || COMMIT=$(git -C "$ALEXA" rev-parse --short=12 HEAD 2>/dev/null || :)
+export VERSION COMMIT
+# the files of one model (files.txt), as paths
+files() {
+    sed -n "s|^$1 |$ALEXA/|p" "$ALEXA/tools/files.txt" | tr '\n' ' '
+}
 if [ "${1:-}" = --all ]; then
     # An Echo that cannot be reached (switched off, away) is skipped and reported, and gets the
     # version with the next deploy; a reachable one that fails stops the run.
@@ -67,16 +76,23 @@ fi
 # Not reachable: exit 75 (EX_TEMPFAIL), before building and testing, so --all can skip the Echo.
 MSYS_NO_PATHCONV=1 $SSH -o ConnectTimeout=10 "$HOST" true 2>/dev/null ||
     { echo "$HOST: not reachable" >&2; exit 75; }
+BIN=/usr/local/echo-dev/jarvis/jarvis
+[ -z "$DOT" ] || BIN=/data/echo-dot-dev/jarvis/jarvis
+if [ "${1:-}" = --status ]; then
+    # reachable, but no assistant answers: none runs (the catch-up installs one)
+    MSYS_NO_PATHCONV=1 $SSH -o ConnectTimeout=10 "$HOST" "$BIN ctl status" || echo "version=none"
+    exit 0
+fi
 PY="py -3"
 command -v py >/dev/null 2>&1 || PY=python3
 OUT="$ALEXA/local/assistant" # the Echo's builds, as build-librespot.sh (neutral names, #68)
 mkdir -p "$OUT"
 REPO=$(cd "$ALEXA/../.." && pwd)
-CORE="$REPO/core" # Jarvis' Go program, shared with the Fire TV (core/)
-cd "$CORE"
+CORE="$REPO/core" # Jarvis' Go program, shared with the Fire TV (core/); not in a release bundle
 if [ -n "${JARVIS_BIN:-}" ]; then
     cp "$JARVIS_BIN" "$OUT/jarvis" # built, vetted and tested by the CI
 else
+    cd "$CORE"
     $PY tools/extract_prompts.py
     # CHECK=cmd vets and tests only what the binary uses (while other packages are being written).
     PKGS=./...
@@ -85,7 +101,7 @@ else
         GOOS=linux GOARCH=arm go vet $PKGS
         go test $PKGS
     fi
-    CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o "$OUT/jarvis" ./cmd/assistant
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -ldflags="-s -w -X main.version=$VERSION -X main.commit=$COMMIT" -o "$OUT/jarvis" ./cmd/assistant
 fi
 # After the restart: the new version answers ctl status, and still does 15 s later (no crash loop).
 verify() {
@@ -100,18 +116,19 @@ verify() {
     done
     echo "$HOST: version $VERSION running"
 }
-FILES="$OUT/jarvis $ALEXA/settings.json $ALEXA/hardware/gen1/src/echo-audio.sh $ALEXA/hardware/gen1/src/echo-bluetooth.sh $ALEXA/hardware/gen1/src/echo-service-loop.sh $ALEXA/hardware/gen1/src/echo-mount-data.sh $ALEXA/hardware/gen1/src/echo-reboot.sh $ALEXA/hardware/gen1/config/udhcpc-echo.script $ALEXA/hardware/gen1/tools/install-assistant.sh"
+# the binary, then the device's own files (device.json, secrets, librespot)
+FILES="$OUT/jarvis"
 DEVICE="$ALEXA/local/devices/$HOST.json"
 if [ -f "$DEVICE" ]; then
     # relative path: Windows' Python does not understand /e/... (MSYS_NO_PATHCONV)
-    $PY -c 'import json, sys; json.load(open(sys.argv[1]))' "../devices/echo/local/devices/$HOST.json"
+    (cd "$ALEXA" && $PY -c 'import json, sys; json.load(open(sys.argv[1]))' "local/devices/$HOST.json")
     cp "$DEVICE" "$OUT/device.json"
     FILES="$FILES $OUT/device.json"
 fi
 for arg in "$@"; do
     case $arg in
     --secrets)
-        $PY tools/make_secrets.py >/dev/null
+        (cd "$CORE" && $PY tools/make_secrets.py >/dev/null)
         FILES="$FILES $REPO/local/secrets.json" ;; # every device's private values (local/README.md)
     --librespot) # 12 MB: only when it changed (tools/build-librespot.sh)
         FILES="$FILES $OUT/librespot" ;;
@@ -127,8 +144,8 @@ if [ -n "$DOT" ]; then
     # btspeaker (#74, hardware/dot2/tools/btspeaker/build.sh): the Bluetooth speaker helper, when built
     BTSPEAKER=$ALEXA/local/dot2-tools/btspeaker
     [ -f "$BTSPEAKER" ] || BTSPEAKER=
-    FILES=$(for f in $FILES "$ALEXA/hardware/dot2/tools/assistant.sh" "$ALEXA/hardware/dot2/tools/install-assistant.sh" $BTSPEAKER; do
-        echo "$f" | grep -qE '/(jarvis|device\.json|secrets\.json|librespot|assistant\.sh|install-assistant\.sh|btspeaker)$' || continue
+    DOTFILES=$(files dot2)
+    FILES=$(for f in $FILES $DOTFILES $BTSPEAKER; do
         if command -v cygpath >/dev/null 2>&1; then cygpath -m "$f"; else echo "$f"; fi
     done | tr '\n' ' ')
     STAGE=/data/echo-dot-dev/jarvis-stage
@@ -153,7 +170,7 @@ if [ -n "$DOT" ]; then
         # the service loop starts Jarvis again within 3 s
         $SSH "$HOST" 'for p in $(pidof jarvis); do kill $p; done; echo restarted'
     fi
-    verify /data/echo-dot-dev/jarvis/jarvis
+    verify "$BIN"
     exit 0
 fi
 if [ -n "${TAILSCALE:-}" ]; then
@@ -161,9 +178,10 @@ if [ -n "${TAILSCALE:-}" ]; then
     $SCP "$ALEXA/local/tailscale/tailscaled" "$ALEXA/local/tailscale/tailscale" "$HOST:/mnt/data/ts-stage/"
 fi
 $SSH "$HOST" 'rm -rf /mnt/echo-net/jarvis-stage; mkdir -p /mnt/echo-net/jarvis-stage; chmod 700 /mnt/echo-net/jarvis-stage'
+FILES="$FILES $(files gen1)"
 $SCP $FILES "$HOST:/mnt/echo-net/jarvis-stage/"
 $SSH "$HOST" 'cd /mnt/echo-net/jarvis-stage && mv echo-service-loop.sh service-loop.sh && mv udhcpc-echo.script udhcpc.script && mv echo-mount-data.sh mount-data.sh && mv echo-reboot.sh echo-reboot && mv echo-bluetooth.sh bluetooth.sh && { [ ! -f secrets.json ] || mv secrets.json jarvis-secrets.json; } && sh install-assistant.sh'
 # Restart Jarvis only (the service loop starts it again within 10 s); the service loop itself
 # picks up a new version at the next boot.
 $SSH "$HOST" 'for p in $(ps | grep "[e]cho-dev/jarvis/jarvis" | awk "{print \$1}"); do kill $p; done; sleep 2; sync; if mount -o remount,ro / 2>/dev/null; then echo "restarted, root read-only"; else echo "restarted, root still busy: reboot with /usr/local/echo-dev/bin/echo-reboot"; fi'
-verify /usr/local/echo-dev/jarvis/jarvis
+verify "$BIN"

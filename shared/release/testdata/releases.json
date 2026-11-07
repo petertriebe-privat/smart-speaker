@@ -1,0 +1,17 @@
+{
+ "current": {
+  "dev": "v1.2.0",
+  "rel": "v1.2.0"
+ },
+ "date": "2026-01-01T00:00:01Z",
+ "releases": [
+  {
+   "channel": "rel",
+   "commit": "0123456789ab",
+   "date": "2026-01-01T00:00:00Z",
+   "manifest_sha256": "d78a13dbf93321875a88502c4d94eb799662663792951e88d8053bf31a008b7e",
+   "version": "v1.2.0"
+  }
+ ],
+ "sequence": 1767225601
+}
