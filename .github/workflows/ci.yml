@@ -170,7 +170,7 @@ jobs:
         # through sh: gradlew is not executable in git (made on Windows)
         run: sh ./gradlew --no-daemon lint assembleDebug
       - name: no secrets in the APKs
-        run: python3 ../../services/deployer/check_artifact.py */build/outputs/apk/debug/*.apk
+        run: python3 ../../services/deployer/check_artifact.py ./*/build/outputs/apk/debug/*.apk
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
