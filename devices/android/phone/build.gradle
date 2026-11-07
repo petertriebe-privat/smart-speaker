@@ -12,8 +12,8 @@ android {
         applicationId 'dev.jarvis.phone'
         minSdk 29          // Android 10
         targetSdk 34       // sideloaded, never in a store
-        versionCode 1
-        versionName '0.1'
+        versionCode rootProject.ext.assistantVersionCode
+        versionName rootProject.ext.assistantVersionName
         ndk {
             abiFilters 'arm64-v8a' // the core is built for it (tools/install_phone.sh)
         }

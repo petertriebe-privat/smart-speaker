@@ -104,12 +104,14 @@ work without it.
 Test without Jarvis: publish a card to `jarvis/screen/<room id>/show` with any MQTT client;
 `tools/demo.py` shows the samples.
 
-**Updates without the PC (#126):** the CI builds the app for every pull request (workflow
-`jarvis-build`, job `firetv-build`), and a merge into main installs it on every stick from the
-Raspberry Pi (`services/deployer/firetv_deploy.py`): re-signed with the installed app's key, as an
-update that keeps the settings and secrets, checked and rolled back when the new version does not
-start. Only the first setup of a stick needs `install.sh`. Switched on with the repository
-variable `FIRETV_DEPLOY=on`.
+**Updates without the PC (#126, #15):** the CI builds and lints the apps for every pull
+request; the owner's release builds the Fire TV app with the release's version
+(`-PassistantVersion=v1.2.0`: versionName, and a versionCode that rises with it,
+`build.gradle`) into the GitHub release, and the Raspberry Pi installs it on every stick of the
+release's channel (`services/deployer/firetv_deploy.py`): re-signed with the installed app's
+key, as an update that keeps the settings and secrets, checked and rolled back when the new
+version does not start; a stick that was switched off gets it once it is back. Only the first
+setup of a stick needs `install.sh`. A build without the property stays `0.1` / versionCode 1.
 
 ## The phone app
 

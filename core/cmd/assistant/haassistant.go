@@ -22,7 +22,7 @@ func (d *device) setupHAAssistant(url, user, password string) {
 	if !d.cfg.Settings.Primary || d.svc.people == nil || d.svc.affairs == nil {
 		return
 	}
-	j := &hamqtt.Device{ID: haAssistantID(), Name: prompts.Name(), Model: "Assistant", Version: revision()}
+	j := &hamqtt.Device{ID: haAssistantID(), Name: prompts.Name(), Model: "Assistant", Version: version}
 	for _, p := range d.svc.people.All() {
 		j.Entities = append(j.Entities, d.personEntities(p)...)
 	}

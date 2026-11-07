@@ -33,6 +33,9 @@
 #ifndef GIT_REVISION
 #define GIT_REVISION "unknown"
 #endif
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "dev"  // the release (scripts/git_revision.py)
+#endif
 
 namespace ha_device {
 namespace {
@@ -186,7 +189,9 @@ void declare()
         diagnostic(c, "WLAN-Signal", "mdi:wifi", "dBm");
         c["device_class"] = "signal_strength";
     }, [] { return String(WiFi.RSSI()); });
-    add("sensor", "version", [=](JsonObject c) { diagnostic(c, "Version", "mdi:source-commit", nullptr); },
+    add("sensor", "version", [=](JsonObject c) { diagnostic(c, "Version", "mdi:tag-outline", nullptr); },
+        [] { return String(FIRMWARE_VERSION); });
+    add("sensor", "commit", [=](JsonObject c) { diagnostic(c, "Commit", "mdi:source-commit", nullptr); },
         [] { return String(GIT_REVISION); });
     add("sensor", "last_error", [=](JsonObject c) { diagnostic(c, "Letzter Fehler", "mdi:alert-circle-outline", nullptr); },
         [] {
@@ -220,7 +225,7 @@ void announce()
         device["name"] = *DEVICE_NAME ? DEVICE_NAME : ASSISTANT_NAME " M5";
         device["model"] = "AtomS3R + Echo Pyramid";
         device["manufacturer"] = "smart-speaker";
-        device["sw_version"] = GIT_REVISION;
+        device["sw_version"] = FIRMWARE_VERSION;
         if (*DEVICE_ROOM) device["suggested_area"] = DEVICE_ROOM;
         c["origin"]["name"] = "smart-speaker";
         e.config(c);
@@ -363,7 +368,7 @@ void print()
 {
     Serial.printf("[HA device] %s, id %s, %u entities, connects %u, commands %u, version %s\n",
                   !configured ? "off" : mqtt.connected() ? "connected" : "not connected", id.c_str(),
-                  unsigned(entities.size()), unsigned(connects), unsigned(commands), GIT_REVISION);
+                  unsigned(entities.size()), unsigned(connects), unsigned(commands), FIRMWARE_VERSION, GIT_REVISION);
     for (const Entity& e : entities)
         if (e.state) Serial.printf("[HA device]   %s = %s\n", e.key, e.sent ? e.published.c_str() : "(not sent)");
 }

@@ -4,3 +4,19 @@ plugins {
     id 'com.android.application' version '9.5.1' apply false
     id 'com.android.library' version '9.5.1' apply false
 }
+
+// The release version (issue #15): -PassistantVersion=v1.2.0 from the owner's release workflow;
+// a local build without it stays 0.1 / 1. versionCode MMmmppdd rises with the version, dd = 99
+// for a release, the N of -dev.N for a dev release (v1.2.0 -> 1020099, v1.3.0-dev.4 -> 1030004),
+// as services/deployer/release.py version-code computes it.
+def releaseVersion = findProperty('assistantVersion')
+def versionCodeOf = { String v ->
+    def m = v =~ /^v(0|[1-9]\d*)\.(\d{1,2})\.(\d{1,2})(?:-dev\.([1-9]\d?))?$/
+    if (!m.matches() || (m.group(4) ?: '0') as int > 98) {
+        throw new GradleException("assistantVersion: not a release version: $v")
+    }
+    def major = m.group(1) as int, minor = m.group(2) as int, patch = m.group(3) as int
+    ((major * 100 + minor) * 100 + patch) * 100 + (m.group(4) ? m.group(4) as int : 99)
+}
+ext.assistantVersionName = releaseVersion ?: '0.1'
+ext.assistantVersionCode = releaseVersion ? versionCodeOf(releaseVersion as String) : 1

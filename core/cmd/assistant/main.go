@@ -58,9 +58,19 @@ var (
 	ctlPath      = flag.String("ctl", board.Path("/mnt/jarvis/ctl.sock", "/run/jarvis/ctl.sock"), "control socket")
 )
 
-// version is the commit the binary was built from (-X main.version=..., by deploy.sh and the CI);
-// ctl status reports it, so a deploy can check that the new version is the one running.
-var version = "dev"
+// version is the release the binary belongs to (-X main.version=v1.2.0, by the owner's release
+// workflow), or the commit for a build from the PC (deploy.sh); commit is the commit it was built
+// from (-X main.commit=..., else the build info). ctl status reports both, so a deploy can check
+// that the new version is the one running.
+var (
+	version = "dev"
+	commit  = ""
+)
+
+// buildCommit: the commit this binary was built from.
+func buildCommit() string {
+	return cmp.Or(commit, revision())
+}
 
 type device struct {
 	cfg            *config.Config
@@ -142,7 +152,7 @@ func main() {
 		os.Exit(0)
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-	log.Printf("[Assistant] %s starting, version %s", board.Name(), version)
+	log.Printf("[Assistant] %s starting, version %s commit %s", board.Name(), version, buildCommit())
 	guardSeccomp() // tvboard.go
 	cfg, err := config.Load(*secretsPath, *settingsPath)
 	if err != nil {
@@ -715,8 +725,8 @@ func (d *device) command(line string) string {
 		d.volMu.Lock()
 		vol := d.volApplied
 		d.volMu.Unlock()
-		status := fmt.Sprintf("version=%s state=%s muted=%v volume=%d gate=%v time_synced=%v mic_peak=%d underruns=%d",
-			version, d.session.State(), d.muted.Load(), vol, d.session.EchoGate(), netx.TimeSynced, d.mic.Peak(), d.speaker.Underruns())
+		status := fmt.Sprintf("version=%s commit=%s state=%s muted=%v volume=%d gate=%v time_synced=%v mic_peak=%d underruns=%d",
+			version, buildCommit(), d.session.State(), d.muted.Load(), vol, d.session.EchoGate(), netx.TimeSynced, d.mic.Peak(), d.speaker.Underruns())
 		if board.Dot2 {
 			status += fmt.Sprintf(" loopback_peak=%d", audio.DotLoopback()) // since the last status
 		}

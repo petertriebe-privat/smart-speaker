@@ -44,9 +44,12 @@ The script runs `go vet` and `go test`, extracts the shared prompts
 installs it with the model's files. Per-device settings (role, room, Spotify name) live in the
 git-ignored `local/devices/<host>.json`.
 
-A merge into `main` can deploy on every Echo through a CI job on a Raspberry Pi
-(`services/deployer`); the CI pipeline itself is set up per repository and is not part of this
-repository yet.
+The household's Echos get releases from the Raspberry Pi (`services/deployer`): the owner's
+release of a commit on `main` is installed with the release's Echo bundle (`tools/bundle.sh`:
+the binary, this `deploy.sh`, `tools/files.txt` and the files it names) on every Echo of its
+channel (`"channel": "dev"` in `local/devices/<host>.json` for a development Echo, else `rel`),
+and an Echo that was switched off gets it as soon as it is back. `tools/files.txt` lists what
+an Echo gets besides the binary, per model; `deploy.sh --status` prints the running version.
 
 For a household's own persona, run `py -3 core/tools/extract_prompts.py --persona`: it writes
 `local/persona.json`, which the deploy puts into the Echo's state directory as

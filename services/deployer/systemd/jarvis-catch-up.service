@@ -1,0 +1,16 @@
+# The catch-up (issue #15): Echos and Fire TV sticks that missed a release (switched off during
+# the rollout) get their channel's current release once they answer again. Skips itself while a
+# deploy runs (deploy.lock); quiet when nothing happened.
+[Unit]
+Description=Catch-up of the assistant's releases on the Echos and Fire TV sticks
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=jarvis-deploy
+WorkingDirectory=/opt/jarvis-deployer
+Environment=HOME=/opt/jarvis-deployer
+# "-": the sticks' turn comes even when an Echo failed
+ExecStart=-/usr/bin/python3 /opt/jarvis-deployer/deployer.py --catch-up
+ExecStart=/usr/bin/python3 /opt/jarvis-deployer/firetv_deploy.py --catch-up
+TimeoutStartSec=45min

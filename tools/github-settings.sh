@@ -7,7 +7,7 @@
 # Rulesets, the fork approval and secret scanning need a public repository (or a paid plan), so
 # run this right after making the repository public. Running it again changes nothing.
 #
-#   tools/github-settings.sh owner/repo
+#   [RELEASE_APP_ID=<id>] tools/github-settings.sh owner/repo
 set -euo pipefail
 
 repo="${1:?usage: $0 owner/repo}"
@@ -50,6 +50,27 @@ for old in "default branch: owner only" "$name"; do
   [ -z "$id" ] || gh api -X DELETE "repos/$repo/rulesets/$id" >/dev/null
 done
 gh api -X POST "repos/$repo/rulesets" --input "$body" >/dev/null
+
+# Release tags (issue #15): v* is created, moved or deleted only by the owner's release app
+# (RELEASE_APP_ID, the GitHub App the private deploy workflow publishes with), not by the admin
+# role: the agents work with tokens of the owner's account and must not make a release. Without
+# RELEASE_APP_ID the rule is left as it is.
+tags="release tags: the release app only"
+if [ -n "${RELEASE_APP_ID:-}" ]; then
+  cat >"$body" <<JSON
+{
+  "name": "$tags",
+  "target": "tag",
+  "enforcement": "active",
+  "conditions": {"ref_name": {"include": ["refs/tags/v*"], "exclude": []}},
+  "bypass_actors": [{"actor_id": $RELEASE_APP_ID, "actor_type": "Integration", "bypass_mode": "always"}],
+  "rules": [{"type": "creation"}, {"type": "update"}, {"type": "deletion"}]
+}
+JSON
+  id=$(gh api "repos/$repo/rulesets" --jq ".[] | select(.name == \"$tags\") | .id")
+  [ -z "$id" ] || gh api -X DELETE "repos/$repo/rulesets/$id" >/dev/null
+  gh api -X POST "repos/$repo/rulesets" --input "$body" >/dev/null
+fi
 
 # Actions: a workflow from a fork's pull request waits for the owner's approval, for every
 # outside contributor (not only first-time ones); the workflow token is read-only and may not

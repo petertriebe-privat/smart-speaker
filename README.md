@@ -238,12 +238,17 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   reports by Telegram, announced only on a speaker the owner names, a call back on request; with
   `/freigabe an` changes wait for the owner's tap in Telegram.
 - The assistant improves itself with a safety net *(Echo)*: the server agent builds a fix or feature on a branch
-  and opens a pull request, the CI tests it; the owner merges it and starts the deploy, which
-  builds that commit and installs it from the Raspberry Pi on every Echo and Fire TV stick,
-  checks that the new version runs, rolls back when not, skips an Echo that is switched off and
-  reports it all in Telegram
-  (`services/deployer`; the deploy workflow lives in the owner's private repository, so nothing
-  in this public one can reach the home network).
+  and opens a pull request, the CI tests it; the owner merges it and makes a release.
+- Releases: every version is a GitHub release of this repository (`v1.2.0`; pre-releases
+  `v1.3.0-dev.4` for the development devices, the channel `dev`), with release notes from the
+  merged pull requests and the Echo bundle and Fire TV APK, checked for secrets. Manifest and
+  index are signed (ECDSA P-256); the Raspberry Pi keeps the releases in its store (served over
+  HTTP to the home network), installs a release on every Echo and Fire TV stick of its channel,
+  checks that the new version runs, rolls back when not, gives an Echo or stick that was
+  switched off the release as soon as it is back, and reports it all in Telegram
+  (`services/deployer`; the release workflow lives in the owner's private repository, so
+  nothing in this public one can reach the home network). Every device reports its version and
+  commit (`ctl status`, Home Assistant).
   The server agent reads every Echo's status, logs and errors for the analysis, only reading and through the
   Pi (`ssh jarvis-diag`, skill `jarvis`) *(Echo)*. The Fire TV app is built and installed on every
   stick the same way, as an update that keeps its setup.

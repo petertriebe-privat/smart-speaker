@@ -1,0 +1,14 @@
+# What deploy.sh installs on an Echo besides the binary, the device's device.json and the
+# secrets, and what a release's Echo bundle holds besides deploy.sh, this list and the binary
+# (bundle.sh). One line per file: the model it is for (gen1 or dot2) and its path under
+# devices/echo.
+gen1 settings.json
+gen1 hardware/gen1/src/echo-audio.sh
+gen1 hardware/gen1/src/echo-bluetooth.sh
+gen1 hardware/gen1/src/echo-service-loop.sh
+gen1 hardware/gen1/src/echo-mount-data.sh
+gen1 hardware/gen1/src/echo-reboot.sh
+gen1 hardware/gen1/config/udhcpc-echo.script
+gen1 hardware/gen1/tools/install-assistant.sh
+dot2 hardware/dot2/tools/assistant.sh
+dot2 hardware/dot2/tools/install-assistant.sh

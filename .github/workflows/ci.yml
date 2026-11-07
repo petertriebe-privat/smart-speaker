@@ -50,7 +50,7 @@ jobs:
           fi
           touches() { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -qE "$1"; }
           out() { if touches "$2"; then echo "$1=true"; else echo "$1=false"; fi >> "$GITHUB_OUTPUT"; }
-          out go '^(core/|shared/prompts/|local/)'
+          out go '^(core/|shared/prompts/|local/|devices/echo/tools/(bundle\.sh|files\.txt|deploy\.sh)$|services/deployer/check_artifact\.py$)'
           out m5 '^(devices/atoms3r/|shared/prompts/|local/|core/internal/wakeword/)'
           out android '^devices/android/'
           out python '\.py$|^ruff\.toml$|^services/'
@@ -102,6 +102,12 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -trimpath -o /tmp/jarvis-armv7 ./cmd/assistant
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o /tmp/jarvis-arm64 ./cmd/assistant
           ls -l /tmp/jarvis-armv7 /tmp/jarvis-arm64
+      - name: no secrets in the release's Echo bundle
+        # the bundle a release publishes (devices/echo/tools/bundle.sh), checked as the owner's
+        # release workflow checks it before publishing
+        run: |
+          sh ../devices/echo/tools/bundle.sh /tmp/jarvis-armv7 /tmp/echo-bundle.tar.gz
+          python3 ../services/deployer/check_artifact.py /tmp/echo-bundle.tar.gz
 
   # The M5 AtomS3R's firmware, with the example secrets.
   m5:
@@ -163,6 +169,8 @@ jobs:
       - name: lint and build
         # through sh: gradlew is not executable in git (made on Windows)
         run: sh ./gradlew --no-daemon lint assembleDebug
+      - name: no secrets in the APKs
+        run: python3 ../../services/deployer/check_artifact.py */build/outputs/apk/debug/*.apk
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
