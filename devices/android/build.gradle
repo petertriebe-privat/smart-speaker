@@ -1,6 +1,6 @@
 // The Android apps of Jarvis: firetv (the Fire TV app) and phone (#75) on the shared library (HUD,
 // hologram, cards, full screen, overlay).
 plugins {
-    id 'com.android.application' version '8.7.3' apply false
-    id 'com.android.library' version '8.7.3' apply false
+    id 'com.android.application' version '9.5.1' apply false
+    id 'com.android.library' version '9.5.1' apply false
 }
