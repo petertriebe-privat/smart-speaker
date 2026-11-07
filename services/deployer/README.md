@@ -27,7 +27,10 @@ Telegram ◀── "Neue Version v1.2.0 aktiv auf dot-dev, echo-dev, echo2"
 - Tags `vMAJOR.MINOR.PATCH` (the patch number is the service pack). Two channels: **rel**, a
   normal GitHub release (`v1.2.0`), and **dev**, a pre-release (`v1.3.0-dev.4`, before
   `v1.3.0`). The workflow counts on from the newest release: `bump` patch, minor or major,
-  for dev with the next `-dev.N`; or an explicit `version`.
+  for dev with the next `-dev.N`; or an explicit `version`. `promote: v1.3.0-dev.2` releases a
+  tested dev release unchanged as `v1.3.0`, built from exactly its commit.
+- The way it is used: every change first as a dev release, which the devices in the channel
+  `dev` run for testing; once it works, `promote` makes it the release.
 - Each device has its channel: `"channel": "dev"` in its `local/devices/<host>.json` (Echos) or
   `local/firetv/<name>.json` (sticks), else `rel`. A dev release goes to the dev devices only; a
   release to every device. A dev device runs the newest of both.
@@ -78,7 +81,7 @@ not the transport, is the trust. The devices fetch from here once they update th
 ## Pieces
 
 - **The deploy workflow** (`smart-speaker-deploy`, `.github/workflows/deploy.yml`): started by
-  hand only (`workflow_dispatch`: `channel`, `bump` or `version`, `target` `both`, `echos`,
+  hand only (`workflow_dispatch`: `channel`, `bump` or `version`, or `promote`, `target` `both`, `echos`,
   `firetv` or `check`, a commit on `main` or its newest), refused unless the repository's owner
   started it; builds on GitHub's runners, the release through the **release app** (a GitHub App
   of the owner with `contents: write` on smart-speaker only, the only actor that may create `v*`
