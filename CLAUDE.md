@@ -22,7 +22,9 @@ local/               git-ignored: the household's own values for every device (s
 ```
 
 - Open work, ideas and bugs: GitHub issues of this repository (`gh issue list`), not a file in
-  the repo and not the old private `m5-stack`. Issues are public: English, no household data.
+  the repo. Issues are public: English, no household data; an issue that needs household details
+  goes to the owner's private `smart-speaker-private`. The former `m5-stack` repository's issues
+  are there too; old numbers in code, docs and commits (`#124`) are mapped in its `issue-map.md`.
 - Design, measurements and lessons learned: `devices/atoms3r/docs/` (`architecture.md`, `ram.md`,
   `google.md`), `devices/echo/docs/` (`16-assistant.md`, `17-bluetooth.md`, `18-several-echos.md`)
   and the hardware docs per Echo model. Update them after a change that matters; add new findings
