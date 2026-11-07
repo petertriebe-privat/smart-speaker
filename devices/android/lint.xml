@@ -11,6 +11,8 @@
     <!-- Library updates come as Dependabot pull requests, not as lint failures. -->
     <issue id="GradleDependency" severity="ignore" />
     <issue id="NewerVersionAvailable" severity="ignore" />
+    <!-- The same for Gradle and the Android Gradle plugin: a release must not fail the build. -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
     <!-- Launcher icons: one design for the TV banner and the phone, no store listing. -->
     <issue id="IconLauncherShape" severity="ignore" />
     <issue id="IconMissingDensityFolder" severity="ignore" />
