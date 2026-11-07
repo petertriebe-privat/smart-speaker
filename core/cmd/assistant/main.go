@@ -783,6 +783,12 @@ func (d *device) command(line string) string {
 		return d.startEval(arg)
 	case "tools":
 		return strings.Join(d.registry.Names(), " ")
+	case "parcels":
+		// one parcel pass now, then 17TRACK's answer through HA and the kept state (#7)
+		if d.svc.parcels == nil {
+			return "error: no parcel tracking here (primary device with HA and watched mailboxes only)"
+		}
+		return strings.ReplaceAll(d.svc.parcels.Report(), "\n", "\\n")
 	case "prefer":
 		// prefer <mail_digest|briefing|evening|urgent>: today's value for the admin from the rules
 		// (asked in the background: the first call may give the start value)

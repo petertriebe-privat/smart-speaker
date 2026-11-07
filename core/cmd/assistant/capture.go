@@ -375,6 +375,9 @@ func (d *device) decided() {
 	c.mu.Unlock()
 }
 
+// quickWrites: the clips keepQuickClip is still writing (tests wait before their directory goes).
+var quickWrites sync.WaitGroup
+
 // keepQuickClip: what the quick path sent to the transcription, with what came back, for finding
 // why commands are not understood (with music right after the wake word, 20.10.2026): the newest
 // quickClipsKept in <state_dir>/quick/ (never mirrored, never in the repository).
@@ -391,7 +394,9 @@ func (d *device) keepQuickClip(pcm []int16, text string) {
 	dir := filepath.Join(store.Dir, "quick")
 	base := filepath.Join(dir, fmt.Sprintf("%s_%s_%s", time.Now().Format("20060102-150405"), music, result))
 	data := wav(pcm, audio.MicRate)
+	quickWrites.Add(1)
 	go func() {
+		defer quickWrites.Done()
 		os.MkdirAll(dir, 0o700)
 		os.WriteFile(base+".wav", data, 0o600)
 		os.WriteFile(base+".txt", []byte(text+"\n"), 0o600)

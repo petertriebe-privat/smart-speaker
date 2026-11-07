@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"echo-assistant/internal/mail"
+	"echo-assistant/internal/store"
 )
 
 func TestParseMailboxes(t *testing.T) {
@@ -121,6 +122,26 @@ func TestAddShipment(t *testing.T) {
 	}
 }
 
+func TestTrackedShipments(t *testing.T) {
+	store.Dir = t.TempDir()
+	s := &Service{}
+	s.st.normalize()
+	s.addShipment("p", sortedShipment{Carrier: "DHL", Number: "0034 0434-12", Sender: "Shop", Status: "versandt"}, 100)
+	s.addShipment("p", sortedShipment{Carrier: "GLS", Status: "no number"}, 100)
+	if got := s.TrackedShipments(); len(got) != 1 || got[0].Number != "0034 0434-12" || got[0].Sender != "Shop" {
+		t.Fatalf("tracked %+v", got)
+	}
+	s.UpdateShipment("0034043412", "zugestellt", true)
+	p := s.st.Shipments[0]
+	if p.Status != "zugestellt" || !p.Delivered || p.T <= 100 {
+		t.Errorf("updated %+v", p)
+	}
+	s.addShipment("p", sortedShipment{Carrier: "DHL", Number: "0034 0434-12", Status: "unterwegs"}, 150) // older mail
+	if p.Status != "zugestellt" {
+		t.Errorf("an older mail undid the tracking: %+v", p)
+	}
+}
+
 func TestRuleSuggestion(t *testing.T) {
 	s := &Service{}
 	s.st.normalize()
@@ -224,5 +245,24 @@ func TestLeadingNumberAndFolders(t *testing.T) {
 	}
 	if findFolder(folders, "nothing") != nil {
 		t.Error("findFolder found a ghost")
+	}
+}
+
+func TestDuplicateAcrossMailboxes(t *testing.T) {
+	s := &Service{}
+	s.st.normalize()
+	first := &entry{T: 1000, Person: "p", Box: "Strato", From: "DHL <a@dhl.example>", Subject: "Kommt heute", Told: true}
+	s.st.Log = append(s.st.Log, first)
+	same := &entry{T: 1009, Person: "p", Box: "Gmail", From: first.From, Subject: first.Subject}
+	other := &entry{T: 1009, Person: "q", Box: "Gmail", From: first.From, Subject: first.Subject}
+	later := &entry{T: 1000 + 2*86400, Person: "p", Box: "Gmail", From: first.From, Subject: first.Subject}
+	sameBox := &entry{T: 1009, Person: "p", Box: "Strato", From: first.From, Subject: first.Subject}
+	s.st.Log = append(s.st.Log, other, later, sameBox)
+	if s.duplicate(other) || s.duplicate(later) || s.duplicate(sameBox) {
+		t.Error("not a duplicate: another person, two days later, the same mailbox")
+	}
+	s.st.Log = append(s.st.Log, same)
+	if !s.duplicate(same) {
+		t.Error("the same mail in another mailbox")
 	}
 }

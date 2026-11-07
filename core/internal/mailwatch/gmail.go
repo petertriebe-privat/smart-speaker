@@ -287,7 +287,7 @@ func (s *Service) gmailNew(ctx context.Context, box Mailbox, history string) ([]
 	}
 	var mails []mail.Incoming
 	for _, id := range ids {
-		m, status, err := s.gmailMessage(ctx, box, id, lim("MAILWATCH_TEXT_CHARS", 1500))
+		m, status, err := s.gmailMessage(ctx, box, id, fetchChars())
 		if status == 404 {
 			continue // deleted meanwhile
 		}
