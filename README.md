@@ -160,7 +160,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 ### Music and TV
 - Spotify on any Spotify Connect speaker, each Echo one itself *(Echo)*: music, podcasts,
   audiobooks, moving between speakers, playlists, liked songs, history, mixes the assistant puts together;
-  per person with their own account; music gets quiet while the assistant listens or talks.
+  per person with their own account; music gets quiet while the assistant listens or talks. On a
+  phone it checks that the music really starts, and says why not (the phone's battery saver).
 - YouTube on any TV in the LAN (DIAL and the Lounge API), pause and seek, summaries.
 - Fire TV: films and series by title, apps, on/off, remote keys.
 - The TV as the assistant's screen *(Echo, Fire TV)*: "zeig mir …" shows it on the TV in the room (or a
@@ -207,9 +208,11 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   a shockwave.
   In the car: the HUD live on the Android Auto screen, the hologram moving in its state's colour
   with the turn's words or the card it showed in full size, beside a small panel with Sprechen /
-  Unterbrechen / Beenden (older cars: rows with a picture of the card); and the wake word heard
+  Unterbrechen / Beenden (older cars: rows with a picture of the card; so far in the Desktop Head
+  Unit only, a real car takes the app only from Google Play, #5); and the wake word heard
   while Android Auto is connected: the music pauses, a short tone says the car's microphone
-  listens, and a start nobody speaks to ends unnoticed.
+  listens, and a start nobody speaks to ends unnoticed. A flight recorder keeps the app's log of
+  each drive for debugging at home.
   Away from home on mobile data too, without a VPN: the house's services over the home gateway
   (the Pi) and the VPS, with a client certificate per phone ([services/home-gateway](services/home-gateway/README.md)).
 - The Echo's ring as a music display *(Echo)*.

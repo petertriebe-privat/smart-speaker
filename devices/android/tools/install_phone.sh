@@ -50,9 +50,10 @@ fi
 apk="$here/phone/build/outputs/apk/debug/phone-debug.apk"
 apk=$(cygpath -w "$apk" 2>/dev/null || echo "$apk")
 
-# Installed as from the Play Store: Android Auto lists no car app without an installer, "unknown
-# sources" in its developer settings notwithstanding (the Fire TV's home screen did the same,
-# install.sh). The Home Assistant app, from the store, showed in the car; Jarvis did not.
+# Installed as from the Play Store: the Desktop Head Unit lists no car app without an installer,
+# "unknown sources" in Android Auto's developer settings notwithstanding (the Fire TV's home screen
+# did the same, install.sh). A real car refuses a sideloaded car app with any installer: only
+# Google Play counts there (06.11.2026).
 $adb install -r -i com.android.vending "$apk"
 $adb shell pm grant $pkg android.permission.RECORD_AUDIO
 $adb shell pm grant $pkg android.permission.POST_NOTIFICATIONS 2>/dev/null || true

@@ -59,6 +59,9 @@ type Service struct {
 	LocalWake func()
 	// LocalPlaying: The assistant's own player delivers audio (Spotify's word for it is not enough).
 	LocalPlaying func() bool
+	// PhoneHint: on the phone, why its Spotify app may not play (e.g. the battery saver cuts it
+	// off from the network in the background); "" when nothing is known.
+	PhoneHint func() string
 
 	clientID, clientSecret string
 	admin                  string    // the admin's refresh token

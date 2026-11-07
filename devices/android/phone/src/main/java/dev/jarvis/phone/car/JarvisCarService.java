@@ -46,6 +46,9 @@ public final class JarvisCarService extends CarAppService {
     @NonNull
     @Override
     public HostValidator createHostValidator() {
+        // In the car's log (CarLog): did Android Auto ask for the app at all? Missing in the car's
+        // launcher it never did (05.11.2026).
+        Log.i(Hud.TAG, "car app: Android Auto binds it");
         return new HostValidator.Builder(getApplicationContext())
                 .addAllowedHosts(dev.jarvis.phone.R.array.car_hosts)
                 .build();
@@ -58,6 +61,7 @@ public final class JarvisCarService extends CarAppService {
             @NonNull
             @Override
             public Screen onCreateScreen(@NonNull Intent intent) {
+                Log.i(Hud.TAG, "car app: opened, car API level " + getCarContext().getCarAppApiLevel());
                 try {
                     getCarContext().startForegroundService(new Intent(getCarContext(), PhoneService.class));
                 } catch (Exception ignored) {

@@ -232,13 +232,22 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   the plain microphone, its reference timed with the `AudioTrack` and `AudioRecord` timestamps.
   The native library is linked with `-z max-page-size=16384` (Android 15's 16 KB pages).
 - `adb shell cat` of a binary file breaks it (line endings); `adb exec-out` does not.
-- Android Auto lists a sideloaded app only with the Play Store as its installer
-  (`adb install -i com.android.vending`), and shows its notifications only then.
+- In the Desktop Head Unit Android Auto lists a sideloaded app only with the Play Store as its
+  installer (`adb install -i com.android.vending`), and shows its notifications only then. A
+  real car refuses a sideloaded car app with any installer and "unknown sources" on
+  (`dumpsys activity service com.google.android.projection.gearhead`, `CarProjectionValidator`:
+  `PACKAGE_FAILED_ALL_CHECKS`): only apps from Google Play run there.
 - Android Auto keeps an app's icon in a cache: a new icon showed after the next connection. A
   square picture as icon got a white disc around it; an adaptive icon (the hologram on the HUD's
   dark ground) has none.
 - A notification's tap with the app's plain launch intent only brought the running console to
   the front; with its own action and data the card arrives (`Notices.java`).
+- Debugging away from home (in the car): Tailscale on the phone and the PC, then
+  `adb connect <the phone's Tailscale address>:5555` over mobile data: logs, tools
+  (`ctl tool`), a new build. ADB over the network (`adb tcpip 5555`) lasts until the phone
+  restarts; it is switched on again at home over USB or wireless debugging. Tailscale routes only
+  the tailnet's addresses, so wireless Android Auto (the car's own WiFi) is not touched; no exit
+  node, no "always-on VPN".
 - Templates only for an IoT app; a weather app may draw on the car screen's surface (the HUD
   live, `CarSurface.java`, mobile.md). A WebView on a private `VirtualDisplay` (a `Presentation`)
   renders into the car's `Surface` directly; in an `ImageReader` a still page sends no new frames,
@@ -248,6 +257,19 @@ start only then, Android 14). After a restart of the phone open Jarvis once.
   server in Android Auto must be stopped and started again.
 - In the car with music the phone's microphone clips (peak 32768); a transcription of the wake
   word's clip reads empty there, real or false (mobile.md, Activation).
+- Android Auto showed Jarvis in the Desktop Head Unit (developer mode) with every manifest variant
+  (IoT, weather, the map templates' permissions), but not in the car: there only apps from
+  Google Play run (06.11.2026, see below; the idea of a small car app from Play: #5).
+  "Launcher anpassen" in Android Auto's settings lists the apps of the last connection, so it
+  says nothing about the car while the DHU was connected last. The flight recorder
+  (`car/CarLog.java`) records the app's log while Android Auto is connected
+  (`files/run/car-logcat.txt`): "car app: Android Auto binds it" shows whether the car asked for
+  the app at all. Other apps' lines it cannot record: READ_LOGS, granted over ADB, asks the user
+  on the screen each time since Android 13 and is refused in the background.
+- The battery saver cuts apps in the background off from the network unless their battery use is
+  unrestricted: Spotify showed "Du bist offline", Spotify's Web API still answered "playing" to a
+  command for the phone. `play_music` now waits until a phone plays (`phonePlays`) and asks the
+  app why not (`phone_power`).
 
 ## Open
 

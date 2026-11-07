@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.provider.AlarmClock;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
@@ -76,8 +77,21 @@ final class PhoneTools implements AudioBridge.Tools {
                 return openApp(a.optString("app"));
             case "phone_alarm":
                 return alarm(a.optString("time"), a.optInt("seconds"), a.optString("label"));
+            case "phone_power": // not the model's: the core asks when music does not start here
+                return power();
         }
         return "Error: unknown tool " + name;
+    }
+
+    // power: why the phone's Spotify may not play, "" when nothing speaks against it. The battery
+    // saver cuts apps in the background off from the network unless their battery use is
+    // unrestricted: Spotify showed "Du bist offline" and took no command (06.11.2026).
+    private String power() {
+        PowerManager pm = ctx.getSystemService(PowerManager.class);
+        if (pm == null || !pm.isPowerSaveMode() || pm.isIgnoringBatteryOptimizations("com.spotify.music")) return "";
+        return "The phone's battery saver is on: Android cuts Spotify off from the network while it is in "
+                + "the background. Tell the user to turn the battery saver off, or to set Spotify's battery use "
+                + "to unrestricted (Settings > Apps > Spotify > Battery).";
     }
 
     private boolean granted(String permission) {
