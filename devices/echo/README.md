@@ -35,7 +35,7 @@ and it is started by `services/jarvis.sh`. The command line tool is `jarvis ctl 
 ## Deploying
 
 ```
-tools/deploy.sh --all             # every Echo in local/devices/*.json
+tools/deploy.sh --all             # every Echo in local/devices/*.json (switched-off ones skipped)
 ECHO_HOST=dot-dev tools/deploy.sh # one device
 ```
 
