@@ -42,7 +42,6 @@
         android:label="Jarvis"
         android:icon="@mipmap/ic_jarvis_app"
         android:roundIcon="@mipmap/ic_jarvis_app"
-        android:extractNativeLibs="true"
         android:usesCleartextTraffic="true">
 
         <service android:name=".PhoneService" android:exported="false"
