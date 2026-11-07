@@ -17,8 +17,8 @@ The Echo Dot Gen 1 has been looked at but not unlocked:
 ## Layout
 
 ```
-assistant/       the Go program for every Echo model; internal/board picks the model's drivers
-tools/           deploy.sh (all models), librespot build, server skill (openhands/)
+tools/           deploy.sh (all models), librespot build
+                 (the Go program itself is ../../core/; internal/board picks the model's drivers)
 docs/            the assistant on the Echo, several Echos, Bluetooth, the original wake word
 hardware/gen1/   Echo Gen 1: system scripts (src/), config/, bring-up tools and docs
 hardware/dot2/   Echo Dot 2: own Linux (init, network, services), unlock and boot tools, docs
@@ -27,7 +27,7 @@ local/           git-ignored: SSH profiles, WiFi, keys, device settings, persona
 
 On the Echo the program lives in `/usr/local/echo-dev/jarvis/jarvis` (the Dot:
 `/data/echo-dot-dev/jarvis/jarvis`), its state in `/mnt/data/jarvis`, its secrets in
-`jarvis-secrets.json` (made by `tools/make_secrets.py` from `local/secrets.h`)
+`jarvis-secrets.json` (made by `core/tools/make_secrets.py` from `local/secrets.h`)
 and it is started by `services/jarvis.sh`. The command line tool is `jarvis ctl …`
 (`jarvis rawcapture …` records raw microphones). An own wake word model goes to
 `/mnt/data/jarvis/wakemodel/` (see [tools/wakeword](../../tools/wakeword/README.md)).

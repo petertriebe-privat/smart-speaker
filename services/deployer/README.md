@@ -14,6 +14,12 @@ Telegram ◀── "Neue Version abc123 aktiv auf dot-dev, echo-dev, echo2"
              or "fehlgeschlagen …, zurückgerollt auf def456"
 ```
 
+**Where it runs today:** the workflow `jarvis-build.yml` and the Pi's self-hosted runner are set
+up in the owner's private repository, not in this public one; this repository has no runner, no
+Actions secrets and no deploy workflow. A self-hosted runner on a public repository would let a
+pull request's workflow reach the home network once its run is approved, so the move needs a
+design where nothing in this repository can target the Pi.
+
 ## Pieces
 
 - **`.github/workflows/jarvis-build.yml`**: job `changes` decides what a pull request or a

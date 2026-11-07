@@ -18,7 +18,7 @@ Update the server after changing the skill here:
 
 ```sh
 for p in codex claude; do
-  ssh <server> "mkdir -p /opt/openhands/$p/skills/jarvis && cat > /opt/openhands/$p/skills/jarvis/SKILL.md" < devices/echo/tools/openhands/jarvis/SKILL.md
+  ssh <server> "mkdir -p /opt/openhands/$p/skills/jarvis && cat > /opt/openhands/$p/skills/jarvis/SKILL.md" < services/openhands/jarvis/SKILL.md
 done
 ```
 
