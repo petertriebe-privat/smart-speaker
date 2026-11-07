@@ -145,7 +145,10 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 - The assistant's own mailbox: mail commands, sending mail, attachments, e-mail printing.
 - Watching the household's private mailboxes (IMAP or Gmail): sorting, notices for what matters,
   an evening digest, search, parcels from shipping mails, tidying released categories into the
-  trash or archive.
+  trash or archive; the same mail in two of a person's mailboxes is told once *(Echo)*.
+- Parcel tracking: the tracking numbers from shipping mails (any carrier, every watched mailbox)
+  followed with 17TRACK through Home Assistant; every status change is told to its person, as the
+  person's rules allow *(Echo)*.
 
 ### Google and the world
 - All calendars (create, change, delete, free slots), contacts (read and write), birthdays, Tasks,

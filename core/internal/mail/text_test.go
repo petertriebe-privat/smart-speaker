@@ -150,3 +150,30 @@ func TestToolsRegistered(t *testing.T) {
 		t.Error("TakesCommands needs MAIL_AUTHSERV_ID")
 	}
 }
+
+func TestBriefShippingMail(t *testing.T) {
+	links := ""
+	for _, lang := range []string{"English", "Türkçe", "Polski", "Español", "Français", "Italiano"} {
+		links += lang + "\n[https://custcomm.example.com/go/2/FW8I-69IBFM2N-6KJLSA5B-1B9QA9U.html?u=https%3A%2F%2Fcustcomm.example.com%2Fgo]\n"
+	}
+	text := "[Onlineversion](https://custcomm.example.com/go/2/a.html) | [Datenschutz](https://custcomm.example.com/b.html)\n\n\n[Image]\n\n" +
+		links + "\n\n\n<p style=\"font-family:'Delivery';\">Hallo,</p>\n<p style=\"text-align:center;\">Ihre Shop GmbH Sendung wird Ihnen <br>" +
+		"<strong>heute zwischen 11:35 - 13:05 Uhr</strong><br> durch Ihre Paketzustellkraft zugestellt.</p>\n\n\n[Jetzt live verfolgen](\n\n\n\n" +
+		"https://custcomm.example.com/go/2/x.html?piececode=00340434610003758398\n)\n<!--[if mso]>\n<table><tr><td>x</td></tr></table>\n<![endif]-->\n" +
+		"Ihre Sendungsnummer &amp; mehr: 00340434610003758398"
+	got := Brief(text)
+	for _, want := range []string{"heute zwischen 11:35 - 13:05 Uhr", "Jetzt live verfolgen", "Onlineversion | Datenschutz",
+		"Sendungsnummer & mehr: 00340434610003758398"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in %q", want, got)
+		}
+	}
+	for _, unwanted := range []string{"http", "<p", "<strong", "mso", "[Image]", "\n\n"} {
+		if strings.Contains(got, unwanted) {
+			t.Errorf("%q left in %q", unwanted, got)
+		}
+	}
+	if len(got) > 400 {
+		t.Errorf("brief is %d bytes: %q", len(got), got)
+	}
+}

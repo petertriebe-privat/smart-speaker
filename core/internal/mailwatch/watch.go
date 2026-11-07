@@ -224,9 +224,15 @@ func classifyInput(now time.Time, personName, label, memory, shipments string, m
 		if m.Attachments != "" {
 			b.WriteString("\nAttachments: " + m.Attachments)
 		}
-		b.WriteString("\n\n" + m.Text + "\n")
+		b.WriteString("\n\n" + clip(mail.Brief(m.Text), lim("MAILWATCH_TEXT_CHARS", 1500)) + "\n")
 	}
 	return b.String()
+}
+
+// fetchChars: how much of a mail's text is read for the sorting: more than it gets
+// (MAILWATCH_TEXT_CHARS), because links and markup are dropped before it is cut (mail.Brief).
+func fetchChars() int {
+	return lim("MAILWATCH_TEXT_CHARS", 1500) * lim("MAILWATCH_TEXT_FETCH_FACTOR", 4)
 }
 
 // classify is one backend request for the mails of one mailbox. False if it failed (tried
@@ -362,6 +368,13 @@ func (s *Service) apply(box Mailbox, person string, mails []mail.Incoming, old b
 			a.Box, a.Ref, a.From, a.Subject = box.Label, sm.Ref, senderName(m.From), m.Subject
 			candidates = append(candidates, a)
 		}
+		if !old && s.duplicate(e) {
+			// The same mail to another of the person's addresses (DHL wrote to two, 07.11.2026):
+			// told or in the digest once, through the first mailbox.
+			e.Told = true
+			log.Printf("[MailWatch] %s: %q came through another mailbox already, not told again", box.Label, e.Subject)
+			continue
+		}
 		if !old && sm.Notify == "now" {
 			urgent = append(urgent, noticeLine(box.Label, sm.Summary, several))
 			urgentEntries = append(urgentEntries, e)
@@ -421,6 +434,18 @@ func (s *Service) apply(box Mailbox, person string, mails []mail.Incoming, old b
 	return fresh
 }
 
+// duplicate: the person got the same mail (sender, subject, within a day) in another mailbox
+// already. Caller holds the lock.
+func (s *Service) duplicate(e *entry) bool {
+	for _, o := range s.st.Log {
+		if o != e && o.Person == e.Person && o.Box != e.Box && !o.Old && o.From == e.From && o.Subject == e.Subject &&
+			o.T > e.T-86400 && o.T < e.T+86400 {
+			return true
+		}
+	}
+	return false
+}
+
 // affairOf: the affair a sorted mail is about, if it is worth keeping: none from newsletters,
 // advertising, social or spam; from older mails (filing the index) only what is still ahead.
 func affairOf(sm sortedMail, old bool, now time.Time) (MailAffair, bool) {
@@ -470,7 +495,7 @@ func (s *Service) fetchNew(ctx context.Context, box Mailbox, b boxState) ([]mail
 	if s.Mail == nil {
 		return nil, b, fmt.Errorf("Error: no mail service")
 	}
-	mails, err := s.Mail.FetchNew(account(box), &b.Validity, &b.Last, lim("MAILWATCH_BATCH", 10), lim("MAILWATCH_TEXT_CHARS", 1500))
+	mails, err := s.Mail.FetchNew(account(box), &b.Validity, &b.Last, lim("MAILWATCH_BATCH", 10), fetchChars())
 	return mails, b, err
 }
 
@@ -646,7 +671,7 @@ func (s *Service) indexStep(ctx context.Context) bool {
 		count := min(len(refs), lim("MAILWATCH_BATCH", 10))
 		var mails []mail.Incoming
 		var err error
-		textChars := lim("MAILWATCH_TEXT_CHARS", 1500)
+		textChars := fetchChars()
 		if box.Gmail() {
 			for _, ref := range refs[:count] {
 				m, status, e := s.gmailMessage(ctx, box, ref, textChars)

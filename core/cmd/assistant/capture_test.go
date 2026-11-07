@@ -25,6 +25,7 @@ func TestNoWordsAfterWakeWordListensOn(t *testing.T) {
 	dir := store.Dir
 	store.Dir = t.TempDir()
 	defer func() { store.Dir = dir }()
+	defer quickWrites.Wait() // the clip is written in the background: before TempDir is removed
 
 	d := &device{}
 	d.capture.active, d.capture.req, d.capture.gen, d.capture.deciding = true, live.Request{Wake: true}, 1, 1

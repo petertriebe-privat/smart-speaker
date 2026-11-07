@@ -225,6 +225,44 @@ func (s *Service) Parcels(person string) []Parcel {
 	return out
 }
 
+// Tracked: one of the parcels with a tracking number, for the tracking with 17TRACK (parceltrack).
+type Tracked struct {
+	Person, Number, Carrier, Sender string
+	Delivered                       bool
+}
+
+// TrackedShipments: every parcel with a tracking number the mails named.
+func (s *Service) TrackedShipments() []Tracked {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var out []Tracked
+	for _, p := range s.st.Shipments {
+		if p.Number != "" {
+			out = append(out, Tracked{Person: p.Person, Number: p.Number, Carrier: p.Carrier, Sender: p.Sender,
+				Delivered: p.Delivered})
+		}
+	}
+	return out
+}
+
+// UpdateShipment: the tracking's newer state of a parcel (every person's entry with the number,
+// spaces and dashes ignored). Its time becomes now, so an older mail does not undo it.
+func (s *Service) UpdateShipment(number, status string, delivered bool) {
+	norm := func(n string) string { return strings.ToUpper(strings.NewReplacer(" ", "", "-", "").Replace(n)) }
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	changed := false
+	for _, p := range s.st.Shipments {
+		if p.Number != "" && norm(p.Number) == norm(number) {
+			p.Status, p.Delivered, p.T = status, delivered, time.Now().Unix()
+			changed = true
+		}
+	}
+	if changed {
+		s.save()
+	}
+}
+
 // openShipments: the parcels of `person` not delivered yet, one per line with `prefix`. Caller
 // holds the lock.
 func (s *Service) openShipments(person, prefix string, now time.Time) string {

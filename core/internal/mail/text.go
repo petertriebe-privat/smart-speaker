@@ -1,6 +1,8 @@
 package mail
 
 import (
+	"html"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -31,6 +33,42 @@ func CleanText(text string) string {
 		}
 	}
 	return strings.TrimSpace(string(out))
+}
+
+var (
+	briefComment = regexp.MustCompile(`(?s)<!--.*?-->`)
+	briefStyle   = regexp.MustCompile(`(?is)<(style|script)\b.*?</(style|script)\s*>`)
+	briefMDLink  = regexp.MustCompile(`\[([^\]\n]*)\]\(\s*https?://[^)]*\)`)
+	briefBreak   = regexp.MustCompile(`(?i)<(br|/p|/div|/tr|/h[1-6]|/li|/table)\b[^>]*>`)
+	briefTag     = regexp.MustCompile(`</?[a-zA-Z!][^>]*>`)
+	briefURL     = regexp.MustCompile(`[\[(<]?\s*https?://[^\s\])>]*\s*[\])>]?`)
+	briefSpaces  = regexp.MustCompile(`[ \t]+`)
+)
+
+// Brief is a mail's text for reading its gist (the mail watch's sorting): no links, no HTML left in
+// a plain part, no empty lines. Shipping mails put thousands of characters of tracked links and
+// language menus before the one sentence that matters (DHL's "heute zwischen 11:35 - 13:05 Uhr"
+// came after 3000 characters of links, 07.11.2026); the start of a mail must be its text.
+func Brief(text string) string {
+	text = briefComment.ReplaceAllString(text, " ")
+	text = briefStyle.ReplaceAllString(text, " ")
+	text = briefMDLink.ReplaceAllString(text, "$1")
+	text = briefBreak.ReplaceAllString(text, "\n")
+	text = briefTag.ReplaceAllString(text, " ")
+	text = briefURL.ReplaceAllString(text, " ")
+	text = html.UnescapeString(text)
+	var out strings.Builder
+	for _, line := range strings.Split(text, "\n") {
+		line = strings.TrimSpace(briefSpaces.ReplaceAllString(line, " "))
+		if line == "" || line == "[Image]" || line == "|" {
+			continue
+		}
+		if out.Len() > 0 {
+			out.WriteByte('\n')
+		}
+		out.WriteString(line)
+	}
+	return CleanText(out.String())
 }
 
 // namedEntities: the HTML entities mails use in practice.
