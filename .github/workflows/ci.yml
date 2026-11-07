@@ -51,7 +51,7 @@ jobs:
           touches() { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -qE "$1"; }
           out() { if touches "$2"; then echo "$1=true"; else echo "$1=false"; fi >> "$GITHUB_OUTPUT"; }
           out go '^(core/|shared/prompts/|local/)'
-          out m5 '^(devices/atoms3r/|shared/prompts/|local/)'
+          out m5 '^(devices/atoms3r/|shared/prompts/|local/|core/internal/wakeword/)'
           out android '^devices/android/'
           out python '\.py$|^ruff\.toml$|^services/'
           out shell '\.(sh|script)$|^services/deployer/jarvis-diag$'
@@ -123,6 +123,14 @@ jobs:
         with:
           path: ~/.platformio
           key: platformio-${{ hashFiles('devices/atoms3r/platformio.ini') }}
+      - name: one wake word model for the M5 and core/
+        # core/ embeds its own copy (go:embed cannot reach outside the module); the M5 builds a
+        # C header from models/: all three must stay the same model.
+        run: |
+          cmp models/hey_jarvis.tflite ../../core/internal/wakeword/hey_jarvis.tflite
+          cmp models/hey_jarvis.json ../../core/internal/wakeword/hey_jarvis.json
+          python3 models/make_model_header.py models/hey_jarvis.tflite include/wake_model.h
+          git diff --exit-code -- include/wake_model.h
       - run: pip install platformio==6.2.0
       - name: build
         run: |

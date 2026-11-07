@@ -14,7 +14,7 @@ devices/android/     the Android apps (Gradle, Java): shared/ (HUD, hologram, ca
 shared/prompts/      persona.h, prompts.h, assistant_name.h: one source for every device (core embeds
                      prompts.json, made by core/tools/extract_prompts.py)
 services/            servers next to the devices: deployer, home-gateway, mcp-servers, agent-mcp,
-                     whatsapp-relay
+                     openhands (the server agent's skill), whatsapp-relay
 tools/               cross-device tools (wake word training, Google and Spotify login, OpenAI costs,
                      archive migration, github-settings.sh for the repository)
 local/               git-ignored: the household's own values for every device (secrets.h, persona,

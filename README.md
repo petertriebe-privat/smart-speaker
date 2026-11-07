@@ -16,7 +16,7 @@ device or on several that work together as one assistant.
 |---|---|
 | The assistant's Go program, running on the Echos, the Fire TV and the phone | [core](core/) |
 | Persona and prompts, one source for every device | [shared/prompts](shared/prompts/) |
-| Servers next to the devices (MCP servers, agent, WhatsApp relay, deployer, home gateway) | [services](services/) |
+| Servers next to the devices (MCP servers, agent and its skill, WhatsApp relay, deployer, home gateway) | [services](services/) |
 | Wake word training, Google and Spotify login, cost report | [tools](tools/) |
 | The household's own values for every device (git-ignored; templates and how-to) | [local](local/) |
 
