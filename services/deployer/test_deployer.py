@@ -68,20 +68,12 @@ class DeployerTest(unittest.TestCase):
         self.assertEqual(len(list(self.cfg.builds.iterdir())), 3)
         self.assertTrue((self.cfg.builds / ("e" * 40) / "jarvis").exists())
 
-    def test_pr_message(self):
-        env = {"PR_NUMBER": "7", "PR_TITLE": "Fix timers", "PR_BRANCH": "ultron/timers",
-               "PR_SHA": "a" * 40, "PR_URL": "https://gh/pr/7", "RUN_URL": "https://ci/run/1",
-               "ECHO_RESULT": "success", "FIRETV_RESULT": "skipped"}
-        text = deployer.pr_message(env)
-        for part in ("PR #7: Fix timers", "Test-Build ok (Echos), Version aaaaaaaaaaaa", "https://ci/run/1",
-                     "Merge = Deploy auf Echos.", "https://gh/pr/7"):
-            self.assertIn(part, text)
-        env["FIRETV_RESULT"] = "success"
-        self.assertIn("Merge = Deploy auf Echos und Fire TV.", deployer.pr_message(env))
-        env["FIRETV_RESULT"] = "failure"
-        self.assertIn("Build fehlgeschlagen: Fire TV (failure)", deployer.pr_message(env))
-        env.update(ECHO_RESULT="skipped", FIRETV_RESULT="skipped")
-        self.assertIn("deployt nichts", deployer.pr_message(env))
+    def test_links_go_to_the_code_not_the_workflow(self):
+        cfg = deployer.Config({"SOURCE_REPOSITORY": "owner/code", "GITHUB_REPOSITORY": "owner/deploy",
+                               "GITHUB_RUN_ID": "5"})
+        self.assertEqual(cfg.repo, "owner/code")
+        self.assertEqual(cfg.run_url, "https://github.com/owner/deploy/actions/runs/5")
+        self.assertEqual(deployer.Config({"GITHUB_REPOSITORY": "owner/code"}).repo, "owner/code")
 
     def test_read_env(self):
         f = Path(self.tmp.name) / "env"

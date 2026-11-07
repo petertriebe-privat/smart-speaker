@@ -1,9 +1,10 @@
 #!/bin/sh
 # Install or update the deploy on the Raspberry Pi (run there with sudo from a checkout of the
 # repository). See README.md.
-#   sudo REPO=<owner>/<name> RUNNER_TOKEN=<token> sh services/deployer/install.sh
+#   sudo REPO=<owner>/smart-speaker-deploy RUNNER_TOKEN=<token> sh services/deployer/install.sh
+# REPO is the private deploy repository: the runner refuses a repository anyone can read.
 # RUNNER_TOKEN only for the first run (a registration token, valid one hour:
-# gh api -X POST repos/<owner>/<name>/actions/runners/registration-token --jq .token).
+# gh api -X POST repos/<owner>/smart-speaker-deploy/actions/runners/registration-token --jq .token).
 # Creates the user jarvis-deploy, /opt/jarvis-deployer with deployer.py, the
 # environment file to fill in, and GitHub's self-hosted runner (label jarvis-deploy) as a service.
 set -eu
@@ -25,7 +26,12 @@ fi
 chown root:jarvis-deploy "$ENV"
 chmod 640 "$ENV"
 if [ ! -x "$HOME_DIR/runner/run.sh" ]; then
-    : "${REPO:?REPO=<owner>/<name> for the first run}" "${RUNNER_TOKEN:?RUNNER_TOKEN for the first run}"
+    : "${REPO:?REPO=<owner>/smart-speaker-deploy for the first run}" "${RUNNER_TOKEN:?RUNNER_TOKEN for the first run}"
+    # a public repository's pull requests could run their own workflow on this runner
+    if curl -fsS -o /dev/null "https://api.github.com/repos/$REPO"; then
+        echo "$REPO can be read without login (public): the runner goes only to a private repository" >&2
+        exit 1
+    fi
     v=$(curl -fsSL https://api.github.com/repos/actions/runner/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
     mkdir -p "$HOME_DIR/runner"
     curl -fsSL "https://github.com/actions/runner/releases/download/v$v/actions-runner-linux-arm64-$v.tar.gz" |

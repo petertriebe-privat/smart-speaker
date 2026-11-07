@@ -82,6 +82,9 @@ The assistant runs on the Amazon Echos (`devices/echo/`, Go in `core/`), the Ato
   at a time. The Fire TV: `devices/android/tools/install.sh <host> <room> [--core]` (builds core/
   for ARMv7 into the APK; the stick's log: `adb shell run-as dev.jarvis.screen cat
   files/run/jarvis.log`). A change in core/ goes to the Echos, the sticks and the phone.
+  After a merge the owner deploys the Echos and sticks with the workflow `deploy` of the private
+  `smart-speaker-deploy` (`services/deployer/README.md`); only the owner starts it, never an
+  agent. This repository never gets a self-hosted runner or a deploy workflow.
 
 ## Working on the Echo hardware
 

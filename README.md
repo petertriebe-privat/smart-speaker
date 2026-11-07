@@ -238,9 +238,11 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   reports by Telegram, announced only on a speaker the owner names, a call back on request; with
   `/freigabe an` changes wait for the owner's tap in Telegram.
 - The assistant improves itself with a safety net *(Echo)*: the server agent builds a fix or feature on a branch
-  and opens a pull request, the CI tests and builds it, and the link comes by Telegram; the
-  owner's merge deploys it on every Echo through the CI on the Raspberry Pi, which checks that the
-  new version runs, rolls back when not, and reports it in Telegram (`services/deployer`; the CI pipeline itself is set up per repository and is not part of this repository yet).
+  and opens a pull request, the CI tests it; the owner merges it and starts the deploy, which
+  builds that commit and installs it from the Raspberry Pi on every Echo and Fire TV stick,
+  checks that the new version runs, rolls back when not, and reports it in Telegram
+  (`services/deployer`; the deploy workflow lives in the owner's private repository, so nothing
+  in this public one can reach the home network).
   The server agent reads every Echo's status, logs and errors for the analysis, only reading and through the
   Pi (`ssh jarvis-diag`, skill `jarvis`) *(Echo)*. The Fire TV app is built and installed on every
   stick the same way, as an update that keeps its setup.

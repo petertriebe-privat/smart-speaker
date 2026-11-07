@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Jarvis' deploy on the Raspberry Pi (#122): a merge into main goes onto every Echo.
+"""Jarvis' deploy on the Raspberry Pi (#122): a commit on main goes onto every Echo.
 
-Run by the CI (job "deploy" of .github/workflows/jarvis-build.yml) on the Pi's self-hosted runner,
-after the build of a commit on main:
+Run by the owner's deploy workflow (a private repository, README.md) on the Pi's self-hosted
+runner, after the build of a commit on main that passed CI, only when the owner starts it:
 
     python3 /opt/jarvis-deployer/deployer.py <commit> <binary>
 
@@ -39,9 +39,11 @@ def read_env(path):
 
 class Config:
     def __init__(self, env):
-        self.repo = env.get("GITHUB_REPOSITORY", "")
+        # the code's repository (links to commits); the workflow runs in another one
+        self.repo = env.get("SOURCE_REPOSITORY") or env.get("GITHUB_REPOSITORY", "")
+        self.run_repo = env.get("GITHUB_REPOSITORY", "")
         self.server = env.get("GITHUB_SERVER_URL", "https://github.com")
-        self.run_url = (f"{self.server}/{self.repo}/actions/runs/{env['GITHUB_RUN_ID']}"
+        self.run_url = (f"{self.server}/{self.run_repo}/actions/runs/{env['GITHUB_RUN_ID']}"
                         if env.get("GITHUB_RUN_ID") else "")
         self.bot = env.get("TELEGRAM_BOT_TOKEN", "")        # Jarvis' bot: sendMessage only
         self.chat = env.get("TELEGRAM_CHAT_ID", "")         # the owner's chat
@@ -151,35 +153,12 @@ class Deployer:
         return False
 
 
-BUILDS = (("ECHO_RESULT", "Echos"), ("FIRETV_RESULT", "Fire TV"))
-
-
-def pr_message(env):
-    """The owner's notice of a pull request after its builds (job "notify", env from the workflow):
-    a build that did not run (skipped) means the pull request does not touch that device."""
-    text = f"PR #{env['PR_NUMBER']}: {env['PR_TITLE']}\n{env['PR_BRANCH']}\n"
-    results = {name: env.get(key, "") for key, name in BUILDS}
-    built = [name for name, r in results.items() if r == "success"]
-    failed = [f"{name} ({r})" for name, r in results.items() if r in ("failure", "cancelled")]
-    if failed:
-        text += f"Build fehlgeschlagen: {', '.join(failed)}: {env['RUN_URL']}"
-    elif built:
-        text += (f"Test-Build ok ({', '.join(built)}), Version {env['PR_SHA'][:12]}: {env['RUN_URL']}\n"
-                 f"Merge = Deploy auf {' und '.join(built)}.")
-    else:
-        text += "Ändert weder die Echos noch die Fire TVs: ein Merge deployt nichts."
-    return text + "\n" + env["PR_URL"]
-
-
 def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     env = {**read_env("/etc/jarvis-deployer.env"), **os.environ}
     cfg = Config(env)
-    if sys.argv[1:] == ["notify-pr"]:
-        send_telegram(cfg, pr_message(env))
-        return
     if len(sys.argv) != 3:
-        sys.exit("usage: deployer.py <commit> <binary> | deployer.py notify-pr")
+        sys.exit("usage: deployer.py <commit> <binary>")
     sys.exit(0 if Deployer(cfg).run(sys.argv[1], Path(sys.argv[2])) else 1)
 
 
