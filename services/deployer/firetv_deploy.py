@@ -2,7 +2,8 @@
 """Jarvis' deploy on the Fire TV sticks (#126), on the Raspberry Pi: a merge into main goes onto
 every stick, as the Echos get it (deployer.py).
 
-Run by the CI (job "firetv-deploy" of .github/workflows/jarvis-build.yml) on the Pi's runner:
+Run by the owner's deploy workflow (job "firetv-deploy", a private repository, README.md) on the
+Pi's runner:
 
     python3 /opt/jarvis-deployer/firetv_deploy.py <commit> <apk>
 
