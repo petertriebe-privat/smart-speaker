@@ -92,7 +92,10 @@ class Workspace:
             return ""
 
     def deploy(self, sha, binary):
-        self.checkout(sha)
+        try:
+            self.checkout(sha)
+        except subprocess.CalledProcessError as e:  # e.g. a commit the repository does not have
+            return False, f"checkout of {sha[:12]} failed: {(e.stderr or '').strip()}"
         env = {**os.environ, "JARVIS_BIN": str(binary), "VERSION": sha[:12], "CHECKED": "1"}
         out = subprocess.run(["sh", "devices/echo/tools/deploy.sh", "--all"], cwd=self.cfg.workspace,
                              env=env, capture_output=True, text=True, timeout=1800)
@@ -133,11 +136,15 @@ class Deployer:
         build = self.keep_build(sha, binary)
         ok, out = self.ws.deploy(sha, build)
         running = [line.split(":")[0] for line in out.splitlines() if line.endswith(" running")]
+        skipped = [line.split(":")[0] for line in out.splitlines()
+                   if line.endswith(": not reachable, skipped")]
         if ok:
             self.state["deployed"] = sha
             self.save()
-            self.telegram(f"Neue Version {sha[:12]} aktiv auf {', '.join(running)}.\n{subject}\n"
-                          f"{self.cfg.server}/{self.cfg.repo}/commit/{sha}")
+            away = (f"Nicht erreichbar, bekommt sie beim nächsten Deploy: {', '.join(skipped)}.\n"
+                    if skipped else "")
+            self.telegram(f"Neue Version {sha[:12]} aktiv auf {', '.join(running)}.\n{away}"
+                          f"{subject}\n{self.cfg.server}/{self.cfg.repo}/commit/{sha}")
             return True
         tail = "\n".join(out.strip().splitlines()[-6:])
         good = self.state.get("deployed")

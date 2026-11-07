@@ -50,7 +50,10 @@ The private workflow only checks out and builds commits of this repository's `ma
   binary) and `VERSION`: the Dot first (alphabetical), then the Echos. After each restart
   deploy.sh waits until `ctl status` reports `version=<commit>`, twice 15 s apart (no crash
   loop); a failure stops the rollout, and deployer.py installs the last good commit and binary on
-  every Echo again (it keeps the three newest builds). Then the message in Telegram through
+  every Echo again (it keeps the three newest builds). An Echo that does not answer SSH (switched
+  off, away) is skipped and named in the report; it gets the version with the next deploy. A last
+  good commit the repository does not have (one from before the move to this repository) cannot
+  be checked out: the report says the rollback failed. Then the message in Telegram through
   Jarvis' bot (sending only). Secrets, librespot and Tailscale are never part of it: those stay
   with `deploy.sh --secrets` etc. from the PC.
 - **agent-mcp** gives Ultron the rule for change tasks (`CODE_RULES`): branch `ultron/…`, tests,

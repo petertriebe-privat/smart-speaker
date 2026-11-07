@@ -8,7 +8,7 @@ import deployer
 
 class FakeWorkspace:
     def __init__(self):
-        self.deploys, self.results = [], []
+        self.deploys, self.results, self.output = [], [], ""
 
     def subject(self, sha):
         return f"subject of {sha}"
@@ -19,6 +19,8 @@ class FakeWorkspace:
         ok = self.results.pop(0) if self.results else True
         if not ok:
             return False, "dot-dev: version x running\necho-dev: version x is not running"
+        if self.output:
+            return True, self.output
         return True, "\n".join(f"{h}: version {sha[:12]} running" for h in ("dot-dev", "echo-dev", "echo2"))
 
 
@@ -54,6 +56,18 @@ class DeployerTest(unittest.TestCase):
         self.assertIn("is not running", self.sent[-1])
         self.assertIn("actions/runs/9", self.sent[-1])
         self.assertEqual(self.deployer().state["deployed"], "a" * 40)
+
+    def test_an_unreachable_echo_is_reported(self):
+        self.ws.output = "dot-dev: not reachable, skipped\necho-dev: version aaaaaaaaaaaa running"
+        self.assertTrue(self.deployer().run("a" * 40, self.binary))
+        self.assertIn("aktiv auf echo-dev.\nNicht erreichbar, bekommt sie beim nächsten Deploy: "
+                      "dot-dev.", self.sent[-1])
+
+    def test_a_failed_checkout_is_reported_not_raised(self):
+        cfg = deployer.Config({"GITHUB_WORKSPACE": self.tmp.name})  # not a git checkout
+        ok, out = deployer.Workspace(cfg).deploy("c" * 40, self.binary)
+        self.assertFalse(ok)
+        self.assertIn("checkout of cccccccccccc failed", out)
 
     def test_failure_without_an_earlier_version(self):
         self.ws.results = [False]
