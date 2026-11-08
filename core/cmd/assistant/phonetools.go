@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"echo-assistant/internal/phone"
 	"echo-assistant/internal/tools"
 )
 
@@ -86,9 +87,33 @@ func (d *device) addPhoneTools() {
 		"time or distance without starting it use the maps tools.",
 		`{"type": "object", "additionalProperties": false, "properties": {"destination": `+str("where to, as the user said it or an address")+
 			`, "mode": {"type": "string", "enum": ["driving", "walking", "bicycling", "transit"]}}, "required": ["destination"]}`)
-	add("phone_call", "Calls someone from the user's phone (in the car over its hands-free). By name "+
-		"from the phone's contacts, or a number. Say whom you call before: a call is not undone.",
-		`{"type": "object", "additionalProperties": false, "properties": {"who": `+str("a contact's name or a phone number")+`}, "required": ["who"]}`)
+	// The user talks themselves: the same tool and the same words as at the speakers at home
+	// (dial_for_me), here over the phone's own line; the app calls it phone_call.
+	d.registry.Add(tools.Tool{
+		Name: "dial_for_me",
+		Description: "Calls someone from the user's phone, and the user talks with them themselves (in the car over " +
+			"its hands-free): 'Rufe Anna an', 'wähl die Praxis'. That is the right tool whenever they name no task " +
+			"for you - with a task for you ('reservier einen Tisch', 'sag ihr, dass ...') it is phone_call. By name " +
+			"from the phone's contacts, or a number. Say whom you call before: a call is not undone.",
+		Parameters: `{"type": "object", "additionalProperties": false, "properties": {"to": ` +
+			str("a contact's name or a phone number") + `}, "required": ["to"]}`,
+		Channels: tools.Voice | tools.Console,
+		Run: func(args map[string]any, ctx tools.Context) string {
+			return phoneToolCall("phone_call", map[string]any{"who": tools.String(args, "to")})
+		},
+	})
+	// The assistant calls with a task (a table, a practice, "ruf Anna an und sag ihr ..."): over the
+	// landline at home, on the primary - the phone has no landline (install_phone.sh leaves SIP out).
+	d.registry.Add(phone.CallTool(false, func(args map[string]any, ctx tools.Context) string {
+		delete(args, "listen")
+		delete(args, "talk")
+		arguments, _ := json.Marshal(args)
+		out, err := d.remoteTool("phone_call", string(arguments), ctx)
+		if err != nil {
+			return "Error: the speakers at home are not reachable for the call: " + err.Error()
+		}
+		return out
+	}))
 	add("phone_messages", "Reads the messages waiting on the user's phone: the notifications of "+
 		"WhatsApp, Signal, Telegram, SMS and other messengers (sender, text, app, key). Read them out "+
 		"or summarize them; the key answers one with phone_reply.",

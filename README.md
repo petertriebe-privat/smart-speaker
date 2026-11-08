@@ -133,8 +133,12 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   speaker, the assistant joining a call as a third party, dialling someone for you *(Echo; the M5
   can listen in)*. The way into the room adapts to a noisy line, so the room stays audible to the
   caller; every call logs how the microphone went.
+- A call the assistant makes for you: listen in or talk along from the pick-up, or step in later;
+  a call running at any Echo, outgoing or incoming, comes onto the speaker where you are *(Echo)*.
+- From the phone app: calls you make yourself go from the phone, calls with a task for the
+  assistant over the landline at home with the result as a message *(phone app)*.
 - The mobile phone over Bluetooth: hands-free unit, calls ringing at the Echo with the caller's
-  name, pairing by voice *(Echo Gen 1)*.
+  name, calling by voice, the assistant as third party in a call, pairing by voice *(Echo Gen 1)*.
 - Guests: numbers not released get a polite guest mode; the message reaches the admin.
 
 ### Messages and mail

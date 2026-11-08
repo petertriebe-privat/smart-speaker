@@ -30,6 +30,14 @@ func (p *Phone) CallForRoom() bool {
 	return p.callForRoomLocked()
 }
 
+// CallHere: a call of this device runs, rings, or waits to be dialled (speaker_call is about it,
+// not about another Echo's).
+func (p *Phone) CallHere() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.call.stage != stageNone || p.wanted != nil || p.mob.audio != nil || p.mob.call != ""
+}
+
 func (p *Phone) callForRoomLocked() bool {
 	return p.call.probe == nil && (p.call.stage == stageTalking || p.call.stage == stageBridge) || p.mob.audio != nil
 }

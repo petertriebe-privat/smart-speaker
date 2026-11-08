@@ -12,14 +12,14 @@ import (
 
 	"echo-assistant/internal/peer"
 	"echo-assistant/internal/phone"
-	"echo-assistant/internal/tools"
 )
 
 // A call on another Echo, heard and joined here (phase 7 of devices/echo/docs/18-several-echos.md, #63).
 // This Echo (where the user is) asks the one with the call for its room: that one's speaker
 // direction plays here, this microphone goes onto its line (internal/phone/remote.go), over a
 // peer audio link. The button walks off -> listen -> talk -> off as for a call here; a long press
-// ends it (a call that is only the bridge hangs up, as at home). By voice: join_call.
+// ends it (a call that is only the bridge hangs up, as at home). By voice: speaker_call, which
+// takes the call of another Echo when none runs here (callElsewhereHere).
 
 // roomLink: the call of another Echo whose room is here (nil = none).
 type roomLink struct {
@@ -60,21 +60,17 @@ func (d *device) setupRoomLink() {
 	d.peers.Handle("/room/join", d.serveRoomJoin)
 	d.peers.Handle("/room/mode", d.serveRoomMode)
 	d.peers.Handle("/room/fetch", d.serveRoomFetch)
-	d.registry.Add(tools.Tool{
-		Name: "join_call",
-		Description: "A phone call that runs at another of the assistant's speakers (the assistant's own call, the user's call on the landline " +
-			"or the mobile phone) comes here: listen (hear it on this speaker), talk (take part with this microphone), " +
-			"off (end it here; a call that is only the user's own then hangs up). For a call at this speaker: speaker_call.",
-		Parameters: `{"type": "object", "additionalProperties": false,
-            "properties": {"mode": {"type": "string", "enum": ["listen", "talk", "off"]}}, "required": ["mode"]}`,
-		Channels: tools.Voice | tools.Agent | tools.Console,
-		Run: func(args map[string]any, ctx tools.Context) string {
-			if ctx.Conversation != nil && ctx.Conversation.Label() == "speaker" {
-				defer ctx.Conversation.EndSoon() // the speaker belongs to the call now
-			}
-			return d.joinCall(tools.String(args, "mode"))
-		},
-	})
+}
+
+// callElsewhereHere: speaker_call while no call runs here (phone.Deps.CallElsewhere): the call of
+// another Echo comes here, or goes on in another mode; ok false when there is none either. One
+// tool for "ich möchte mithören" wherever the call runs, so the model need not know which Echo
+// has it.
+func (d *device) callElsewhereHere(mode string) (string, bool) {
+	if d.peers == nil || roomHere() == nil && d.callElsewhere() == nil {
+		return "", false
+	}
+	return d.joinCall(mode), true
 }
 
 // callElsewhere: another Echo with a call running.

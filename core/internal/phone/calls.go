@@ -44,6 +44,7 @@ type call struct {
 	direct                                    bool       // dial_for_me: the user talks themselves, GPT Live is not in it
 	probe                                     *echoProbe // the echo test (echotest.go): no room, no session
 	listen                                    bool       // phone_call listen: on the speaker at home from the pick-up
+	talk                                      bool       // phone_call talk: the microphone at home too, a three-way call
 	reportCall                                bool       // outgoing for the user: the report by a call back
 	callback                                  bool       // incoming: a number the assistant called for the user calls back
 	history                                   string     // the earlier calls with this number, as context (followup.go)
@@ -324,7 +325,8 @@ func (p *Phone) dial(r *callRequest) {
 	c.reason = r.reason
 	c.direct = r.direct
 	c.probe = r.probe
-	c.listen = r.listen
+	c.listen = r.listen || r.talk
+	c.talk = r.talk
 	c.reportCall = r.reportCall
 	c.name = r.name
 	// A call for the user outside the household: kept per number, with the earlier calls as context.
@@ -521,9 +523,15 @@ func (p *Phone) onInviteResponse(m *Message) {
 	}
 	// "Ich möchte mithören": the call is on the speaker from the pick-up (the conversation that
 	// asked for it was over before the call started, so nobody at home could switch it on).
-	if c.listen && p.deps.Speaker != nil && p.bridge.setMode(modeListen) {
+	// "Ich will mitreden" (talk): the microphone at home too, a three-way call from the start; the
+	// session hears of it once it greets (updateCall).
+	mode := modeListen
+	if c.talk {
+		mode = modeTalk
+	}
+	if c.listen && p.deps.Speaker != nil && p.bridge.setMode(mode) {
 		p.bridge.announce(true)
-		log.Printf("[Phone] picked up (%s), audible at home from the start", codecName(c.media.Payload))
+		log.Printf("[Phone] picked up (%s), %s at home from the start", codecName(c.media.Payload), mode.name())
 		return
 	}
 	log.Printf("[Phone] picked up (%s)", codecName(c.media.Payload))
@@ -904,6 +912,12 @@ func (p *Phone) updateCall(now time.Time) {
 			// Listened to at home from the start: the other side is told at once (§ 201 StGB).
 			if c.listen && p.bridge.Mode().ToRoom {
 				p.session.Commentary(prompts.TextOr("LIVE_BRIDGE_LISTENING", bridgeListening))
+			}
+			// Talking along from the start: a three-way call, as when the user steps in later
+			// (setBridgeLocked).
+			if c.talk && p.bridge.Mode().ToLine && p.conf == nil && p.session.OnPhone() {
+				p.conf = &conference{since: now, own: true}
+				p.session.Commentary(prompts.TextOr("LIVE_BRIDGE_JOINED", bridgeJoined))
 			}
 		}
 	}

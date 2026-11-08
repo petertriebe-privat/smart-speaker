@@ -258,64 +258,7 @@ func (p *Phone) AddTools(r *tools.Registry) {
 	if !p.Configured() {
 		return
 	}
-	r.Add(tools.Tool{
-		Name: "phone_call",
-		Description: "Calls someone by phone and has the conversation by voice. A person of the household (name, or '' for the " +
-			"user): The assistant talks with them itself, with memory and all tools ('ruf mich an', a wake-up call, an " +
-			"urgent alert, 'ruf Anna an und sag ihr ...'). Anyone else (a phone number: book a table, ask a shop or a " +
-			"practice): The assistant knows only the task there, and the result is reported afterwards; confirm the details " +
-			"with the user first (number, date, time, people, name); the number from find_contact, for a business from " +
-			"find_place. At a later time ('ruf mich um 7 an'): create_task. German numbers only; children may call " +
-			"only the household. Only with a task for you: if the user " +
-			"wants to talk themselves, or names no task at all ('Rufe Anna an'), it is dial_for_me. " +
-			"listen: the user at home wants to hear the call on the speaker from the start ('ich möchte mithören'); " +
-			"during it they can talk along or listen in with speaker_call or the action button; the conversation at the " +
-			"speaker ends after your next sentence (the call has the speaker). " +
-			"A call to someone else that does not reach its goal (busy, nobody answers, a mailbox, cut off) is " +
-			"tried again by itself, and a call back from that number continues the task (call_followups). " +
-			"report: 'call' when the user wants to be called back with the result ('ruf mich danach an', " +
-			"'ruf mich zurück'), else 'message'. " +
-			"Returns right away; the call starts once no other conversation runs.",
-		Parameters: `{"type": "object", "additionalProperties": false,
-            "properties": {"to": {"type": "string", "description": "a person of the household by name ('' = the user), or a phone number with area code, e.g. 07161 123456"},
-                           "task": {"type": "string", "description": "in German: why the assistant calls and what to say, ask or arrange, with all details (for a reservation the user's name, what to accept and what not)"},
-                           "listen": {"type": "boolean", "description": "true: audible on the speaker at home from the pick-up"},
-                           "report": {"type": "string", "enum": ["message", "call"], "description": "how the user gets the result of a call to someone else: message (Telegram or mail) or call (The assistant calls them back)"}},
-            "required": ["to", "task"]}`,
-		Channels: tools.Everywhere,
-		Run: func(args map[string]any, ctx tools.Context) string {
-			answer := p.placeCall(tools.String(args, "to"), tools.String(args, "task"), ctx)
-			if tools.String(args, "report") == "call" && strings.Contains(answer, "on the user's behalf") {
-				p.mu.Lock()
-				if p.wanted != nil {
-					p.wanted.reportCall = true
-				}
-				p.mu.Unlock()
-				for _, by := range []string{"Telegram.", "mail."} {
-					answer = strings.Replace(answer, "The result is reported afterwards by "+by,
-						"The assistant calls the user back with the result afterwards.", 1)
-				}
-			}
-			if listen, _ := args["listen"].(bool); listen && !strings.HasPrefix(answer, "Error") {
-				if p.deps.Speaker == nil {
-					return answer + " (Listening in is not possible on this device: no speaker.)"
-				}
-				p.mu.Lock()
-				if p.wanted != nil {
-					p.wanted.listen = true
-				}
-				p.mu.Unlock()
-				answer += " It is audible on the speaker at home from the pick-up; the other side is told so."
-				// The conversation that asked ends now: the speaker belongs to the call, and two of
-				// The assistant talked at once (19.10.2026: this one went on narrating while the call ran).
-				if ctx.Conversation != nil && ctx.Conversation.Label() == "speaker" {
-					ctx.Conversation.EndSoon()
-					answer += " Say only one short sentence that you are calling now; this conversation ends then."
-				}
-			}
-			return answer
-		},
-	})
+	r.Add(CallTool(p.deps.Speaker != nil, p.runCall))
 	r.Add(tools.Tool{
 		Name: "press_keys",
 		Description: "Presses keys on the phone during the current call (touch tones), e.g. when an automatic announcement or a " +
@@ -334,8 +277,10 @@ func (p *Phone) AddTools(r *tools.Registry) {
 	}
 	r.Add(tools.Tool{
 		Name: "speaker_call",
-		Description: "Puts the phone call that is running on the speaker at home, so the user there follows it or takes " +
-			"part in it ('lege das Gespräch auf den Lautsprecher', 'ich möchte mitsprechen', 'Verbindung beenden'). " +
+		Description: "Puts the phone call that is running on this speaker, so the user here follows it or takes " +
+			"part in it ('lege das Gespräch auf den Lautsprecher', 'ich möchte mithören', 'ich möchte mitsprechen', " +
+			"'Verbindung beenden'): the assistant's own call (outgoing or incoming) or the user's, also when it runs " +
+			"at another of the assistant's speakers (it comes here then). " +
 			"listen: the whole call, the other side and the assistant, is audible at home, the microphone stays off - say at " +
 			"once that someone is listening in. talk: the microphone at home is on the line too - a three-way call, " +
 			"The assistant stays in it and the user can step in (listen takes them out again). off: the call goes on without the speaker; " +
@@ -352,6 +297,16 @@ func (p *Phone) AddTools(r *tools.Registry) {
 			// "Verbindung beenden" during a call on the mobile phone ends that one.
 			if tools.String(args, "mode") == "off" && p.MobileActive() {
 				return p.mobileAction("hangup")
+			}
+			// The call runs at another Echo: its room comes here (cmd/assistant/roomlink.go).
+			if !p.CallHere() && p.deps.CallElsewhere != nil {
+				if answer, ok := p.deps.CallElsewhere(tools.String(args, "mode")); ok {
+					if ctx.Conversation != nil && !strings.HasPrefix(answer, "Error") && tools.String(args, "mode") != "off" {
+						ctx.Conversation.EndSoon()
+						answer += " Say one short sentence that it is on the speaker, nothing more: this conversation ends now."
+					}
+					return answer
+				}
 			}
 			answer := p.SetBridge(tools.String(args, "mode"))
 			// The conversation at home now has the speaker that the call needs: end it, else the
