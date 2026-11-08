@@ -54,7 +54,9 @@ if [ "${1:-}" = --all ]; then
     exit 0
 fi
 HOST=${ECHO_HOST:-echo-dev}
-CFG="$ALEXA/local/ssh/config"
+# As a Windows path (E:/...): Windows' ssh.exe cannot open /e/..., and MSYS_NO_PATHCONV (the
+# reachability check below) keeps Git Bash from converting it - every Echo Gen 1 was "not reachable".
+CFG=$(cygpath -m "$ALEXA/local/ssh/config" 2>/dev/null || echo "$ALEXA/local/ssh/config")
 DOTCFG="$ALEXA/local/dot-ssh/config"
 DOT=
 if [ -f "$DOTCFG" ] && grep -q "^Host ${HOST}[[:space:]]*$" "$DOTCFG"; then
