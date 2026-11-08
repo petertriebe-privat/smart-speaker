@@ -76,6 +76,14 @@ type Deps struct {
 	// Speaker: the speaker at home (audio.Speaker), for a call on the speaker (bridge.go).
 	// nil = the speaker tools refuse: no listening in, no intercom.
 	Speaker Speaker
+	// OtherRoom: connect_speaker with a room: elsewhere false when room is this speaker's (then
+	// the call goes on its own room), else that Echo is asked to fetch the call's room in mode
+	// (monitor or talk) and answer is for the tool. nil = only this speaker's room.
+	OtherRoom func(room, mode string) (answer string, elsewhere bool)
+	// CallElsewhere: speaker_call while no call runs on this device: the call of another Echo
+	// comes here in mode (listen, talk; off sends it back). ok false = no such call either.
+	// nil = only this device's calls.
+	CallElsewhere func(mode string) (answer string, ok bool)
 	// HomeBusy: a conversation at the speaker runs. The call then leaves the room alone: the
 	// speaker belongs to that conversation and the far end must not hear it. nil = never busy.
 	HomeBusy func() bool
@@ -172,6 +180,7 @@ type callRequest struct {
 	direct                     bool       // dial_for_me: straight to the speaker, no GPT Live session
 	probe                      *echoProbe // the echo test (echotest.go)
 	listen                     bool       // phone_call listen: on the speaker from the pick-up
+	talk                       bool       // phone_call talk: the user talks along from the pick-up (implies listen)
 	reportCall                 bool       // phone_call report "call": the result by a call back
 	retry                      bool       // a retry of a call that did not reach its goal (followup.go)
 	at                         time.Time
@@ -240,6 +249,7 @@ func New(secrets config.Secrets, register *people.Register, session Session, dep
 	}
 	p.bridge = newBridge(deps.Speaker, deps.HomeBusy)
 	p.mic = newMicChain()
+	p.bridge.over = p.micReport
 	p.loadSpeakerAccess()
 	p.loadFollowups()
 	for _, entry := range strings.Split(secrets.String("PHONE_CALLERS"), ",") {

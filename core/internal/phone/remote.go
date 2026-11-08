@@ -30,6 +30,14 @@ func (p *Phone) CallForRoom() bool {
 	return p.callForRoomLocked()
 }
 
+// CallHere: a call of this device runs, rings, or waits to be dialled (speaker_call is about it,
+// not about another Echo's).
+func (p *Phone) CallHere() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.call.stage != stageNone || p.wanted != nil || p.mob.audio != nil || p.mob.call != ""
+}
+
 func (p *Phone) callForRoomLocked() bool {
 	return p.call.probe == nil && (p.call.stage == stageTalking || p.call.stage == stageBridge) || p.mob.audio != nil
 }
@@ -48,8 +56,12 @@ func (p *Phone) MoveRoom(sp Speaker, mode string, gone func()) string {
 	}
 	b := p.bridge
 	b.mu.Lock()
+	old := b.gone // another remote room before this one (the phone's app switching listen and talk)
 	b.speaker, b.gone = sp, gone
 	b.mu.Unlock()
+	if old != nil {
+		go old()
+	}
 	log.Printf("[Bridge] the room is another Echo's (%s)", m.name())
 	if p.mob.audio != nil { // the mobile phone's call: the room only
 		if b.setMode(m) {
@@ -58,6 +70,14 @@ func (p *Phone) MoveRoom(sp Speaker, mode string, gone func()) string {
 		return "The call is " + m.name() + " at the other Echo now."
 	}
 	if b.Mode() == m { // already on here: the tones tell the new room
+		b.announce(true)
+		return "The call is " + m.name() + " at the other Echo now."
+	}
+	// The call was just picked up and the assistant has not greeted yet (the phone's app waited for
+	// the pick-up): the greeting tells the other side and starts the three-way call (updateCall),
+	// as for phone_call listen and talk.
+	if c := &p.call; c.greet && c.stage == stageTalking && b.setMode(m) {
+		c.listen, c.talk = true, m.ToLine
 		b.announce(true)
 		return "The call is " + m.name() + " at the other Echo now."
 	}
