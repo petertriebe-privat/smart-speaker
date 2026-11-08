@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -35,6 +33,13 @@ type roomJoin struct {
 	Key     string `json:"key"`
 	From    string `json:"from"`
 	Mode    string `json:"mode"`
+	Caller  bool   `json:"caller,omitempty"` // the caller asked for this room (connect_speaker room): monitor or talk
+}
+
+// roomFetch: the Echo with the call asks this one to fetch its room for the caller.
+type roomFetch struct {
+	At   string `json:"at"`
+	Mode string `json:"mode"`
 }
 
 type roomModeReq struct {
@@ -54,6 +59,7 @@ func (d *device) setupRoomLink() {
 	}
 	d.peers.Handle("/room/join", d.serveRoomJoin)
 	d.peers.Handle("/room/mode", d.serveRoomMode)
+	d.peers.Handle("/room/fetch", d.serveRoomFetch)
 	d.registry.Add(tools.Tool{
 		Name: "join_call",
 		Description: "A phone call that runs at another of the assistant's speakers (the assistant's own call, the user's call on the landline " +
@@ -113,11 +119,13 @@ func (d *device) joinCall(mode string) string {
 	if at == nil {
 		return "Error: no call is running at another assistant speaker."
 	}
-	key := make([]byte, 16)
-	rand.Read(key)
-	var sb [4]byte
-	rand.Read(sb[:])
-	session := binary.BigEndian.Uint32(sb[:])
+	return d.joinAt(*at, mode, false)
+}
+
+// joinAt: the room of the call at `at` comes here in mode; caller: the caller asked for it from
+// the line (connect_speaker room, mode monitor or talk), else the user here (listen or talk).
+func (d *device) joinAt(at peer.Peer, mode string, caller bool) string {
+	session, key := newSession()
 	link, err := d.peers.NewAudioLink(session, key, at.Addr, at.Port+1)
 	if err != nil {
 		return "Error: " + err.Error()
@@ -136,9 +144,10 @@ func (d *device) joinCall(mode string) string {
 		},
 	})
 	roomMu.Lock()
-	hereRoom = &roomLink{link: link, at: *at, mode: mode}
+	hereRoom = &roomLink{link: link, at: at, mode: mode}
 	roomMu.Unlock()
-	answer := d.roomRequest(*at, "/room/join", roomJoin{Session: session, Key: hex.EncodeToString(key), From: d.peers.Name, Mode: mode})
+	answer := d.roomRequest(at, "/room/join", roomJoin{Session: session, Key: hex.EncodeToString(key), From: d.peers.Name,
+		Mode: mode, Caller: caller})
 	if strings.HasPrefix(answer, "Error") {
 		d.leaveRoom()
 		return answer
@@ -240,7 +249,12 @@ func (d *device) serveRoomJoin(body []byte) ([]byte, error) {
 		delete(roomLinks, q.Session)
 		roomMu.Unlock()
 	}
-	answer := d.svc.phone.MoveRoom(sp, q.Mode, gone)
+	var answer string
+	if q.Caller {
+		answer = d.svc.phone.ConnectSpeakerAt(q.Mode, sp, gone)
+	} else {
+		answer = d.svc.phone.MoveRoom(sp, q.Mode, gone)
+	}
 	if strings.HasPrefix(answer, "Error") {
 		link.Close()
 	} else {
@@ -264,4 +278,51 @@ func (d *device) serveRoomMode(body []byte) ([]byte, error) {
 		return json.Marshal(sharedText{Text: "Error: the room of the call is not at another Echo."})
 	}
 	return json.Marshal(sharedText{Text: d.svc.phone.RoomMode(q.Mode)})
+}
+
+// --- The caller asks for another room ("verbinde mich mit dem Arbeitszimmer") ----------------
+
+// otherRoom: connect_speaker with room on the Echo with the call (phone.Deps.OtherRoom): the Echo
+// of that room fetches the call's room; elsewhere false when room is this Echo's.
+func (d *device) otherRoom(room, mode string) (string, bool) {
+	if d.peers == nil {
+		return "", false
+	}
+	here, others, errText := d.speakersIn(room)
+	switch {
+	case errText != "":
+		return errText, true
+	case here:
+		return "", false
+	case len(others) != 1:
+		return "Error: name exactly one assistant speaker.", true
+	case others[0].State != "idle" && others[0].State != "music":
+		return "Error: " + others[0].Name + " is busy right now (" + others[0].State + ").", true
+	}
+	answer := d.roomRequest(others[0], "/room/fetch", roomFetch{At: d.peers.Name, Mode: mode})
+	if !strings.HasPrefix(answer, "Error") {
+		log.Printf("[Room] the caller is connected with %s (%s)", others[0].Name, mode)
+	}
+	return answer, true
+}
+
+// serveRoomFetch: the Echo with the call wants its room here, for the caller.
+func (d *device) serveRoomFetch(body []byte) ([]byte, error) {
+	var q roomFetch
+	if err := json.Unmarshal(body, &q); err != nil {
+		return nil, err
+	}
+	var at *peer.Peer
+	for _, p := range d.peers.Alive() {
+		if p.Name == q.At {
+			at = &p
+		}
+	}
+	switch {
+	case at == nil:
+		return json.Marshal(sharedText{Text: "Error: unknown Echo."})
+	case d.intercomBusy() || d.svc.phone != nil && d.svc.phone.CallForRoom():
+		return json.Marshal(sharedText{Text: "Error: " + d.peers.Name + " is busy right now."})
+	}
+	return json.Marshal(sharedText{Text: d.joinAt(*at, q.Mode, true)})
 }

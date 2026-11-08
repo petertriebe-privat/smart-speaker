@@ -369,9 +369,12 @@ func (p *Phone) AddTools(r *tools.Registry) {
 			"when they call from outside ('verbinde mich mit dem Lautsprecher zu Hause'). monitor: they hear the room " +
 			"at home, nothing of theirs is audible there. talk: both ways, an intercom. Only for a caller who dialled " +
 			"in from a released number, never for a guest. The conversation with you ends with it (the connection does " +
-			"not need you and would cost money); at home it is announced and can be ended at any time.",
+			"not need you and would cost money); at home it is announced and can be ended at any time. room: another of " +
+			"the assistant's speakers ('verbinde mich mit dem Arbeitszimmer'); empty = the speaker that took the call. " +
+			"In a call this is the way to any room, not intercom.",
 		Parameters: `{"type": "object", "additionalProperties": false,
-            "properties": {"mode": {"type": "string", "enum": ["monitor", "talk"], "description": "monitor = nur reinhören, talk = gegensprechen"}},
+            "properties": {"mode": {"type": "string", "enum": ["monitor", "talk"], "description": "monitor = nur reinhören, talk = gegensprechen"},
+                           "room": {"type": "string", "description": "room or name of the assistant speaker; empty = this one"}},
             "required": ["mode"]}`,
 		// Also for a guest: a released number that is not in PHONE_CALLERS is a guest in the
 		// conversation (no memory, no tools) and may still ask for the room. Who may is decided
@@ -381,7 +384,17 @@ func (p *Phone) AddTools(r *tools.Registry) {
 			if ctx.Conversation != nil && ctx.Conversation.Label() != "phone" {
 				return "Error: only the caller themselves asks for this, in the call. At home it is speaker_call."
 			}
-			return p.ConnectSpeaker(tools.String(args, "mode"))
+			mode := tools.String(args, "mode")
+			if room := tools.String(args, "room"); room != "" && p.deps.OtherRoom != nil {
+				if e := p.ConnectCheck(mode); e != "" {
+					return e
+				}
+				// Another Echo fetches the call's room (ConnectSpeakerAt there through the peer link).
+				if answer, elsewhere := p.deps.OtherRoom(room, mode); elsewhere {
+					return answer
+				}
+			}
+			return p.ConnectSpeaker(mode)
 		},
 	})
 	p.addAccessTool(r)

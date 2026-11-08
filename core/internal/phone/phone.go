@@ -76,6 +76,10 @@ type Deps struct {
 	// Speaker: the speaker at home (audio.Speaker), for a call on the speaker (bridge.go).
 	// nil = the speaker tools refuse: no listening in, no intercom.
 	Speaker Speaker
+	// OtherRoom: connect_speaker with a room: elsewhere false when room is this speaker's (then
+	// the call goes on its own room), else that Echo is asked to fetch the call's room in mode
+	// (monitor or talk) and answer is for the tool. nil = only this speaker's room.
+	OtherRoom func(room, mode string) (answer string, elsewhere bool)
 	// HomeBusy: a conversation at the speaker runs. The call then leaves the room alone: the
 	// speaker belongs to that conversation and the far end must not hear it. nil = never busy.
 	HomeBusy func() bool
@@ -240,6 +244,7 @@ func New(secrets config.Secrets, register *people.Register, session Session, dep
 	}
 	p.bridge = newBridge(deps.Speaker, deps.HomeBusy)
 	p.mic = newMicChain()
+	p.bridge.over = p.micReport
 	p.loadSpeakerAccess()
 	p.loadFollowups()
 	for _, entry := range strings.Split(secrets.String("PHONE_CALLERS"), ",") {

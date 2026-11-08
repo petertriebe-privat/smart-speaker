@@ -1,6 +1,7 @@
 package phone
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -81,6 +82,74 @@ func TestMicGateDampsTheEcho(t *testing.T) {
 	echo := sine(400, micRate, micFrame, 3000)
 	if got := peakOf(lifted.process(echo, true)); got*100 > 3000*(micGatePct+2) {
 		t.Errorf("with gain %.1f the gate left %d of 3000, want about %d %%", lifted.Gain(), got, micGatePct)
+	}
+}
+
+// A caller in the street: the line carries noise between the words (peaks around 300). The
+// noise alone must not keep the gate shut - it did, and the room reached the caller at a tenth
+// (7.11.2026) - but every word of the caller still shuts it.
+func TestRoomEchoNoisyLineLeavesTheGateOpen(t *testing.T) {
+	var r roomEcho
+	noise := func(i int) int { return 250 + (i*37)%100 } // 250..349
+	for i := 0; i < 150; i++ {                           // 3 s to learn the line
+		r.heard(noise(i), 0)
+	}
+	r.report()
+	for i := 0; i < 100; i++ {
+		r.heard(noise(i), 0)
+	}
+	if r.loud != 0 {
+		t.Errorf("the line's noise shut the gate %d times in 2 s (threshold %d)", r.loud, r.threshold())
+	}
+	// Two seconds of the caller's speech: every frame counts, the floor does not climb past it.
+	for i := 0; i < 100; i++ {
+		r.heard(3000+(i*53)%2000, 0)
+	}
+	if r.loud != 100 {
+		t.Errorf("speech shut the gate in %d of 100 frames (threshold %d)", r.loud, r.threshold())
+	}
+	if r.threshold() > gateMax {
+		t.Errorf("threshold %d above the cap %d", r.threshold(), gateMax)
+	}
+	// After the words the noise brings the floor back down at once.
+	r.heard(300, 0)
+	if r.threshold() > 300*gateOverNoise {
+		t.Errorf("threshold %d after the words, want at most %d", r.threshold(), 300*gateOverNoise)
+	}
+	if got := r.report(); !strings.Contains(got, "201 frames") {
+		t.Errorf("report %q", got)
+	}
+	if r.report() != "" {
+		t.Error("the report did not start anew")
+	}
+	// A digitally silent line (most mobile calls): the old threshold, quiet word ends count.
+	var q roomEcho
+	for i := 0; i < 100; i++ {
+		q.heard(0, 0)
+	}
+	q.heard(gateAudible+50, 0)
+	if !q.active() {
+		t.Error("on a silent line a quiet word end did not shut the gate")
+	}
+}
+
+func TestMicReportTellsWhyTheRoomWasQuiet(t *testing.T) {
+	m := newMicChain()
+	if m.report() != "" {
+		t.Error("a report without frames")
+	}
+	quiet := sine(400, micRate, micFrame, 1000)
+	for i := 0; i < 30; i++ {
+		m.process(quiet, false)
+	}
+	for i := 0; i < 70; i++ {
+		m.process(quiet, true)
+	}
+	got := m.report()
+	for _, want := range []string{"100 frames", "gate shut 70 %", "room peak 1000"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("report %q lacks %q", got, want)
+		}
 	}
 }
 

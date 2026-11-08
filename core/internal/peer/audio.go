@@ -49,6 +49,8 @@ type AudioLink struct {
 	h      AudioHandlers // under mu: the receiving goroutine reads them
 	seq    uint32
 	last   uint32 // highest seq received
+
+	stream *audioStream // over TCP instead of UDP (stream.go); nil = UDP
 }
 
 // Handle: the link's frames go to h from now on.
@@ -85,6 +87,10 @@ func (s *Service) NewAudioLink(session uint32, key []byte, host string, port int
 
 // Close: the link takes no more frames (the other side is told with AudioEnd by the caller).
 func (l *AudioLink) Close() {
+	if l.stream != nil {
+		l.stream.close()
+		return
+	}
 	l.s.audio.mu.Lock()
 	delete(l.s.audio.links, l.Session)
 	l.s.audio.mu.Unlock()
@@ -186,6 +192,10 @@ func (l *AudioLink) Send(kind byte, payload []byte) {
 	body[8] = kind
 	copy(body[9:], payload)
 	packet := append(append([]byte(audioMagic), l.mac(body)...), body...)
+	if l.stream != nil {
+		l.stream.write(packet)
+		return
+	}
 	l.s.audio.mu.Lock()
 	conn := l.s.audio.conn
 	l.s.audio.mu.Unlock()

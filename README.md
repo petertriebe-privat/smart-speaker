@@ -128,9 +128,11 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   calls household members, calls businesses for you and reports back; presses keys in voice menus.
 - Follow-ups for calls made on your behalf: retries, call backs that continue the task, a history
   per number *(Echo)*.
-- The speaker in calls: listening in to the room from outside, intercom both ways, a running call
-  on the speaker, the assistant joining a call as a third party, dialling someone for you *(Echo; the M5
-  can listen in)*.
+- The speaker in calls: listening in to the room from outside, intercom both ways - with the room of
+  any of the assistant's speakers ("verbinde mich mit dem Arbeitszimmer") -, a running call on the
+  speaker, the assistant joining a call as a third party, dialling someone for you *(Echo; the M5
+  can listen in)*. The way into the room adapts to a noisy line, so the room stays audible to the
+  caller; every call logs how the microphone went.
 - The mobile phone over Bluetooth: hands-free unit, calls ringing at the Echo with the caller's
   name, pairing by voice *(Echo Gen 1)*.
 - Guests: numbers not released get a polite guest mode; the message reaches the admin.
@@ -230,6 +232,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   and people on the primary; every Echo rings for the landline and can take the call.
 - The primary role moves to another Echo when one fails.
 - Intercom between Echos; a room per Echo for announcements and conversations.
+- Intercom from the phone app to any speaker at home, away from home too: over the home tunnel to
+  an Echo, which takes it or passes it on to the Echo of that room *(phone app)*.
 
 ### More
 - Images (`gpt-image-2`) printed, mailed or sent to the chat, right away also during a conversation
