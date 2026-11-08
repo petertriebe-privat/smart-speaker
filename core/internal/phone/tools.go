@@ -258,7 +258,11 @@ func (p *Phone) AddTools(r *tools.Registry) {
 	if !p.Configured() {
 		return
 	}
-	r.Add(CallTool(p.deps.Speaker != nil, p.runCall))
+	listenAt := ListenNowhere
+	if p.deps.Speaker != nil {
+		listenAt = ListenAtHome
+	}
+	r.Add(CallTool(listenAt, p.runCall))
 	r.Add(tools.Tool{
 		Name: "press_keys",
 		Description: "Presses keys on the phone during the current call (touch tones), e.g. when an automatic announcement or a " +

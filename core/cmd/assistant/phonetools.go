@@ -104,7 +104,11 @@ func (d *device) addPhoneTools() {
 	})
 	// The assistant calls with a task (a table, a practice, "ruf Anna an und sag ihr ..."): over the
 	// landline at home, on the primary - the phone has no landline (install_phone.sh leaves SIP out).
-	d.registry.Add(phone.CallTool(false, func(args map[string]any, ctx tools.Context) string {
+	// listen and talk: the call's room comes onto the phone once it is picked up (roomstream.go),
+	// not onto the speaker at home.
+	d.registry.Add(phone.CallTool(phone.ListenOnPhone, func(args map[string]any, ctx tools.Context) string {
+		listen, _ := args["listen"].(bool)
+		talk, _ := args["talk"].(bool)
 		delete(args, "listen")
 		delete(args, "talk")
 		arguments, _ := json.Marshal(args)
@@ -112,8 +116,24 @@ func (d *device) addPhoneTools() {
 		if err != nil {
 			return "Error: the speakers at home are not reachable for the call: " + err.Error()
 		}
-		return out
+		if !(listen || talk) || strings.HasPrefix(out, "Error") {
+			return out
+		}
+		mode := "listen"
+		if talk {
+			mode = "talk"
+		}
+		joined := d.joinHome(mode, true)
+		if strings.HasPrefix(joined, "Error") {
+			return out + " Listening in on the phone failed: " + joined
+		}
+		if ctx.Conversation != nil && ctx.Conversation.Label() == "speaker" {
+			ctx.Conversation.EndSoon()
+			joined += " Say only one short sentence that you are calling now; this conversation ends then."
+		}
+		return out + " " + joined
 	}))
+	d.addPhoneRoomTools() // speaker_call: a call at home onto the phone (roomstream.go)
 	add("phone_messages", "Reads the messages waiting on the user's phone: the notifications of "+
 		"WhatsApp, Signal, Telegram, SMS and other messengers (sender, text, app, key). Read them out "+
 		"or summarize them; the key answers one with phone_reply.",

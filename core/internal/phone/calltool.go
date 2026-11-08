@@ -6,11 +6,19 @@ import (
 	"echo-assistant/internal/tools"
 )
 
+// Where the user listens in to a call the assistant makes (CallTool).
+const (
+	ListenNowhere = ""                       // a device without a speaker
+	ListenAtHome  = "on the speaker at home" // the Echos
+	ListenOnPhone = "on this phone"          // the phone's app: the call runs at home, its room comes here
+)
+
 // CallTool: phone_call, the assistant calls someone with a task and has the conversation itself.
-// atHome: the device has the speaker at home, so the user can listen in or talk along from the
-// pick-up (listen, talk). The phone's app has no landline and no speaker at home: it runs the call
-// on the primary at home (cmd/assistant/phonetools.go) without those two. run makes the call.
-func CallTool(atHome bool, run func(args map[string]any, ctx tools.Context) string) tools.Tool {
+// listenAt: where the user can listen in or talk along from the pick-up (listen, talk); the phone's
+// app has no landline: it runs the call on the primary at home (cmd/assistant/phonetools.go) and
+// takes the call's room onto the phone. run makes the call.
+func CallTool(listenAt string, run func(args map[string]any, ctx tools.Context) string) tools.Tool {
+	atHome := listenAt != ListenNowhere
 	description := "Calls someone by phone over the landline and has the conversation by voice. A person of the " +
 		"household (name, or '' for the user): The assistant talks with them itself, with memory and all tools ('ruf " +
 		"mich an', a wake-up call, an urgent alert, 'ruf Anna an und sag ihr ...'). Anyone else (a phone number: book " +
@@ -20,17 +28,17 @@ func CallTool(atHome bool, run func(args map[string]any, ctx tools.Context) stri
 		"numbers only; children may call only the household. Only with a task for you: if the user wants to talk " +
 		"themselves, or names no task at all ('Rufe Anna an'), it is dial_for_me. "
 	listen := ""
+	if listenAt == ListenOnPhone {
+		description += "The call runs over the landline at home. "
+	}
 	if atHome {
-		description += "listen: the user at home wants to hear the call on the speaker from the start ('ich möchte " +
+		description += "listen: the user wants to hear the call " + listenAt + " from the start ('ich möchte " +
 			"mithören'); talk: they also talk along from the start, a three-way call ('ich will mitreden', 'ich " +
 			"rede mit'). During the call they can still step in, listen only or leave with speaker_call or the action " +
-			"button; the conversation at the speaker ends after your next sentence (the call has the speaker). "
-		listen = `"listen": {"type": "boolean", "description": "true: audible on the speaker at home from the pick-up"},
-                           "talk": {"type": "boolean", "description": "true: the user at home talks along from the pick-up (three-way call)"},
+			"button; this conversation ends after your next sentence (the call has the speaker). "
+		listen = `"listen": {"type": "boolean", "description": "true: audible ` + listenAt + ` from the pick-up"},
+                           "talk": {"type": "boolean", "description": "true: the user talks along ` + listenAt + ` from the pick-up (three-way call)"},
                            `
-	} else {
-		description += "The call runs over the landline at home; listening in is possible only at the speakers at " +
-			"home. "
 	}
 	description += "A call to someone else that does not reach its goal (busy, nobody answers, a mailbox, cut " +
 		"off) is tried again by itself, and a call back from that number continues the task (call_followups). " +

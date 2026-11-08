@@ -136,7 +136,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 - A call the assistant makes for you: listen in or talk along from the pick-up, or step in later;
   a call running at any Echo, outgoing or incoming, comes onto the speaker where you are *(Echo)*.
 - From the phone app: calls you make yourself go from the phone, calls with a task for the
-  assistant over the landline at home with the result as a message *(phone app)*.
+  assistant over the landline at home with the result as a message; listening in and talking along
+  on the phone, from the pick-up or to any call running at home, also away from home *(phone app)*.
 - The mobile phone over Bluetooth: hands-free unit, calls ringing at the Echo with the caller's
   name, calling by voice, the assistant as third party in a call, pairing by voice *(Echo Gen 1)*.
 - Guests: numbers not released get a polite guest mode; the message reaches the admin.

@@ -663,11 +663,11 @@ func TestTalkingAlongFromTheStart(t *testing.T) {
 
 // On the phone's app there is no speaker at home: phone_call has no listen or talk there.
 func TestCallToolAwayHasNoListening(t *testing.T) {
-	away := CallTool(false, nil)
+	away := CallTool(ListenNowhere, nil)
 	if strings.Contains(away.Parameters, "listen") || strings.Contains(away.Parameters, "talk") {
 		t.Errorf("parameters %s", away.Parameters)
 	}
-	home := CallTool(true, nil)
+	home := CallTool(ListenAtHome, nil)
 	if !strings.Contains(home.Parameters, `"talk"`) || !strings.Contains(home.Parameters, `"listen"`) {
 		t.Errorf("parameters %s", home.Parameters)
 	}

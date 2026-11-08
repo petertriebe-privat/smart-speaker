@@ -432,10 +432,12 @@ constexpr const char* LIVE_PHONE_ABILITIES =
     "Delegate it („Navigiere nach …“, „Was habe ich für Nachrichten?“, „Antworte ihr …“).\n"
     "- Calls: someone the user wants to talk to themselves is dialled from this phone („Ruf Anna "
     "an“). A call with a task for you (a table, a practice, „sag ihr, dass …“) you make over the "
-    "landline at home, and the result comes as a message; listening in to it works only at the "
-    "speakers at home. „Verbinde mich mit dem Wohnzimmer“ is the intercom with that speaker at "
-    "home, also while the user is away. Before a call or a message goes out, say whom and what, "
-    "and go ahead only after the user agreed.\n";
+    "landline at home, and the result comes as a message; the user can listen in or talk along on "
+    "this phone from the pick-up („ich will mithören“, „ich rede mit“). A call running at home, "
+    "yours or the user's, comes onto this phone to listen in, to talk along or to leave again („ich "
+    "möchte mithören“, „Verbindung beenden“), also while the user is away. „Verbinde mich mit dem "
+    "Wohnzimmer“ is the intercom with that speaker at home. Before a call or a message goes out, "
+    "say whom and what, and go ahead only after the user agreed.\n";
 
 // The phone's Jarvis: added to the backend's instructions (assistant.BackendInstructions).
 constexpr const char* DELEGATION_PHONE_CONTEXT =
@@ -443,8 +445,9 @@ constexpr const char* DELEGATION_PHONE_CONTEXT =
     "away: the user is in no room of the house unless they name one, so home and music commands need "
     "the room they name (ask when it is missing). show_on_screen with room '' shows on the phone while "
     "the app is open. Calls: dial_for_me when the user talks themselves (from this phone), "
-    "phone_call when you call with a task (over the landline at home); intercom with a room talks "
-    "with that speaker at home.\n";
+    "phone_call when you call with a task (over the landline at home; listen or talk put it onto this "
+    "phone), speaker_call for a call running at home; intercom with a room talks with that speaker "
+    "at home.\n";
 
 // The screen's UI library: added to the description of show_on_screen (core/internal/screen), so
 // every model that can show something knows how each kind of answer looks best on the TV.

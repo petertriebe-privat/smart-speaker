@@ -16,6 +16,9 @@ import (
 
 const testPeerKey = "a peer key for the tests, long enough"
 
+// heartbeatTest: a state change reaches the other Echo with the next heartbeat at the latest.
+const heartbeatTest = 6 * time.Second
+
 func testPort(t *testing.T) int {
 	c, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
 	if err != nil {

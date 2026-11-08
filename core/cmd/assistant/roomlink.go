@@ -51,6 +51,7 @@ var (
 	roomMu    sync.Mutex
 	hereRoom  *roomLink                      // on this Echo: the room of another's call
 	roomLinks = map[uint32]*peer.AudioLink{} // on the Echo with the call: the rooms elsewhere
+	roomNow   uint32                         // ... the session of the one that has the room now
 )
 
 func (d *device) setupRoomLink() {
@@ -60,6 +61,7 @@ func (d *device) setupRoomLink() {
 	d.peers.Handle("/room/join", d.serveRoomJoin)
 	d.peers.Handle("/room/mode", d.serveRoomMode)
 	d.peers.Handle("/room/fetch", d.serveRoomFetch)
+	d.peers.HandleAudio("/room/stream", d.serveRoomStream) // the phone's app (roomstream.go)
 }
 
 // callElsewhereHere: speaker_call while no call runs here (phone.Deps.CallElsewhere): the call of
@@ -93,6 +95,9 @@ func roomHere() *roomLink {
 func (d *device) joinCall(mode string) string {
 	if d.peers == nil {
 		return "Error: this Echo is not linked with others."
+	}
+	if r := roomHere(); r != nil && r.link.Streamed() {
+		return d.joinHomeCall(mode) // the phone: a new stream per mode (roomstream.go)
 	}
 	if r := roomHere(); r != nil {
 		answer := d.roomRequest(r.at, "/room/mode", roomModeReq{Session: r.link.Session, Mode: mode})
@@ -235,31 +240,60 @@ func (d *device) serveRoomJoin(body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	link.Handle(peer.AudioHandlers{OnPCM: d.svc.phone.HearRemote})
+	return json.Marshal(sharedText{Text: d.takeRoom(link, q.From, q.Mode, q.Caller)})
+}
+
+// takeRoom: the call here gets its room at from over link (an Echo over UDP, the phone's app over
+// its stream), in mode; caller: the caller asked for it (connect_speaker room). A streamed link
+// that ends switches the room off unless another one took it meanwhile (roomNow).
+func (d *device) takeRoom(link *peer.AudioLink, from, mode string, caller bool) string {
+	session := link.Session
+	link.Handle(peer.AudioHandlers{
+		OnPCM: d.svc.phone.HearRemote,
+		OnEnd: func() {
+			roomMu.Lock()
+			current := roomNow == session
+			delete(roomLinks, session)
+			roomMu.Unlock()
+			link.Close()
+			if current {
+				log.Printf("[Room] %s left the call: %s", from, d.svc.phone.RoomMode("off"))
+			}
+		},
+	})
 	sp := phone.RemoteSpeaker(link.SendPCM, link.SendTone, func() { link.Send(peer.AudioFlush, nil) })
 	gone := func() {
-		log.Printf("[Room] the room is back from %s", q.From)
+		log.Printf("[Room] the room is back from %s", from)
 		link.Send(peer.AudioEnd, nil)
 		link.Close()
 		roomMu.Lock()
-		delete(roomLinks, q.Session)
+		delete(roomLinks, session)
+		if roomNow == session {
+			roomNow = 0
+		}
 		roomMu.Unlock()
 	}
+	roomMu.Lock()
+	roomLinks[session] = link
+	before := roomNow
+	roomNow = session
+	roomMu.Unlock()
 	var answer string
-	if q.Caller {
-		answer = d.svc.phone.ConnectSpeakerAt(q.Mode, sp, gone)
+	if caller {
+		answer = d.svc.phone.ConnectSpeakerAt(mode, sp, gone)
 	} else {
-		answer = d.svc.phone.MoveRoom(sp, q.Mode, gone)
+		answer = d.svc.phone.MoveRoom(sp, mode, gone)
 	}
 	if strings.HasPrefix(answer, "Error") {
-		link.Close()
-	} else {
 		roomMu.Lock()
-		roomLinks[q.Session] = link
+		delete(roomLinks, session)
+		roomNow = before
 		roomMu.Unlock()
-		log.Printf("[Room] the call's room is at %s (%s)", q.From, q.Mode)
+		link.Close()
+		return answer
 	}
-	return json.Marshal(sharedText{Text: answer})
+	log.Printf("[Room] the call's room is at %s (%s)", from, mode)
+	return answer
 }
 
 func (d *device) serveRoomMode(body []byte) ([]byte, error) {
@@ -269,9 +303,13 @@ func (d *device) serveRoomMode(body []byte) ([]byte, error) {
 	}
 	roomMu.Lock()
 	_, ok := roomLinks[q.Session]
+	current := roomNow == q.Session
 	roomMu.Unlock()
-	if !ok || d.svc.phone == nil {
+	switch {
+	case !ok || d.svc.phone == nil:
 		return json.Marshal(sharedText{Text: "Error: the room of the call is not at another Echo."})
+	case !current: // a room that another one replaced (the phone's app switching modes): nothing to do
+		return json.Marshal(sharedText{Text: "ok"})
 	}
 	return json.Marshal(sharedText{Text: d.svc.phone.RoomMode(q.Mode)})
 }

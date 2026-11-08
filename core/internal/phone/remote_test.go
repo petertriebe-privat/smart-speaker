@@ -12,6 +12,35 @@ import (
 	"echo-assistant/internal/tools"
 )
 
+// The phone's app waited for the pick-up and takes the room at once (cmd/assistant/roomstream.go):
+// the assistant has not greeted yet, so the greeting tells the other side and starts the
+// three-way call, as for phone_call talk at home.
+func TestRoomTakenAtThePickUp(t *testing.T) {
+	h := newHarness(t, nil)
+	h.register(t)
+	r := &tools.Registry{}
+	h.p.AddTools(r)
+	r.Call("phone_call", `{"to": "07161 123456", "task": "einen Termin vereinbaren"}`, tools.Context{Channel: tools.Agent})
+	h.p.dialIfRequested(time.Now())
+	h.answerOurCall(t)
+	var tones atomic.Int32
+	remote := RemoteSpeaker(func([]int16) {}, func(float64, int, float64) { tones.Add(1) }, func() {})
+	if got := h.p.MoveRoom(remote, "talk", func() {}); !strings.Contains(got, "talk at the other Echo") {
+		t.Fatalf("move: %q", got)
+	}
+	if h.p.Bridge() != "talk" || tones.Load() != 2 {
+		t.Fatalf("bridge %s, %d tones there", h.p.Bridge(), tones.Load())
+	}
+	h.sess.set(live.Live)
+	h.p.updateCall(time.Now())
+	h.sess.mu.Lock()
+	notes := strings.Join(h.sess.commentary, " | ")
+	h.sess.mu.Unlock()
+	if !strings.Contains(notes, "§ 201") || !strings.Contains(notes, "three-way") || !h.p.ConferenceActive() {
+		t.Errorf("after the greeting: conference %v, notes %q", h.p.ConferenceActive(), notes)
+	}
+}
+
 func TestRoomAtAnotherEcho(t *testing.T) {
 	h := newHarness(t, nil)
 	from := h.reg.LocalAddr().(*net.UDPAddr)

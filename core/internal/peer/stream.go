@@ -207,3 +207,6 @@ func (s *Service) DialAudio(ctx context.Context, p Peer, path string, body []byt
 
 // Streamed: the link goes over TCP (DialAudio, HandleAudio), not over UDP to a device in the LAN.
 func (l *AudioLink) Streamed() bool { return l.stream != nil }
+
+// Closed: a streamed link that is over (closed here, or the other side gone).
+func (l *AudioLink) Closed() bool { return l.stream != nil && l.stream.closed.Load() }

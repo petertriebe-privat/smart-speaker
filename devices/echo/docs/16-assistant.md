@@ -56,16 +56,28 @@ tool descriptions say which tool.
 | --- | --- | --- |
 | Calling the assistant | the landline number; `connect_speaker` (with `room`) puts the caller on the speaker of any room | Echo |
 | The assistant calls with a task (a table, a practice) and reports | `phone_call` | Echo; the phone app runs it on the primary over the peer link, the report comes by message |
-| ... and the user listens in / talks along from the pick-up | `phone_call` `listen` / `talk` | Echo (not from the phone app: no audio at home) |
-| A running call (the assistant's or the user's, out or in) onto this speaker: listen, talk, leave | `speaker_call`, the action button; a call at another Echo comes here | Echo |
+| ... and the user listens in / talks along from the pick-up | `phone_call` `listen` / `talk` | Echo; the phone app on the phone (the stream waits for the pick-up) |
+| A running call (the assistant's or the user's, out or in) onto this speaker: listen, talk, leave | `speaker_call`, the action button; a call at another Echo comes here | Echo; the phone app: the call at home onto the phone |
 | The user talks themselves ("ruf Anna an") | `dial_for_me` | Echo (landline or the paired mobile, `via`); the phone app over the phone itself |
 | The mobile phone as hands-free unit, its calls at home | `bluetooth_pair`, `mobile_handsfree`, `mobile_call`, `dial_for_me` `via phone` | Echo Gen 1 |
 | The assistant in a running call (also the mobile's) as a third party | the wake word during the call (conference, below) | Echo |
 | Talking with another room | `intercom` (from the phone app also away from home) | Echo, phone app |
 
-Not possible: listening in from the phone app to a call the assistant makes at home (the call's
-audio would need the stream of the intercom; issue #20), and the assistant joining a call the
-user holds on the mobile phone without the Echo (Android lets no app into a cellular call).
+The phone app as the room of a call at home (#20, `cmd/assistant/roomstream.go`): the call's audio
+and the app's microphone go over the same stream as the intercom from the phone (`/room/stream`
+through the home tunnel). The Echo that takes the stream takes the call's room itself when the
+call runs there (`takeRoom`, as for another Echo over UDP), else it passes the audio on to the
+Echo with the call (`relayRoom`, a normal `/room/join`). For `phone_call` with `listen`/`talk`
+the stream waits (`wait`, up to 3 min) until the call is picked up; the greeting then tells the
+other side and starts the three-way call (`MoveRoom` before the greeting). A change of mode is a
+new stream: the Echo with the call takes the new room and drops the old one (`roomNow`, an old
+room's `gone`). A stream that ends switches the room off at home. Tested with unit tests
+(waiting, relay, tones, microphone onto the line, the end back at the Echo with the call); not
+yet on the devices. The echo gate on the way to the line works as for another Echo; with the
+phone's loudspeaker instead of earbuds the app's own echo gate makes it half duplex.
+
+Not possible: the assistant joining a call the user holds on the mobile phone without the Echo
+(Android lets no app into a cellular call).
 
 ### Phone call at the speaker: listening in, speaking along, two-way talk
 
