@@ -92,8 +92,9 @@ func (d *device) setupShared() {
 	d.peers.Handle("/tool", d.serveTool)
 	d.peers.Handle("/conversation", d.serveConversation)
 	d.peers.Handle("/context", d.serveContext)
-	d.peers.Handle("/state", d.serveState)       // failover.go
-	d.peers.Handle("/handover", d.serveHandover) // failover.go
+	d.peers.Handle("/state", d.serveState)              // failover.go
+	d.peers.Handle("/handover", d.serveHandover)        // failover.go
+	d.peers.Handle("/google_login", d.serveGoogleLogin) // failover.go, for a member M5
 	if d.cfg.Settings.Primary {
 		return
 	}

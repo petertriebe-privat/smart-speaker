@@ -113,6 +113,9 @@ wake arbitration.
   the leader sends the file with a version number to the partners; they write it to a
   mirror folder and read from there (memory in the prompt, people, tasks in the agenda).
   A secondary device that returns fetches the whole state at the first heartbeat.
+- **The Google login:** a secondary Echo or stick takes the primary's `google.json` from the
+  mirror (`applyLogins`); a member M5, which cannot hold the mirror, asks `/google_login` for it
+  when its own is refused (`devices/atoms3r/docs/google.md`).
 - **Writing from the secondary device:** Tools that change state (`remember`, `create_task`,
   `add_person`, `speaker_access`, `mail_rule`, …) get the flag
   `Leader` in the registry. On a secondary device the leader runs them (tool call over the peer link with person

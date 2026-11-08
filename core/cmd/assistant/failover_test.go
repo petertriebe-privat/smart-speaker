@@ -8,6 +8,25 @@ import (
 	"echo-assistant/internal/config"
 )
 
+// A member M5 gets the primary's Google login (google.json as it is), a secondary does not answer,
+// and a primary without a renewed login says so.
+func TestGoogleLoginForMembers(t *testing.T) {
+	dir := t.TempDir()
+	d := &device{cfg: &config.Config{Settings: config.Settings{StateDir: dir, Primary: true}}}
+	if _, err := d.serveGoogleLogin(nil); err == nil {
+		t.Error("no google.json: want an error")
+	}
+	login := `{"refresh_token":"r","web":true}`
+	os.WriteFile(filepath.Join(dir, "google.json"), []byte(login), 0o600)
+	if got, err := d.serveGoogleLogin(nil); err != nil || string(got) != login {
+		t.Errorf("primary: %q, %v", got, err)
+	}
+	d.cfg.Settings.Primary = false
+	if _, err := d.serveGoogleLogin(nil); err != errNotPrimary {
+		t.Errorf("secondary: %v, want errNotPrimary", err)
+	}
+}
+
 // The mirror carries the shared state, not what belongs to one device, and a takeover writes it
 // back into the state dir.
 func TestStateFilesAndTheirWayBack(t *testing.T) {

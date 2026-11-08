@@ -325,6 +325,21 @@ func (d *device) serveState([]byte) ([]byte, error) {
 	return json.Marshal(stateFiles{Epoch: d.cfg.Settings.Epoch, Files: d.stateFiles()})
 }
 
+// serveGoogleLogin: the primary's Google login (its state_dir/google.json: refresh_token, web) for
+// a member M5, which cannot pull the whole mirror (its RAM) and otherwise kept the copy in its
+// secrets.h until that expired (08.11.2026). The same login the mirror carries, under the same
+// signature.
+func (d *device) serveGoogleLogin([]byte) ([]byte, error) {
+	if !d.cfg.Settings.Primary {
+		return nil, errNotPrimary
+	}
+	data, err := os.ReadFile(filepath.Join(d.cfg.Settings.StateDir, "google.json"))
+	if err != nil {
+		return nil, errors.New("no renewed Google login on the primary")
+	}
+	return data, nil
+}
+
 func (d *device) stateFiles() map[string][]byte {
 	dir := d.cfg.Settings.StateDir
 	return readTree(dir, mirrorSkip...)
