@@ -153,6 +153,8 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 ### Google and the world
 - All calendars (create, change, delete, free slots), contacts (read and write), birthdays, Tasks,
   Sheets tables, Drive files.
+- One Google login for every device: the main Echo renews it by a link to the admin, the other
+  Echos, the sticks and a member M5 take it from there (the M5 when its own is refused).
 - Maps: places with opening hours and phone numbers, travel times by car, transit and bike;
   weather, warnings, pollen, air quality; monthly request limits.
 - Web search; Gemini for video summaries.

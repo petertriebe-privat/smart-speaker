@@ -23,6 +23,7 @@
 #include "services/telegram.h"
 #include "services/whatsapp.h"
 #include "system/error_log.h"
+#include "system/peer.h"
 #include "system/time_util.h"
 #include "system/tls_gate.h"
 #include "system/utf8.h"
@@ -104,6 +105,34 @@ bool dropStoredAccountLocked(const String& refused)
     loadAccountLocked();
     Serial.println("[Google] the stored login was refused: using the one from secrets.h");
     return account.length() && account != refused;
+}
+
+// A member (#66) takes the main Echo's login when its own was refused: the Echo renews it by link,
+// the member's copy in secrets.h (GOOGLE_REFRESH_TOKEN_WEB) does not follow and expired
+// (08.11.2026). Signed peer call /google_login (core: serveGoogleLogin), kept in NVS as a link's
+// login. true if there is a new one to try.
+bool leaderAsked = false;  // under tokenLock: once per authorize, no loop with the fallback
+bool takeLeaderLoginLocked(const String& refused)
+{
+    if (!MEMBER || leaderAsked) return false;
+    String answer;
+    if (!peer::callLeader("/google_login", "{}", answer, 8000)) {
+        Serial.printf("[Google] the main device's login: %s\n", answer.c_str());
+        return false;
+    }
+    JsonDocument parsed;
+    if (deserializeJson(parsed, answer)) return false;
+    const String refresh = parsed["refresh_token"] | "";
+    // only a web-client login: the one kept in NVS is used with the web client
+    if (refresh.isEmpty() || refresh == refused || !(parsed["web"] | false) || !*GOOGLE_WEB_CLIENT_ID) return false;
+    Preferences prefs;
+    if (prefs.begin("google", false)) prefs.putString("refresh", refresh);
+    prefs.end();
+    account = refresh;
+    accountWeb = accountLoaded = true;
+    loginNeeded = false;
+    errorlog::add("Google: login taken from the main device");
+    return true;
 }
 
 // Whether the admin can renew the login himself: web client and relay (its /google page) set up.
@@ -209,12 +238,27 @@ bool authorizeLocked(Token& entry, String& error)
 {
     if (entry.access.length() && int32_t(entry.until - millis()) > 0) return true;
     const bool own = entry.refresh == account;
-    const char* expired = renewable()
-        ? "Error: the Google login has expired. The assistant sends the admin a link to log in again (Telegram); Google "
-          "works again once he has used it. Tell the user so; there is nothing else to do."
-        : "Error: the Google login has expired or was revoked; the admin has to run tools/google_auth.py on the "
-          "PC and flash the device again.";
+    const char* expired =
+        MEMBER ? "Error: the Google login has expired and the main device's could not be taken (it is not reachable "
+                 "or has no renewed login). Once the main device works with Google again, this one does too. Tell "
+                 "the user so; there is nothing else to do."
+        : renewable()
+            ? "Error: the Google login has expired. The assistant sends the admin a link to log in again (Telegram); "
+              "Google works again once he has used it. Tell the user so; there is nothing else to do."
+            : "Error: the Google login has expired or was revoked; the admin has to run tools/google_auth.py on the "
+              "PC and flash the device again.";
+    // a member: the main device's login, once, then this check again
+    auto fromLeader = [&]() {
+        if (!own || !takeLeaderLoginLocked(entry.refresh)) return false;
+        entry.refresh = account;
+        entry.web = accountWeb;
+        leaderAsked = true;
+        const bool ok = authorizeLocked(entry, error);
+        leaderAsked = false;
+        return ok;
+    };
     if (entry.refresh.isEmpty()) {  // web client only, never logged in
+        if (fromLeader()) return true;
         loginNeeded = true;
         error = expired;
         return false;
@@ -232,6 +276,7 @@ bool authorizeLocked(Token& entry, String& error)
                 entry.web = accountWeb;
                 return authorizeLocked(entry, error);
             }
+            if (fromLeader()) return true;
             if (own) loginNeeded = true;
             error = own ? expired
                         : "Error: this mailbox's Google login has expired; its owner has to log in again "

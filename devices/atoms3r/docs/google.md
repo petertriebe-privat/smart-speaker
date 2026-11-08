@@ -21,6 +21,14 @@ expired login of its own stayed expired (found 25.10.2026). `GOOGLE_REFRESH_TOKE
 it is used when no login from a link is stored, and when the stored one is refused (that one is
 then deleted).
 
+That copy does not follow when the Echo renews its login by link: it expired, and Google stayed
+off on the member (found 08.11.2026). So a member whose login is refused (or that has none) takes
+the main device's: the signed peer call `/google_login` (core `serveGoogleLogin`, the primary's
+`google.json`, only a web-client login) goes into NVS as a link's login would, and the call is
+tried again, once. The Echos and sticks do the same through the mirror of the primary's state
+(`applyLogins`, every 2 minutes). Without a reachable primary with a renewed login, the member
+says so instead of promising a link.
+
 `update_event` on both devices: the backend fills the parameters it does not change with `""` and
 `0` (strict schemas), so those mean unchanged; `time: "all_day"` makes an event all-day. Until
 24.10.2026 an empty title or notes replaced the event's own, and changing only the place blanked
