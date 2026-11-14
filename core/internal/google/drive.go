@@ -11,14 +11,17 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"echo-assistant/internal/store"
 )
 
 // The assistant's files in the user's Google Drive: a visible folder "Jarvis" with the backups (core.json,
 // people.json, tasks.json) and subfolders for the memory's archive ("Themen", "Gespräche") and the
-// tables ("Tabellen"). Scope drive.file: The assistant sees only the files it made itself (or that
-// tools/migrate_archive.py made with the same OAuth client). Drive keeps older versions of a
+// tables ("Tabellen"). The folder is an Obsidian vault (package vault). Scope drive: the assistant
+// has full access, but every request stays in its folder (found by its mark, rootProperty) and the
+// folders in it; with an older login of scope drive.file it sees only the files it made itself (or
+// that tools/migrate_archive.py made with the same OAuth client). Drive keeps older versions of a
 // file (revisions). Folder ids and the backups' file ids are kept in state_dir/drive.json. As
 // devices/atoms3r/src/services/drive.cpp.
 
@@ -32,7 +35,13 @@ const (
 type Drive struct {
 	a  *Account
 	mu sync.Mutex // the ids file
+
+	foldersMu   sync.Mutex // Folders, kept for foldersKeep
+	folders     []string
+	foldersTime time.Time
 }
+
+const foldersKeep = 10 * time.Minute
 
 type driveIDs struct {
 	Folder  string            `json:"folder,omitempty"`
@@ -124,8 +133,11 @@ func setOrDelete(m map[string]string, name, id string) map[string]string {
 // forgetAll: something was deleted in Drive: look everything up again.
 func (d *Drive) forgetAll() {
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	removeIDs()
+	d.mu.Unlock()
+	d.foldersMu.Lock()
+	d.folders = nil
+	d.foldersMu.Unlock()
 }
 
 // --- Requests -------------------------------------------------------------------------------------
@@ -178,16 +190,105 @@ func (d *Drive) findFolder(name, parent string) (string, error) {
 	return id, nil
 }
 
+// rootProperty marks the assistant's folder (appProperties are seen only by this OAuth client):
+// with the scope drive the assistant sees the whole Drive, so a folder of the same name elsewhere
+// must not be taken for it.
+const rootProperty = "appProperties has { key='assistant' and value='root' }"
+
 func (d *Drive) rootID() (string, error) {
 	if id := d.cachedID("", ""); id != "" {
 		return id, nil
 	}
-	id, err := d.findFolder(prompts.Name(), "") // the folder is named after the assistant
+	id, err := d.searchOne(rootProperty + " and mimeType='" + folderMIME + "' and trashed=false")
 	if err != nil {
 		return "", err
 	}
+	if id == "" { // made before the mark, or new: named after the assistant, in My Drive
+		if id, err = d.findFolder(prompts.Name(), "root"); err != nil {
+			return "", err
+		}
+		d.markRoot(id)
+	}
 	d.cacheID("", "", id)
 	return id, nil
+}
+
+func (d *Drive) markRoot(id string) {
+	if err := d.json("PATCH", "/drive/v3/files/"+id+"?fields=id", map[string]any{"appProperties": map[string]string{"assistant": "root"}}, nil); err != nil {
+		log.Printf("[Drive] folder not marked: %v", err)
+	}
+}
+
+// MarkRoot: the assistant's folder gets its mark (once per start, for folders made before it).
+func (d *Drive) MarkRoot() error {
+	id, err := d.rootID()
+	if err == nil {
+		d.markRoot(id)
+	}
+	return err
+}
+
+// Folders: the assistant's folder and every folder in it (not those starting with a dot, as
+// Obsidian's .obsidian and .trash), at most 200. With the scope drive.file only those the
+// assistant made; with drive also the household's.
+func (d *Drive) Folders() ([]string, error) {
+	d.foldersMu.Lock()
+	defer d.foldersMu.Unlock()
+	if d.folders != nil && time.Since(d.foldersTime) < foldersKeep {
+		return d.folders, nil
+	}
+	all, err := d.walkFolders()
+	if err == nil {
+		d.folders, d.foldersTime = all, time.Now()
+	}
+	return all, err
+}
+
+func (d *Drive) walkFolders() ([]string, error) {
+	root, err := d.rootID()
+	if err != nil {
+		return nil, err
+	}
+	all, level := []string{root}, []string{root}
+	for len(level) > 0 && len(all) < 200 {
+		var next []string
+		for _, chunk := range InParents(level) {
+			var answer map[string]any
+			q := "mimeType='" + folderMIME + "' and trashed=false and " + chunk
+			if err := d.json("GET", "/drive/v3/files?spaces=drive&fields=files(id,name)&pageSize=200&q="+enc(q), nil, &answer); err != nil {
+				return all, err
+			}
+			for _, f := range digL(answer, "files") {
+				if name := digS(f, "name"); !strings.HasPrefix(name, ".") {
+					next = append(next, digS(f, "id"))
+				}
+			}
+		}
+		level = next
+		all = append(all, level...)
+	}
+	return all, nil
+}
+
+// InParents: "('a' in parents or 'b' in parents …)" for the folders ids, in pieces of 30 (a query's
+// length is limited).
+func InParents(ids []string) []string {
+	var out []string
+	for len(ids) > 0 {
+		n := min(len(ids), 30)
+		var parts []string
+		for _, id := range ids[:n] {
+			parts = append(parts, "'"+id+"' in parents")
+		}
+		out = append(out, "("+strings.Join(parts, " or ")+")")
+		ids = ids[n:]
+	}
+	return out
+}
+
+// Rename gives the file id a new name and MIME type.
+func (d *Drive) Rename(id, name, mime string) error {
+	return d.json("PATCH", "/drive/v3/files/"+id+"?fields=id", map[string]any{"name": name, "mimeType": mime}, nil)
 }
 
 func (d *Drive) subfolderID(folder string) (string, error) {

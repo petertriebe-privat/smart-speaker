@@ -33,6 +33,30 @@ func TestRulebookMarkdownRoundtrip(t *testing.T) {
 	}
 }
 
+// The file is a note of the Obsidian vault: properties first, a person as a wikilink; both parse
+// back (and a person written without the link still counts).
+func TestRulebookObsidian(t *testing.T) {
+	m := rulebookMemory()
+	m.core.Rules = append(m.core.Rules, Rule{ID: 6, Text: "Weck mich um sieben.", Area: "plans", Person: "Anna"})
+	md := m.rulebookMarkdownLocked()
+	if !strings.HasPrefix(md, "---\ntyp: \"Regelbuch\"\ntags:\n  - \"regelbuch\"\n---\n"+rulebookTitle()) ||
+		!strings.Contains(md, "- [6] Weck mich um sieben. (nur für [[Anna]])") {
+		t.Fatalf("view:\n%s", md)
+	}
+	md += "- Licht aus. (nur für [[Anna|Anna B]])\n- Ruhe. (nur für Anna)\n"
+	rules, ok := parseRulebook(md)
+	if !ok || len(rules) != 7 {
+		t.Fatalf("parsed: %v %+v", ok, rules)
+	}
+	only := map[string]string{}
+	for _, r := range rules {
+		only[r.text] = r.only
+	}
+	if only["Weck mich um sieben."] != "Anna" || only["Licht aus."] != "Anna B" || only["Ruhe."] != "Anna" {
+		t.Errorf("persons: %+v", rules)
+	}
+}
+
 // The household's edits go into the core: changed, moved, deleted, added, confirmed; The assistant's own
 // change meanwhile stays.
 func TestRulebookEdits(t *testing.T) {

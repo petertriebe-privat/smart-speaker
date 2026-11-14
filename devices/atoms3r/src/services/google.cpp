@@ -329,7 +329,7 @@ int call(const char* method, const char* host, const String& path, const String&
 // As SCOPES in tools/google_auth.py.
 const char* const SCOPES[] = {
     "https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly",
-    "https://www.googleapis.com/auth/contacts",        "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/contacts",        "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/tasks",           "https://www.googleapis.com/auth/gmail.modify"};
 
 String loginState, loginVerifier;  // the pending link, under tokenLock
@@ -438,10 +438,10 @@ void exchangeCode(const String& code)
         tellAdmin(text, text);
         return;
     }
-    const String granted = parsed["scope"] | "";
+    const String granted = " " + String(parsed["scope"] | "") + " ";
     String missing;
-    for (const char* scope : SCOPES)
-        if (granted.indexOf(scope) < 0) missing += String(missing.length() ? ", " : "") + (strrchr(scope, '/') + 1);
+    for (const char* scope : SCOPES)  // exactly: .../drive is a prefix of .../drive.file
+        if (granted.indexOf(" " + String(scope) + " ") < 0) missing += String(missing.length() ? ", " : "") + (strrchr(scope, '/') + 1);
     if (missing.length()) {
         const String text = "Es fehlen Berechtigungen (" + missing + "). Bitte öffnen Sie den Link noch einmal und "
                             "setzen Sie alle Häkchen.";

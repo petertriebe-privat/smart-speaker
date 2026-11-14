@@ -631,6 +631,81 @@ func TestListeningInFromTheStart(t *testing.T) {
 	}
 }
 
+// "Ruf die Praxis an, ich rede mit": the microphone at home is on the line from the pick-up, and
+// the assistant knows it is a three-way call.
+func TestTalkingAlongFromTheStart(t *testing.T) {
+	h := newHarness(t, nil)
+	h.register(t)
+	r := &tools.Registry{}
+	h.p.AddTools(r)
+	out := r.Call("phone_call", `{"to": "07161 123456", "task": "einen Termin vereinbaren", "talk": true}`,
+		tools.Context{Channel: tools.Voice})
+	if !strings.Contains(out, "talks along") {
+		t.Fatalf("phone_call: %q", out)
+	}
+	h.p.dialIfRequested(time.Now())
+	h.answerOurCall(t)
+	if h.p.Bridge() != "talk" {
+		t.Fatalf("after the pick-up the call is %q, want talk", h.p.Bridge())
+	}
+	h.sess.set(live.Live)
+	h.p.updateCall(time.Now())
+	h.sess.mu.Lock()
+	notes := strings.Join(h.sess.commentary, " | ")
+	h.sess.mu.Unlock()
+	if !strings.Contains(notes, "§ 201") || !strings.Contains(notes, "three-way") {
+		t.Errorf("the session was not told: %q", notes)
+	}
+	if !h.p.ConferenceActive() {
+		t.Error("no three-way call: the assistant does not hear the room")
+	}
+}
+
+// On the phone's app there is no speaker at home: phone_call has no listen or talk there.
+func TestCallToolAwayHasNoListening(t *testing.T) {
+	away := CallTool(ListenNowhere, nil)
+	if strings.Contains(away.Parameters, "listen") || strings.Contains(away.Parameters, "talk") {
+		t.Errorf("parameters %s", away.Parameters)
+	}
+	home := CallTool(ListenAtHome, nil)
+	if !strings.Contains(home.Parameters, `"talk"`) || !strings.Contains(home.Parameters, `"listen"`) {
+		t.Errorf("parameters %s", home.Parameters)
+	}
+	var r tools.Registry
+	r.Add(away) // the schema is valid JSON
+	r.Add(home)
+}
+
+// speaker_call without a call here: another Echo's call comes here (CallElsewhere), and without
+// one either the usual answer.
+func TestSpeakerCallTakesTheCallOfAnotherEcho(t *testing.T) {
+	h := newHarness(t, nil)
+	r := &tools.Registry{}
+	h.p.AddTools(r)
+	elsewhere := ""
+	h.p.deps.CallElsewhere = func(mode string) (string, bool) {
+		if elsewhere == "" {
+			return "", false
+		}
+		return "The call at " + elsewhere + " is " + mode + " here now.", true
+	}
+	home := &fakeConversation{label: "speaker"}
+	if got := r.Call("speaker_call", `{"mode":"listen"}`, tools.Context{Channel: tools.Voice, Conversation: home}); !strings.Contains(got, "no call") {
+		t.Errorf("without any call: %q", got)
+	}
+	elsewhere = "Jarvis Küche"
+	got := r.Call("speaker_call", `{"mode":"talk"}`, tools.Context{Channel: tools.Voice, Conversation: home})
+	if !strings.Contains(got, "Jarvis Küche is talk here") || home.ends != 1 {
+		t.Errorf("another Echo's call: %q, ends %d", got, home.ends)
+	}
+	// A call here goes first.
+	h.register(t)
+	h.talking(t)
+	if got := r.Call("speaker_call", `{"mode":"listen"}`, tools.Context{Channel: tools.Voice}); strings.Contains(got, "Küche") {
+		t.Errorf("a call here went to the other Echo: %q", got)
+	}
+}
+
 func TestCallingSomeoneToTalkYourself(t *testing.T) {
 	h := newHarness(t, nil)
 	h.register(t)

@@ -38,6 +38,7 @@ var ErrNoPrimary = errors.New("no primary device reachable")
 type rpc struct {
 	mu       sync.Mutex
 	handlers map[string]Handler
+	streams  map[string]AudioHandler // calls that become audio links (stream.go)
 	nonces   map[string]time.Time
 }
 
@@ -96,6 +97,12 @@ func (s *Service) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil || r.Method != http.MethodPost || !s.verify(r.Header.Get(authHeader), r.URL.Path, body, time.Now()) {
 		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	// An audio link stays with the device that takes it, primary or not: that one plays it or
+	// passes the audio on itself (stream.go).
+	if h := s.audioHandler(r.URL.Path); h != nil {
+		s.serveAudio(w, r, body, h)
 		return
 	}
 	if r.Header.Get(relayHeader) != "" && !s.isPrimary() {

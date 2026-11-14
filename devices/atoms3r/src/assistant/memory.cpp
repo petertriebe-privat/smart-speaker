@@ -529,13 +529,14 @@ void applyTopic(JsonObjectConst change, const String& at, const String& conversa
     topic["done"] = change["done"] | false;
 
     const String key = topic["key"] | "";
-    const String header = "Thema: " + String(topic["title"] | "") + "\nSchlüssel: " + key + "\nStand (" +
-                          timeutil::today() + "): " + (topic["status"] | "") + "\nStichwörter: " +
-                          (topic["keywords"] | "") + "\nStatus: " + ((topic["done"] | false) ? "erledigt" : "offen") +
-                          "\nAngelegt: " + (topic["created"] | "") + "\n";
-    String entry = "--- " + at + (conversationTitle.length() ? " (" + conversationTitle + ")" : "") + " ---\n";
+    const String header = vault::topicHeader(key, topic["title"] | "", topic["status"] | "", topic["keywords"] | "",
+                                             timeutil::today(), topic["created"] | "", topic["done"] | false);
+    // The entry links the note it came from: the conversation, or the night's review.
+    const String from = conversationTitle.isEmpty()                    ? String()
+                        : conversationTitle == "Nächtliche Durchsicht" ? vault::dreamName(timeutil::today())
+                                                                       : vault::conversationName(at, conversationTitle);
     const String notes = change["notes"] | "";
-    entry += (notes.length() ? notes : String(topic["status"] | "")) + "\n";
+    const String entry = vault::entry(at, conversationTitle, from, notes.length() ? notes : String(topic["status"] | ""));
     queueNote(MEMORY_FOLDER_TOPICS, "Thema [" + key + "]: " + String(topic["title"] | ""),
               "SUBJECT \"[" + key + "]\"", header, entry);
 }
@@ -631,12 +632,10 @@ void apply(const JsonDocument& update, const Conversation& conversation)
     if (minor) entry["minor"] = true;  // short commands: soon only in the index (pruneRecent)
     pruneRecent();
     addToIndex(at, conversation.started, title, summary, keywords, topicTitles, with, conversation.channel.c_str());
-    const String label = channelLabel(conversation.channel.c_str());
     queueNote(MEMORY_FOLDER_CONVERSATIONS, "Gespräch " + at + " – " + title, "",
-              "Gespräch vom " + at + ": " + title + (with.length() ? "\nMit: " + people::name(with) : String()) +
-                  (label.length() ? "\nKanal: " + label : String()) +
-                  "\nKurzfassung: " + summary + "\nStichwörter: " + keywords +
-                  "\nThemen: " + topicTitles + "\n\nTranskript:\n" + conversation.transcript);
+              vault::conversationNote(at, title, with.length() ? people::name(with) : String(),
+                                      channelLabel(conversation.channel.c_str()), summary, keywords, topicTitles,
+                                      conversation.transcript));
     saveCore();
     queueCoreBackup();
     Serial.printf("[Memory] with %s, profile %u fields%s, +%u ~%u -%u facts, %d rules, topics: %s, conversation: %s\n",
@@ -744,7 +743,7 @@ void processPending()
         // Keep the transcript at least (in the mailbox, findable by full-text search).
         const String at = timeutil::format(conversation.started, "%Y-%m-%d %H:%M");
         queueNote(MEMORY_FOLDER_CONVERSATIONS, "Gespräch " + at + " – nicht zusammengefasst", "",
-                  "Gespräch vom " + at + " (nicht zusammengefasst)\n\nTranskript:\n" + transcript);
+                  vault::conversationNote(at, "", "", "", "", "", "", transcript));
     }
     LittleFS.remove(String(PENDING_DIR) + "/" + name);
     conversationAttempts = 0;

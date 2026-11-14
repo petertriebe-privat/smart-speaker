@@ -19,6 +19,10 @@ phone (core: internal/hometunnel) ── TLS + client certificate ──▶ home
   calls go over the tunnel when no heartbeat shows it; an Echo that is not the primary passes such
   a call on to the primary (`X-Jarvis-Relay`, `core/internal/peer/rpc.go`), so the gateway needs no
   knowledge of who leads (until that core is on the Echos, the primary first in `ECHOS` takes them).
+- The phone's intercom (`/intercom/stream`, `core/internal/peer/stream.go`) is such a call that
+  stays open and then carries audio both ways; the Echo that takes it keeps it (no relay to the
+  primary) and passes the audio on itself. It needs nothing on the gateway: `proxy_timeout` (10 min
+  without data) never runs out while 50 frames a second flow.
 
 ## Files
 
