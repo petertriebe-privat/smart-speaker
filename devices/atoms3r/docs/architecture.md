@@ -276,7 +276,8 @@ Google services [google.md](google.md); for the planned Android app [mobile.md](
 - At most one getting-to-know question a day, casually at the end; "Lern mich kennen" asks several.
 - Skills (taught procedures) live in the core with caps (20 skills, 4000 characters each); only
   name and trigger are in the prompt, the body is loaded on use.
-- **Backups and archive in Google Drive** (scope `drive.file`): the flash stays the truth; Drive
+- **Backups and archive in Google Drive** (scope `drive`, kept to the assistant's folder; an
+  Obsidian vault, see `google.md`): the flash stays the truth; Drive
   keeps revisions, so a broken backup can be rolled back — an empty core once overwrote a good
   backup in the old mailbox design. A backup that cannot be read is never overwritten. Archive
   files carry `appProperties` (topic key, conversation time); conversations are de-duplicated by

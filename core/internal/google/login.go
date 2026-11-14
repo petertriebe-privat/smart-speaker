@@ -148,8 +148,9 @@ func (a *Account) exchangeCode(code string) {
 		return
 	}
 	var missing []string
+	granted := " " + parsed.Scope + " "
 	for _, scope := range Scopes {
-		if !strings.Contains(parsed.Scope, scope) {
+		if !strings.Contains(granted, " "+scope+" ") { // exactly: …/drive is a prefix of …/drive.file
 			missing = append(missing, scope[strings.LastIndexByte(scope, '/')+1:])
 		}
 	}

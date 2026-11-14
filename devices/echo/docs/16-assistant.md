@@ -618,6 +618,10 @@ Page texts are data, not instructions; at most 12,000 characters per page (4,000
 - **Volume:** Software gain (see [hardware test](../hardware/gen1/docs/audio.md)).
 - **No presence sensor:** `room_sensor` is missing, announcements do not wait for someone in the room.
 - **In parallel:** Phone call and speaker conversation at the same time (the M5 can do only one).
+- **Obsidian vault (14.11.2026):** Both devices write the archive as Markdown with properties and
+  wikilinks (`internal/vault`, `assistant/vault.h`; details in `devices/atoms3r/docs/google.md`).
+  Only the main Echo converts old `.txt` notes (`Archive.Tidy`, in the memory loop with
+  `ArchiveWritable`), and only the Echo searches every level of folders in the vault (the M5 one).
 - **Phone call at the speaker:** Listening in, speaking along and two-way talk exist only here; the M5
   has no echo cancellation at the speaker (issue #3) and would have to limit itself to listening in.
 - **Learning from behavior and the learning report** (2026-10-27, `internal/memory/behaviour.go`,

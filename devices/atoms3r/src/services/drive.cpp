@@ -121,11 +121,30 @@ bool findFolder(const String& name, const String& parent, String& id, String& er
     return true;
 }
 
+// The assistant's folder carries this mark (appProperties, seen only by this OAuth client): with
+// the scope drive the assistant sees the whole Drive, so a folder of the same name elsewhere must
+// not be taken for it. As core/internal/google/drive.go.
+constexpr const char* ROOT_PROPERTY = "appProperties has { key='assistant' and value='root' }";
+
+void markRoot(const String& id)
+{
+    JsonDocument answer;
+    String error;
+    if (jsonRequest("PATCH", "/drive/v3/files/" + id + "?fields=id", "{\"appProperties\": {\"assistant\": \"root\"}}",
+                    answer, error) != 200)
+        Serial.printf("[Drive] folder not marked: %s\n", error.c_str());
+}
+
 bool rootId(String& id, String& error)
 {
     id = cachedId(nullptr, nullptr);
     if (id.length()) return true;
-    if (!findFolder(FOLDER, "", id, error)) return false;
+    if (!searchOne(String(ROOT_PROPERTY) + " and mimeType='" + FOLDER_MIME + "' and trashed=false", id, error))
+        return false;
+    if (id.isEmpty()) {  // made before the mark, or new: named after the assistant, in My Drive
+        if (!findFolder(FOLDER, "root", id, error)) return false;
+        markRoot(id);
+    }
     cacheId(nullptr, nullptr, id);
     return true;
 }
@@ -287,6 +306,34 @@ String replace(const String& id, const char* mime, const uint8_t* data, size_t l
     const int status = google::request("PATCH", HOST, "/upload/drive/v3/files/" + id + "?uploadType=media&fields=id",
                                        mime, data, length, reply, error);
     return status == 200 ? String("stored") : error;
+}
+
+String rename(const String& id, const String& name, const char* mime)
+{
+    JsonDocument metadata, answer;
+    metadata["name"] = name;
+    metadata["mimeType"] = mime;
+    String body, error;
+    serializeJson(metadata, body);
+    return jsonRequest("PATCH", "/drive/v3/files/" + id + "?fields=id", body, answer, error) == 200 ? String("stored")
+                                                                                                     : error;
+}
+
+bool inParents(String& query, String& error)
+{
+    String root;
+    if (!rootId(root, error)) return false;
+    JsonDocument answer;
+    const String q = "mimeType='" + String(FOLDER_MIME) + "' and trashed=false and '" + root + "' in parents";
+    if (jsonRequest("GET", "/drive/v3/files?spaces=drive&fields=files(id,name)&pageSize=30&q=" + urlEncode(q), "",
+                    answer, error) != 200)
+        return false;
+    query = "('" + root + "' in parents";
+    for (JsonObjectConst folder : answer["files"].as<JsonArrayConst>())
+        if (!String(folder["name"] | ".").startsWith("."))  // not Obsidian's .obsidian and .trash
+            query += " or '" + String(folder["id"] | "") + "' in parents";
+    query += ")";
+    return true;
 }
 
 String trashFile(const String& id)

@@ -8,6 +8,7 @@
 #include <ArduinoJson.h>
 #include <vector>
 
+#include "assistant/vault.h"
 #include "config.h"
 #include "system/scoped_lock.h"
 
@@ -23,7 +24,6 @@ constexpr const char* PENDING_DIR = "/memory/pending";        // conversations n
 constexpr const char* CORE_JOB = "zz-core.json";              // last in the outbox, one at a time
 constexpr const char* CORE_SUBJECT = "Gedächtnis (Kern)";
 constexpr const char* JSON_MARKER = "\n---JSON---\n";          // backup mail: text, then the core
-constexpr const char* HISTORY_MARKER = "\nVerlauf:\n";         // dossier: header, then entries
 
 // A person's profile: always in the prompt, never merged away or capped like the facts.
 struct ProfileField {
@@ -67,8 +67,7 @@ bool coreBackupUsable();  // Drive (assistant/backup) or the mailbox
 bool archiveUsable();     // dossiers and transcripts: Drive when set up, else the mailbox
 constexpr const char* CORE_BACKUP_FILE = "core.json";  // in Drive
 constexpr const char* DRIVE_TOPICS = "Themen";                 // Drive subfolders of the archive
-constexpr const char* DRIVE_CONVERSATIONS = "Gespräche";
-constexpr const char* ARCHIVE_MIME = "text/plain";
+constexpr const char* DRIVE_CONVERSATIONS = "Gespräche";  // the notes' format: assistant/vault.h
 
 // memory.cpp (caller holds the lock)
 // `memoryWork`: for consolidation and dreaming (without the last dream's diary and ideas).
@@ -83,7 +82,8 @@ JsonObject findFact(int id);
 bool setProfile(const String& person, const char* key, String value);  // "" clears the field
 bool removeFact(int id);
 // Updates (or creates) a topic from a change {title, status, keywords[], notes, done} and adds
-// an entry "--- at (heading) ---" with the notes to its dossier. `touch`: a conversation was about
+// an entry "### at – heading" (vault::entry, linking the conversation or the night's review) with
+// the notes to its dossier. `touch`: a conversation was about
 // it, so it counts as recent; not for the dream, which must not bring old topics back.
 void applyTopic(JsonObjectConst change, const String& at, const String& heading, bool touch = true);
 bool outsider(const String& channel);  // a call with someone outside the household

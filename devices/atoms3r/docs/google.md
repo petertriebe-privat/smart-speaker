@@ -6,7 +6,7 @@ Everything here is optional. Without Google settings the tools below are simply 
 |---|---|---|
 | `list_events`, `find_free_time`, `create_event`, `update_event`, `delete_event` | Calendar API | OAuth |
 | `find_contact`, `save_contact`, `upcoming_birthdays`, caller names on the phone | People API | OAuth |
-| memory backups and archive, tables | Drive API, Sheets API | OAuth (`drive.file`) |
+| memory backups and archive (an Obsidian vault), tables | Drive API, Sheets API | OAuth (`drive`, kept to the assistant's folder) |
 | `list_todos`, `add_todo`, `change_todo` | Google Tasks API | OAuth |
 | watched Gmail mailboxes (`mail_news`, `search_private_mail`, `read_private_mail`, notices) | Gmail API (read only) | OAuth |
 | `find_place`, `travel_time`, `get_weather` | Places API (New), Routes API, Weather, Pollen, Air Quality API | API key |
@@ -79,9 +79,37 @@ so the assistant does not invent other fixes.
   a flash, and a task agent running `google_auth.py` on the server renewed only its own token.
 
 Scopes: `calendar.events`, `calendar.readonly` (all calendars, free/busy), `contacts`,
-`drive.file` (only files the assistant created: the folder *<Name>* with backups, `Themen`,
-`Gespräche`, `Tabellen`), `tasks`, `gmail.readonly` (the watched mailbox, see below). Run the
-script again whenever a new scope is added.
+`drive` (see *The Drive folder as an Obsidian vault* below), `tasks`, `gmail.readonly` (the
+watched mailbox, see below). Run the script again whenever a new scope is added.
+
+### The Drive folder as an Obsidian vault
+
+Since 14.11.2026 the folder *<Name>* is meant to be opened as an Obsidian vault (Google Drive for
+Desktop on the PC; on a phone a sync plugin or app). Format: `core/internal/vault` and
+`assistant/vault.h` on the M5, the same on both devices:
+
+- Notes are `.md` (`text/markdown`) with properties (YAML front matter: `typ`, `datum`, `mit`,
+  `kanal`, `themen`, `stichwörter`, `status`, `tags`) and wikilinks: a conversation links its
+  person (`[[Anna]]`) and topics, a dossier's history entry (`### <time> – <title>`, under
+  `## Verlauf`) links the conversation or the night's dream (`Aus: [[2026-11-14 18.38 – …]]`), the
+  rulebook links a person (`(nur für [[Anna]])`; read back with or without the link).
+- File names are what a wikilink reaches and Windows stores: a topic by its title (renamed when
+  the title changes), a conversation `2026-11-14 18.38 – <title>`, a dream `Traum 2026-11-14`; no
+  `: [ ] # ^ | \ / * ? " < >`. Notes are still found by `appProperties` (topic key, time).
+- Notes of the old text format (`.txt`, `Verlauf:`, `--- <time> (<title>) ---`) are read by both
+  devices. The main Echo converts them (`Archive.Tidy`: ten per minute, then every
+  `ARCHIVE_TIDY_MS`, 6 h, so notes an older device writes are converted too); a `.txt` there that
+  is not the assistant's becomes `.md` with its text unchanged. An M5 alone converts nothing.
+- Scope `drive` (since 14.11.2026, instead of `drive.file`): with `drive.file` the assistant saw
+  only files it made, so a note the household wrote in Obsidian stayed invisible. Full access is
+  kept to the folder in the code: the folder carries `appProperties` `assistant=root` (only this
+  OAuth client sees it) and is found by it, else by its name in *My Drive* (then marked); the
+  archive search runs only in the folder and the folders in it (the Echo: all levels, without
+  `.obsidian` and `.trash`; the M5: one level). So `recall` also finds the household's own notes.
+  The login check compares scopes exactly (`…/drive` is a prefix of `…/drive.file`).
+- `drive` is a restricted scope: Google shows the unverified-app warning at the login, which is
+  fine for the household's own client. Until the admin logs in again (`tools/google_auth.py`, or the
+  login link), the old `drive.file` login keeps working with the assistant's own files.
 
 ### Gmail (watched mailboxes)
 
@@ -99,7 +127,8 @@ trash (a later stage) will need `gmail.modify`, which still cannot delete for go
 JSON as second argument) asks for `drive.file`, `gmail.modify` (read and sort; the MCP server
 refuses trash and spam), `calendar.readonly` and `contacts.readonly` only and writes client id, secret and refresh token as JSON to `OUTFILE`; that
 file goes to the agent's server (`/run/secrets/google.json`), nowhere else. Its own token, so it
-can be revoked without touching the assistant; the same client, so `drive.file` shows it the assistant's files.
+can be revoked without touching the assistant; the same client, so `drive.file` shows it the files
+the assistant made (not the household's own notes in the vault).
 
 New mail is found with the history API (`history.list` since the last `historyId`, inbox only,
 drafts and own mails skipped); on the first check, or when the starting point is older than

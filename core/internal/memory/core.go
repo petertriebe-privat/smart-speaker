@@ -252,6 +252,7 @@ type Memory struct {
 	restoreRetry   time.Time
 	ruleSortRetry  time.Time // the rulebook's sorting failed: not before then
 	rulebookNext   time.Time // the next sync of the rulebook's Markdown file
+	tidyNext       time.Time // the next round of keeping the archive an Obsidian vault (tidyArchive)
 }
 
 func New(p *people.Register) *Memory {

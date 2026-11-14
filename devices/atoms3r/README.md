@@ -197,7 +197,8 @@ lib/, models/   TFLite Micro and the "Hey Jarvis" model (third party, Apache 2.0
 ## Privacy
 
 Conversations go to OpenAI; memory backups, the archive and tables go to your own Google Drive
-(scope `drive.file`: the assistant only sees files it created). Keys and household data stay in
+(scope `drive`: full access, but the assistant only works in its own folder, found by a mark only
+its OAuth client sees, and the folders in it). Keys and household data stay in
 `local/secrets.h`. Model instructions treat e-mails, documents, web pages and video contents as
 data, never as instructions; mail commands are only accepted from household members whose mail
 the provider verified (DMARC).
