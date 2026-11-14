@@ -16,6 +16,9 @@ func TestWeek(t *testing.T) {
 	if _, _, _, ok := Week("gestern"); ok {
 		t.Error("no time")
 	}
+	if _, _, _, ok := Week("1970-01-01 01:00"); ok {
+		t.Error("a clock not set yet is no week")
+	}
 }
 
 func TestParseConversation(t *testing.T) {
