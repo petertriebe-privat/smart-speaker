@@ -22,6 +22,9 @@ func Week(at string) (key string, monday, sunday time.Time, ok bool) {
 			return "", time.Time{}, time.Time{}, false
 		}
 	}
+	if t.Year() < 2000 { // a clock not set yet (1970): no week to file it under
+		return "", time.Time{}, time.Time{}, false
+	}
 	year, week := t.ISOWeek()
 	day := (int(t.Weekday()) + 6) % 7 // Monday 0
 	monday = time.Date(t.Year(), t.Month(), t.Day()-day, 0, 0, 0, 0, time.Local)
