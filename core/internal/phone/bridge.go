@@ -126,6 +126,7 @@ type bridge struct {
 	local   Speaker     // this Echo's speaker
 	gone    func()      // the room was another Echo's and is off now: tell that one
 	busy    func() bool // a conversation at the speaker runs (then the room belongs to it)
+	over    func()      // the bridge went off: the log of the way out (Phone.micReport)
 
 	spec *audio.Spectrum // what the room hears, for the LED ring
 	echo roomEcho        // when it was last loud in the room, for the gate on the way out
@@ -198,6 +199,9 @@ func (b *bridge) setMode(mode bridgeMode) bool {
 		b.stop = nil
 	}
 	log.Printf("[Bridge] %s", mode.name())
+	if !mode.on() && b.over != nil {
+		b.over() // takes no lock of the bridge
+	}
 	return true
 }
 
@@ -424,13 +428,21 @@ func (p *Phone) setBridgeLocked(mode bridgeMode) string {
 // ConnectSpeaker: the user dialled in from outside and wants the room at home ("monitor": they
 // hear the room; "talk": both ways, the intercom). GPT Live is not needed for it and ends - it
 // would listen along and cost money for nothing; the call itself stays up as the bridge.
-func (p *Phone) ConnectSpeaker(name string) string {
+func (p *Phone) ConnectSpeaker(name string) string { return p.ConnectSpeakerAt(name, nil, nil) }
+
+// ConnectCheck: whether the running call may be connected with a room in mode name ("" = yes,
+// else the error for the tool), before another Echo is asked for its room (OtherRoom).
+func (p *Phone) ConnectCheck(name string) string {
 	mode, ok := modeByName(name)
 	if !ok || !mode.ToLine {
 		return "Error: mode must be monitor or talk."
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	return p.connectCheckLocked()
+}
+
+func (p *Phone) connectCheckLocked() string {
 	c := &p.call
 	switch {
 	case c.stage != stageTalking && c.stage != stageBridge:
@@ -441,13 +453,39 @@ func (p *Phone) ConnectSpeaker(name string) string {
 		// By default only the admin: a released number opens a live microphone in the home
 		// (speaker_access releases and takes back).
 		return "Error: this number is not released for the speaker and the microphone at home."
-	case p.deps.Speaker == nil:
+	}
+	return ""
+}
+
+// ConnectSpeakerAt: ConnectSpeaker with the room at another Echo (sp plays there, its microphone
+// comes in through HearRemote, gone is called once it is over; remote.go): the caller asked for
+// that room ("verbinde mich mit dem Arbeitszimmer", connect_speaker room), and that Echo fetched
+// the call's room (cmd/assistant/roomlink.go). sp nil = this Echo's room.
+func (p *Phone) ConnectSpeakerAt(name string, sp Speaker, gone func()) string {
+	mode, ok := modeByName(name)
+	if !ok || !mode.ToLine {
+		return "Error: mode must be monitor or talk."
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	c := &p.call
+	if e := p.connectCheckLocked(); e != "" {
+		return e
+	}
+	if sp == nil && p.deps.Speaker == nil {
 		return "Error: this device has no speaker for a call."
 	}
-	if !p.bridge.setMode(mode) {
+	b := p.bridge
+	if sp != nil {
+		b.mu.Lock()
+		b.speaker, b.gone = sp, gone
+		b.mu.Unlock()
+		log.Printf("[Bridge] the room is another Echo's (%s)", mode.name())
+	}
+	if !b.setMode(mode) { // the tones below tell the room, also when the mode stays as it was
 		return "Error: this device has no speaker for a call."
 	}
-	p.bridge.announce(true)
+	b.announce(true)
 	if c.stage != stageBridge {
 		c.stage = stageBridge
 		c.bridgeSince = time.Now()

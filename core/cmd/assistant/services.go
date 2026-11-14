@@ -538,10 +538,12 @@ func (d *device) addLiveTools() {
 			}
 			return "call"
 		},
-		Speaker:  d.speaker,
-		HomeBusy: func() bool { return d.session.Open() },
-		Say:      func(text string) { s.announcer.Speak(text) },
-		Speech:   speech24k,
+		Speaker:       d.speaker,
+		HomeBusy:      func() bool { return d.session.Open() },
+		OtherRoom:     d.otherRoom,         // roomlink.go
+		CallElsewhere: d.callElsewhereHere, // roomlink.go
+		Say:           func(text string) { s.announcer.Speak(text) },
+		Speech:        speech24k,
 		Duck: func(on bool) {
 			d.mobileDuck.Store(on)
 			d.duckMusic(d.session.State())

@@ -1,6 +1,10 @@
 package phone
 
-import "time"
+import (
+	"log"
+	"strings"
+	"time"
+)
 
 // Speakerphone: the way out of the microphone for the intercom between two Echos
 // (cmd/assistant/intercom.go) - the same gain control and gate as a call's microphone (mic.go). The
@@ -25,4 +29,25 @@ func (s *Speakerphone) Played(pcm []int16, later time.Duration) {
 		peak = max(peak, int(v), -int(v))
 	}
 	s.echo.heard(peak, later)
+}
+
+// Report: the way out and what came in, for the log at the end ("" when nothing went either way).
+func (s *Speakerphone) Report() string { return joinReports(s.chain.report(), s.echo.report()) }
+
+// micReport: the log of the microphone's way onto the line when the bridge goes off, so a call
+// the other side hardly heard shows why (gate shut, or the room too quiet for the gain control).
+func (p *Phone) micReport() {
+	if r := joinReports(p.mic.report(), p.bridge.echo.report()); r != "" {
+		log.Printf("[Mic] %s", r)
+	}
+}
+
+func joinReports(parts ...string) string {
+	var out []string
+	for _, s := range parts {
+		if s != "" {
+			out = append(out, s)
+		}
+	}
+	return strings.Join(out, "; ")
 }

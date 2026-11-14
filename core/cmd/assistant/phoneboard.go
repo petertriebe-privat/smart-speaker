@@ -191,7 +191,8 @@ func (d *device) phoneMic(p *phoneConn, done <-chan struct{}) {
 	sent := ""
 	for {
 		want := "mic 0\n"
-		if d.listening() || d.session.Open() {
+		// The intercom and a call at home talked along on the phone: an open microphone.
+		if d.listening() || d.session.Open() || intercomActive() != nil || talkingHome() {
 			want = "mic 1\n"
 		}
 		if want != sent {
