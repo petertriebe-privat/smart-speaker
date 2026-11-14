@@ -228,6 +228,8 @@ The values exist only on the device, not in the repository.
 | Two people talk to two Echos at the same time | two independent conversations, both write to memory via the leader |
 | `tell_other_conversation` | also across devices (conversations visible in the heartbeat) |
 | Intercom between rooms ("call the kitchen") | peer audio directly, without GPT Live; the same building block as the call on another Echo (phase 7) |
+| Intercom from the phone app, also away from home | a stream over the home tunnel to the Echo the gateway picks; that one plays it or passes it on to the Echo of the room asked for (`16-assistant.md`) |
+| The caller asks for a room ("verbinde mich mit dem Arbeitszimmer") | `connect_speaker` with `room`: that room's Echo fetches the call's room (`/room/fetch`, then `/room/join` as `speaker_call` for a call elsewhere) |
 | Announcement everywhere | all devices; running conversations take priority as today (`Announcer.Busy`) |
 | Synchronous music in several rooms | not with librespot alone; separate topic (phase 8, own issue) |
 | End-of-conversation tone, ducking | local; a conversation in the kitchen does not lower the music in the living room |
