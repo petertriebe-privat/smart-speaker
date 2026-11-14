@@ -573,9 +573,13 @@ func (m *Memory) apply(u update, c conversation) {
 	if with != "" {
 		withName = m.People.Name(with)
 	}
-	text := vault.Conversation{At: at, Title: title, With: withName, Channel: channelLabel(c.channel), Summary: summary,
-		Keywords: keywords, Topics: topicTitles, Transcript: c.transcript}.Markdown()
-	m.queueNote(note{Kind: "conversation", Key: at, Subject: "Gespräch " + at + " – " + title, Text: text})
+	// A short command ("Licht an") gets no note of its own in the archive: it stays in the index
+	// (recall finds it), and a note per command only buried the conversations that matter.
+	if !u.Minor || len(topicTitles) > 0 {
+		text := vault.Conversation{At: at, Title: title, With: withName, Channel: channelLabel(c.channel), Summary: summary,
+			Keywords: keywords, Topics: topicTitles, Transcript: c.transcript}.Markdown()
+		m.queueNote(note{Kind: "conversation", Key: at, Subject: "Gespräch " + at + " – " + title, Text: text})
+	}
 	m.saveLocked()
 	m.mu.Unlock()
 	m.addToIndex(indexEntry{At: at, T: c.started, Title: title, Summary: summary, Keywords: keywords,
