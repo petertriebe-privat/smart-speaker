@@ -81,6 +81,10 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 - The archive stays an overview: short commands get no note of their own, and conversations older
   than a month are folded into one note per week (summaries, people, topics), their transcripts go
   to the Drive trash *(folding: Echo)*. The nightly dream condenses the facts towards about 50.
+- The memory's links as knowledge: `related` answers what belongs to a person or a topic (their
+  topics, people, conversations, rules, facts) from the device, and every person of the household
+  gets a page in the vault with profile, topics and rules, with room for the household's own notes
+  *(Echo)*.
 - Consolidation after every conversation; a nightly dream that tidies the memory, merges doubles,
   closes stale topics and finds patterns across days (only with evidence from several days).
 - Behaviour rules from corrections ("Nenn mich nicht Sir"), sorted into a rulebook; rules the assistant

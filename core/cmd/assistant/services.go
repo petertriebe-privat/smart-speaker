@@ -188,6 +188,10 @@ func (d *device) setupServices() {
 		// the rulebook as Markdown in the assistant's Drive folder, editable by the household (#82)
 		s.memory.RulebookLoad = func() ([]byte, bool, error) { return s.google.Drive().Load("Regelbuch.md") }
 		s.memory.RulebookStore = func(data []byte) error { return s.google.Drive().Store("Regelbuch.md", "text/markdown", data) }
+		// a page per person of the household in the vault's folder Personen (memory/related.go)
+		s.memory.PersonPage = func(name string, update func(string) (string, bool)) error {
+			return s.google.Drive().UpdateNote("Personen", name, update)
+		}
 		s.agenda = agenda.New(s.google, s.people.Admin)
 		s.agenda.Busy = d.anyOpen
 		if board.Phone {
@@ -320,6 +324,7 @@ func (d *device) setupServices() {
 	d.addRingTool() // hacontrols.go
 	s.memory.AddTools(r)
 	s.memory.AddDreamTool(r)
+	s.memory.AddRelatedTool(r)
 	s.people.AddTools(r)
 	s.tasks.AddTools(r)
 	// Home Assistant's tools come from HA over MCP.
