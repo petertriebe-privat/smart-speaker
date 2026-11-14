@@ -38,7 +38,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/calendar.readonly",  # calendar list, free/busy
     "https://www.googleapis.com/auth/contacts",           # read + write contacts (21.7)
-    "https://www.googleapis.com/auth/drive.file",         # own files only: backups, archive, sheets (14, 21.6)
+    "https://www.googleapis.com/auth/drive",              # full access, used only in the assistant's folder (an Obsidian vault): backups, archive, sheets, the household's notes
     "https://www.googleapis.com/auth/tasks",              # to-do lists (21.3)
     "https://www.googleapis.com/auth/gmail.modify",       # watched mailbox: read, labels, trash; never delete (#37)
 ]

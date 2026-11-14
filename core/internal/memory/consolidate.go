@@ -12,6 +12,7 @@ import (
 	"echo-assistant/internal/prompts"
 	"echo-assistant/internal/store"
 	"echo-assistant/internal/textutil"
+	"echo-assistant/internal/vault"
 )
 
 const (
@@ -240,6 +241,9 @@ func (m *Memory) Run() {
 					m.rulebookNext = now.Add(retry)
 				}
 				continue
+			case m.archiveWritable() && m.archiveUsable() && now.After(m.tidyNext):
+				m.tidyArchive(now) // archive.go
+				continue
 			case len(store.List(outboxDir)) > 0 && m.archiveUsable() && m.archiveWritable() && now.After(outboxRetry):
 				if !m.flushOutbox() {
 					outboxRetry = now.Add(retry)
@@ -300,7 +304,7 @@ func (m *Memory) processPending() {
 		// Keep the transcript at least (in the archive, findable by full-text search).
 		at := time.Unix(started, 0).Format("2006-01-02 15:04")
 		m.queueNote(note{Kind: "conversation", Key: at, Subject: "Gespräch " + at + " – nicht zusammengefasst",
-			Text: "Gespräch vom " + at + " (nicht zusammengefasst)\n\nTranskript:\n" + transcript})
+			Text: vault.Conversation{At: at, Transcript: transcript}.Markdown()})
 	}
 	store.Remove(pendingDir + "/" + name)
 	m.mu.Lock()
@@ -394,7 +398,8 @@ func (m *Memory) consolidateNow(c conversation) outcome {
 	return done
 }
 
-func (m *Memory) applyTopicLocked(title, status string, keywords []string, notes string, isDone bool, at, heading string, touch bool) {
+// link: the archive note the entry came from (vault.ConversationName, vault.DreamName).
+func (m *Memory) applyTopicLocked(title, status string, keywords []string, notes string, isDone bool, at, heading, link string, touch bool) {
 	if title == "" {
 		return
 	}
@@ -427,22 +432,12 @@ func (m *Memory) applyTopicLocked(title, status string, keywords []string, notes
 		t.T = time.Now().Unix() // recency decides which topics the prompt shows with their status
 	}
 	t.Done = isDone
-	state := "offen"
-	if t.Done {
-		state = "erledigt"
+	header := vault.Topic{Key: t.Key, Title: t.Title, Status: t.Status, Keywords: t.Keywords, Updated: today(),
+		Created: t.Created, Done: t.Done}.Markdown()
+	if notes == "" {
+		notes = t.Status
 	}
-	header := "Thema: " + t.Title + "\nSchlüssel: " + t.Key + "\nStand (" + today() + "): " + t.Status +
-		"\nStichwörter: " + t.Keywords + "\nStatus: " + state + "\nAngelegt: " + t.Created + "\n"
-	entry := "--- " + at
-	if heading != "" {
-		entry += " (" + heading + ")"
-	}
-	entry += " ---\n"
-	if notes != "" {
-		entry += notes + "\n"
-	} else {
-		entry += t.Status + "\n"
-	}
+	entry := vault.Entry(at, heading, link, notes)
 	m.queueNote(note{Kind: "topic", Key: t.Key, Subject: "Thema [" + t.Key + "]: " + t.Title, Text: header, Entry: entry})
 }
 
@@ -563,7 +558,7 @@ func (m *Memory) apply(u update, c conversation) {
 	}
 	var topicTitles []string
 	for _, t := range u.Topics {
-		m.applyTopicLocked(t.Title, t.Status, t.Keywords, t.Notes, t.Done, at, title, true)
+		m.applyTopicLocked(t.Title, t.Status, t.Keywords, t.Notes, t.Done, at, title, vault.ConversationName(at, title), true)
 		topicTitles = append(topicTitles, t.Title)
 	}
 	m.capTopicsLocked()
@@ -574,16 +569,12 @@ func (m *Memory) apply(u update, c conversation) {
 	m.core.Recent = append(m.core.Recent, e)
 	m.pruneRecentLocked()
 	topicsText := strings.Join(topicTitles, ", ")
-	label := channelLabel(c.channel)
-	text := "Gespräch vom " + at + ": " + title
+	withName := ""
 	if with != "" {
-		text += "\nMit: " + m.People.Name(with)
+		withName = m.People.Name(with)
 	}
-	if label != "" {
-		text += "\nKanal: " + label
-	}
-	text += "\nKurzfassung: " + summary + "\nStichwörter: " + keywords + "\nThemen: " + topicsText +
-		"\n\nTranskript:\n" + c.transcript
+	text := vault.Conversation{At: at, Title: title, With: withName, Channel: channelLabel(c.channel), Summary: summary,
+		Keywords: keywords, Topics: topicTitles, Transcript: c.transcript}.Markdown()
 	m.queueNote(note{Kind: "conversation", Key: at, Subject: "Gespräch " + at + " – " + title, Text: text})
 	m.saveLocked()
 	m.mu.Unlock()

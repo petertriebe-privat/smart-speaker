@@ -512,7 +512,7 @@ void dream()
     Serial.printf("[Dream] diary: %s\n[Dream] report:\n%s\n", diary.c_str(), report.c_str());
     const String today = timeutil::today();
     queueNote(MEMORY_FOLDER_CONVERSATIONS, "Traum " + today, "",
-              "Traum vom " + today + " (nächtliche Durchsicht des Gedächtnisses)\n\n" + diary + "\n\n" + report);
+              vault::dreamNote(today, diary, report));
 }
 
 }  // namespace internal

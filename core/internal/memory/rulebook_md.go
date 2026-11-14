@@ -11,6 +11,7 @@ import (
 
 	"echo-assistant/internal/store"
 	"echo-assistant/internal/textutil"
+	"echo-assistant/internal/vault"
 )
 
 // The rulebook as a Markdown file in the household's Drive (#82, step 6b): a view the household can
@@ -19,8 +20,9 @@ import (
 // household changed there (a line changed, deleted, added, moved to another area, a tentative
 // rule moved into an area = confirmed) goes into the core, so the assistant's own changes meanwhile stay.
 // Then the file is written anew. Without the title line nothing is taken over (a broken file);
-// Drive keeps older versions. The file is in the assistant's own folder (scope drive.file): only the
-// household edits it, so it counts as their words.
+// Drive keeps older versions. The file is in the assistant's own folder: only the household edits
+// it, so it counts as their words. It is a note of the Obsidian vault (package vault): properties
+// first, a person as a wikilink "(nur für [[Anna]])", read back with or without the link.
 
 const (
 	rulebookWritten = "rulebook_written.md"
@@ -50,6 +52,8 @@ func (m *Memory) personName(id string) string {
 
 func (m *Memory) rulebookMarkdownLocked() string {
 	var b strings.Builder
+	b.WriteString(vault.FrontMatter(vault.Property{Key: "typ", Value: "Regelbuch"},
+		vault.Property{Key: "tags", Values: []string{"regelbuch"}}))
 	b.WriteString(rulebookTitle() + "\n\n")
 	b.WriteString("Stand " + time.Now().Format("02.01.2006 15:04") + ". Diese Datei schreibt " + prompts.Name() + " aus seinem Gedächtnis. " +
 		"Du kannst sie bearbeiten: eine Regel ändern, löschen, in einen anderen Bereich verschieben oder unter einem " +
@@ -59,7 +63,8 @@ func (m *Memory) rulebookMarkdownLocked() string {
 	line := func(r Rule) string {
 		text := fmt.Sprintf("- [%d] %s", r.ID, r.Text)
 		if r.Person != "" {
-			text += " (nur für " + m.personName(r.Person) + ")"
+			name := m.personName(r.Person)
+			text += " (nur für " + vault.Link(name, name) + ")" // a wikilink: the person's note in Obsidian
 		}
 		if r.Origin == "learned" && !r.Tentative() {
 			text += " (gelernt)"
@@ -123,7 +128,10 @@ func parseRulebook(md string) (rules []mdRule, ok bool) {
 		r := mdRule{area: area, tentative: tentative, text: g[2]}
 		r.id, _ = strconv.Atoi(g[1])
 		if only := onlyForRe.FindStringSubmatch(r.text); only != nil {
-			r.only = strings.TrimSpace(only[1])
+			r.only = strings.TrimSpace(strings.NewReplacer("[[", "", "]]", "").Replace(only[1]))
+			if bar := strings.IndexByte(r.only, '|'); bar >= 0 { // [[Note|Name]]
+				r.only = strings.TrimSpace(r.only[bar+1:])
+			}
 		}
 		r.text = strings.TrimSpace(becauseRe.ReplaceAllString(learnedRe.ReplaceAllString(onlyForRe.ReplaceAllString(r.text, ""), ""), ""))
 		if r.text != "" {

@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"echo-assistant/internal/vault"
 )
 
 // Drive as the backup target (package backup) and as the memory's archive tier (memory.Archive):
@@ -12,7 +14,7 @@ import (
 const (
 	driveTopics        = "Themen" // Drive subfolders of the archive
 	driveConversations = "Gespräche"
-	archiveMIME        = "text/plain"
+	legacyMIME         = "text/plain" // notes until 11/2026 (vault.Convert)
 )
 
 // BackupTarget stores backups as files in the folder the assistant. It implements backup.Target.
@@ -87,13 +89,15 @@ func (r *Archive) LoadTopic(key, title string) (string, error) { return r.findNo
 func (r *Archive) LoadConversation(at string) (string, error) { return r.findNote(false, at, "") }
 
 // StoreTopic replaces a topic's dossier (found by its key); a new one is made when there is none.
-// text is the whole dossier, history included.
+// text is the whole dossier, history included. The file is named after the topic's title
+// (renamed when the title changed, so wikilinks reach it).
 func (r *Archive) StoreTopic(key, subject, text string) error {
 	if key == "" { // "Thema [key]: title"
 		if open, closing := strings.IndexByte(subject, '['), strings.IndexByte(subject, ']'); open >= 0 && closing > open {
 			key = subject[open+1 : closing]
 		}
 	}
+	name := vault.NameFromSubject(subject) + vault.Ext
 	var found []Entry
 	if key != "" {
 		var err error
@@ -105,13 +109,15 @@ func (r *Archive) StoreTopic(key, subject, text string) error {
 	started := time.Now()
 	var err error
 	if len(found) > 0 {
-		err = r.d.Replace(found[0].ID, archiveMIME, []byte(text))
+		if err = r.d.Replace(found[0].ID, vault.MIME, []byte(text)); err == nil && (found[0].Name != name || found[0].Type != vault.MIME) {
+			err = r.d.Rename(found[0].ID, name, vault.MIME)
+		}
 	} else {
 		var props map[string]string
 		if key != "" {
 			props = map[string]string{"topic": key}
 		}
-		err = r.d.Create(driveTopics, subject+".txt", archiveMIME, []byte(text), props)
+		err = r.d.Create(driveTopics, name, vault.MIME, []byte(text), props)
 	}
 	logStored(driveTopics, subject, err, started)
 	return err
@@ -126,7 +132,8 @@ func (r *Archive) StoreConversation(at, subject, text string) error {
 		}
 	}
 	// By name: two conversations can start in the same minute.
-	found, err := r.d.List(driveConversations, "name="+Quoted(subject+".txt"), 1)
+	name := vault.NameFromSubject(subject) + vault.Ext
+	found, err := r.d.List(driveConversations, "name="+Quoted(name), 1)
 	if err != nil {
 		log.Printf("[Memory] Drive %s: %v", driveConversations, err)
 		return err
@@ -139,7 +146,7 @@ func (r *Archive) StoreConversation(at, subject, text string) error {
 	if at != "" {
 		props = map[string]string{"at": at}
 	}
-	err = r.d.Create(driveConversations, subject+".txt", archiveMIME, []byte(text), props)
+	err = r.d.Create(driveConversations, name, vault.MIME, []byte(text), props)
 	logStored(driveConversations, subject, err, started)
 	return err
 }
@@ -152,8 +159,13 @@ func logStored(folder, subject string, err error, started time.Time) {
 	log.Printf("[Memory] Drive %s: %s -> %s (%d ms)", folder, subject, result, time.Since(started).Milliseconds())
 }
 
-// Search: full text over all notes in the assistant's files for the first two terms; at most two notes
-// (dossiers, transcripts).
+// noteTypes: the MIME types of notes: Markdown (as Drive names it for files from Obsidian), and
+// text (the old format and the household's own).
+const noteTypes = "(mimeType='text/markdown' or mimeType='text/x-markdown' or mimeType='text/plain')"
+
+// Search: full text over the notes in the assistant's folder and the folders in it (dossiers,
+// transcripts, and with the scope drive the household's own notes) for the first two terms; at
+// most two notes.
 func (r *Archive) Search(terms []string) ([]string, error) {
 	if len(terms) == 0 {
 		return nil, nil
@@ -162,10 +174,23 @@ func (r *Archive) Search(terms []string) ([]string, error) {
 	if len(terms) > 1 {
 		query += " or fullText contains " + Quoted(terms[1])
 	}
-	found, err := r.d.List("", "mimeType='"+archiveMIME+"' and ("+query+")", 2)
+	folders, err := r.d.Folders()
 	if err != nil {
 		return nil, err
 	}
+	var found []Entry
+	for _, parents := range InParents(folders) {
+		more, err := r.d.List("", noteTypes+" and ("+query+") and "+parents, 2)
+		if err != nil {
+			return nil, err
+		}
+		found = append(found, more...)
+	}
+	found = found[:min(len(found), 2)]
+	return r.texts(found)
+}
+
+func (r *Archive) texts(found []Entry) ([]string, error) {
 	var notes []string
 	var lastErr error
 	for _, file := range found {
@@ -177,4 +202,45 @@ func (r *Archive) Search(terms []string) ([]string, error) {
 		}
 	}
 	return notes, lastErr
+}
+
+// Tidy keeps the archive an Obsidian vault: it converts up to limit notes of the old text format
+// in Themen and Gespräche (and any other .txt there) into Markdown with their new name (package
+// vault), and marks the assistant's folder. more: notes are left for the next round. Only the
+// primary device calls it (memory.ArchiveWritable).
+func (r *Archive) Tidy(limit int) (more bool, err error) {
+	if err := r.d.MarkRoot(); err != nil {
+		return false, err
+	}
+	converted := 0
+	for _, folder := range []string{driveTopics, driveConversations} {
+		found, err := r.d.List(folder, "mimeType='"+legacyMIME+"'", limit+1)
+		if err != nil {
+			return false, err
+		}
+		for _, file := range found {
+			if converted == limit {
+				return true, nil
+			}
+			data, err := r.d.Download(file.ID)
+			if err != nil {
+				return false, err
+			}
+			name, markdown, ok := vault.Convert(file.Name, string(data))
+			if ok {
+				err = r.d.Replace(file.ID, vault.MIME, []byte(markdown))
+			} else { // not the assistant's format: the text stays, as a note Obsidian shows
+				name = vault.FileName(strings.TrimSuffix(file.Name, ".txt"))
+			}
+			if err == nil {
+				err = r.d.Rename(file.ID, name+vault.Ext, vault.MIME)
+			}
+			if err != nil {
+				return false, err
+			}
+			log.Printf("[Drive] %s/%s -> %s%s", folder, file.Name, name, vault.Ext)
+			converted++
+		}
+	}
+	return false, nil
 }

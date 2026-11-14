@@ -28,7 +28,7 @@ const tokenURL = "https://oauth2.googleapis.com/token"
 // Scopes as SCOPES in tools/google_auth.py.
 var Scopes = []string{
 	"https://www.googleapis.com/auth/calendar.events", "https://www.googleapis.com/auth/calendar.readonly",
-	"https://www.googleapis.com/auth/contacts", "https://www.googleapis.com/auth/drive.file",
+	"https://www.googleapis.com/auth/contacts", "https://www.googleapis.com/auth/drive",
 	"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/gmail.modify",
 }
 

@@ -15,6 +15,7 @@ import (
 	"echo-assistant/internal/store"
 	"echo-assistant/internal/textutil"
 	"echo-assistant/internal/tools"
+	"echo-assistant/internal/vault"
 )
 
 // Dreaming, as devices/atoms3r/src/assistant/memory_dream.cpp: once a night (DREAM_HOUR) the memory
@@ -403,7 +404,7 @@ func (m *Memory) applyDream(d dreamResult, times map[string]bool) string {
 		}
 		fmt.Fprintf(&report, "- Thema „%s“%s (%s)\n", t.Title, state, e.Reason)
 		m.applyTopicLocked(t.Title, status, addKeywords(nil, t.Keywords), "Nächtliche Durchsicht: "+e.Reason,
-			e.Done, at, "Nächtliche Durchsicht", false)
+			e.Done, at, "Nächtliche Durchsicht", vault.DreamName(date), false)
 	}
 	// Topics that are one: the first keeps going with the merged status, the others are closed.
 	for _, e := range d.TopicMerge {
@@ -426,11 +427,11 @@ func (m *Memory) applyDream(d dreamResult, times map[string]bool) string {
 			keywords = addKeywords(keywords, other.Keywords)
 			m.applyTopicLocked(other.Title, "Zusammengeführt in „"+keptTitle+"“.", addKeywords(nil, other.Keywords),
 				"Nächtliche Durchsicht: zusammengeführt in „"+keptTitle+"“ ("+e.Reason+")", true, at,
-				"Nächtliche Durchsicht", false)
+				"Nächtliche Durchsicht", vault.DreamName(date), false)
 		}
 		report.WriteString(" (" + e.Reason + ")\n")
 		m.applyTopicLocked(keptTitle, e.Status, keywords, "Nächtliche Durchsicht: andere Themen hier zusammengeführt",
-			kept.Done, at, "Nächtliche Durchsicht", false)
+			kept.Done, at, "Nächtliche Durchsicht", vault.DreamName(date), false)
 	}
 	// Profile fields said shorter (the content stays; the model must not drop what still holds).
 	for _, e := range d.Profiles {
@@ -731,7 +732,7 @@ func (m *Memory) dream() {
 	log.Printf("[Dream] diary: %s\n[Dream] report:\n%s", d.Diary, report)
 	day := today()
 	m.queueNote(note{Kind: "conversation", Key: time.Now().Format("2006-01-02 15:04"), Subject: "Traum " + day,
-		Text: "Traum vom " + day + " (nächtliche Durchsicht des Gedächtnisses)\n\n" + d.Diary + "\n\n" + report})
+		Text: vault.Dream{Day: day, Diary: d.Diary, Report: report}.Markdown()})
 }
 
 // AddDreamTool registers the tool dream (run the review now, or undo the last one).

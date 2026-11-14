@@ -9,8 +9,8 @@ import (
 	"echo-assistant/internal/tools"
 )
 
-// Tables the user keeps with the assistant, as Google Sheets in the Drive folder Jarvis/Tabellen (scope
-// drive.file: The assistant sees only the sheets it made). Tools (the admin's account: Private):
+// Tables the user keeps with the assistant, as Google Sheets in the Drive folder Jarvis/Tabellen (with
+// the scope drive also the sheets the household puts there). Tools (the admin's account: Private):
 // read_sheet (a sheet's rows, or all sheets with links), add_sheet_row (makes the sheet with
 // column names when missing), update_sheet_row. As devices/atoms3r/src/services/sheets.cpp.
 

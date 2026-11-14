@@ -74,6 +74,10 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
 ### Memory and learning
 - A profile per person, facts, topics with dossiers, every conversation with its transcript
   (Google Drive archive); `recall` searches it ("Wo waren wir bei der Radtour?").
+- The Drive folder is an Obsidian vault: dossiers, conversations, dreams and the rulebook are
+  Markdown with properties and wikilinks (person, topics, the conversation an entry came from), so
+  the graph shows who talked about what; older text notes are converted on the main Echo, and
+  `recall` also finds the household's own notes in the folder.
 - Consolidation after every conversation; a nightly dream that tidies the memory, merges doubles,
   closes stale topics and finds patterns across days (only with evidence from several days).
 - Behaviour rules from corrections ("Nenn mich nicht Sir"), sorted into a rulebook; rules the assistant
