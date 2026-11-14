@@ -30,6 +30,8 @@ type fakeDrive struct {
 type fakeFile struct {
 	id, name, mime, parent, content string
 	props                           map[string]string
+	created                         time.Time // zero: long ago
+	trashed                         bool
 }
 
 var (
@@ -38,6 +40,7 @@ var (
 	qMIME     = regexp.MustCompile(`mimeType='([^']+)'`)
 	qProperty = regexp.MustCompile(`appProperties has \{ key='([^']+)' and value='([^']*)' \}`)
 	qFullText = regexp.MustCompile(`fullText contains '([^']*)'`)
+	qCreated  = regexp.MustCompile(`createdTime < '([^']*)'`)
 )
 
 func unquote(literal string) string {
@@ -52,6 +55,14 @@ func (f *fakeDrive) add(name, mimeType, parent, content string, props map[string
 }
 
 func (f *fakeDrive) matches(file *fakeFile, q string) bool {
+	if file.trashed {
+		return false
+	}
+	if g := qCreated.FindStringSubmatch(q); g != nil {
+		if before, err := time.Parse(time.RFC3339, g[1]); err != nil || !file.created.Before(before) {
+			return false
+		}
+	}
 	if g := qName.FindStringSubmatch(q); g != nil && file.name != unquote(g[1]) {
 		return false
 	}
@@ -145,9 +156,11 @@ func (f *fakeDrive) RoundTrip(req *http.Request) (*http.Response, error) {
 		var meta struct {
 			Name, MimeType string
 			AppProperties  map[string]string
+			Trashed        bool
 		}
 		json.Unmarshal(body, &meta)
 		file := f.files[id]
+		file.trashed = file.trashed || meta.Trashed
 		if meta.Name != "" {
 			file.name, file.mime = meta.Name, meta.MimeType
 		}

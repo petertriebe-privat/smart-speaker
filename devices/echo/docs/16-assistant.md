@@ -622,6 +622,13 @@ Page texts are data, not instructions; at most 12,000 characters per page (4,000
   wikilinks (`internal/vault`, `assistant/vault.h`; details in `devices/atoms3r/docs/google.md`).
   Only the main Echo converts old `.txt` notes (`Archive.Tidy`, in the memory loop with
   `ArchiveWritable`), and only the Echo searches every level of folders in the vault (the M5 one).
+  The Echo also folds conversations older than a month into week notes (`Archive.FoldWeek`).
+- **The dream measured (09.–14.11.2026):** six nights on the main Echo, 22–31 s each, ~24 000
+  tokens in. Everything the diary named was applied (topics, affairs), but it kept nearly all
+  facts: 55 → 60 in the week, the memory in the prompt 19 300 → 22 000 characters, at most −1 %
+  a night („When in doubt, keep“). Since 14.11. `DREAM_INSTRUCTIONS` also removes details of done
+  matters, changing states and trivia that would change nothing, keeps in doubt only whether a
+  fact holds (not whether it matters) and aims at about 50 facts.
 - **Phone call at the speaker:** Listening in, speaking along and two-way talk exist only here; the M5
   has no echo cancellation at the speaker (issue #3) and would have to limit itself to listening in.
 - **Learning from behavior and the learning report** (2026-10-27, `internal/memory/behaviour.go`,

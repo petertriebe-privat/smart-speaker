@@ -632,10 +632,12 @@ void apply(const JsonDocument& update, const Conversation& conversation)
     if (minor) entry["minor"] = true;  // short commands: soon only in the index (pruneRecent)
     pruneRecent();
     addToIndex(at, conversation.started, title, summary, keywords, topicTitles, with, conversation.channel.c_str());
-    queueNote(MEMORY_FOLDER_CONVERSATIONS, "Gespräch " + at + " – " + title, "",
-              vault::conversationNote(at, title, with.length() ? people::name(with) : String(),
-                                      channelLabel(conversation.channel.c_str()), summary, keywords, topicTitles,
-                                      conversation.transcript));
+    // A short command gets no note of its own in the archive (the index keeps it), as the Echo.
+    if (!minor || topicTitles.length())
+        queueNote(MEMORY_FOLDER_CONVERSATIONS, "Gespräch " + at + " – " + title, "",
+                  vault::conversationNote(at, title, with.length() ? people::name(with) : String(),
+                                          channelLabel(conversation.channel.c_str()), summary, keywords, topicTitles,
+                                          conversation.transcript));
     saveCore();
     queueCoreBackup();
     Serial.printf("[Memory] with %s, profile %u fields%s, +%u ~%u -%u facts, %d rules, topics: %s, conversation: %s\n",

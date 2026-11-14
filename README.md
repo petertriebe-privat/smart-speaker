@@ -78,6 +78,9 @@ and [devices/atoms3r/docs/architecture.md](devices/atoms3r/docs/architecture.md)
   Markdown with properties and wikilinks (person, topics, the conversation an entry came from), so
   the graph shows who talked about what; older text notes are converted on the main Echo, and
   `recall` also finds the household's own notes in the folder.
+- The archive stays an overview: short commands get no note of their own, and conversations older
+  than a month are folded into one note per week (summaries, people, topics), their transcripts go
+  to the Drive trash *(folding: Echo)*. The nightly dream condenses the facts towards about 50.
 - Consolidation after every conversation; a nightly dream that tidies the memory, merges doubles,
   closes stale topics and finds patterns across days (only with evidence from several days).
 - Behaviour rules from corrections ("Nenn mich nicht Sir"), sorted into a rulebook; rules the assistant

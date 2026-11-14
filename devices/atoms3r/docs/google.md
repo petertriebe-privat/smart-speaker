@@ -107,6 +107,19 @@ Desktop on the PC; on a phone a sync plugin or app). Format: `core/internal/vaul
   archive search runs only in the folder and the folders in it (the Echo: all levels, without
   `.obsidian` and `.trash`; the M5: one level). So `recall` also finds the household's own notes.
   The login check compares scopes exactly (`…/drive` is a prefix of `…/drive.file`).
+- What the archive keeps (14.11.2026): a short command (`minor` in the consolidation, „Licht an“)
+  gets no conversation note any more, only its line in the index (both devices; one that touched
+  a topic still gets one, its dossier links it). About half the notes of a week were such commands.
+  Conversations older than `ARCHIVE_FOLD_DAYS` (30) are folded on the main Echo into one note per
+  ISO week, `Wochen/Woche 2026-W46.md` (properties `woche`, `von`, `bis`, `personen`, `themen`; a
+  line per conversation with time, title, summary, person and topics), and their notes go to
+  Drive's trash (restorable for 30 days): `Archive.FoldWeek`, one week per round after `Tidy`.
+  Dreams and the household's own notes stay. What lasts is in the core and the dossiers; the
+  transcripts were the archive's bulk and nobody read them again. `open_conversation` of a folded
+  conversation says so and points to `recall`, which finds the week note. Why not keep everything:
+  the archive costs neither prompt nor speed (`recall` gets at most two notes from Drive's
+  full-text search, cut to `MEMORY_RECALL_CHARS`), but a vault of thousands of transcripts is no
+  overview for the household.
 - `drive` is a restricted scope: Google shows the unverified-app warning at the login, which is
   fine for the household's own client. Until the admin logs in again (`tools/google_auth.py`, or the
   login link), the old `drive.file` login keeps working with the assistant's own files.
