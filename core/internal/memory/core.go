@@ -235,6 +235,9 @@ type Memory struct {
 	// no Drive, no file.
 	RulebookLoad  func() ([]byte, bool, error)
 	RulebookStore func(data []byte) error
+	// PersonPage: a person's page in the vault (related.go): update gets its current text ("" =
+	// none) and returns the new one, false = unchanged. nil = no Drive, no pages.
+	PersonPage    func(name string, update func(old string) (string, bool)) error
 	ReviewAffairs func(changes []AffairReview) string
 	// ReportHour: the hour of the weekly learning report for a person from their rules
 	// (prefer.Hour "learn_report"); nil = LEARN_REPORT_HOUR.
@@ -253,6 +256,7 @@ type Memory struct {
 	ruleSortRetry  time.Time // the rulebook's sorting failed: not before then
 	rulebookNext   time.Time // the next sync of the rulebook's Markdown file
 	tidyNext       time.Time // the next round of keeping the archive an Obsidian vault (tidyArchive)
+	personNext     time.Time // the next round of the person pages (syncPersonPages)
 }
 
 func New(p *people.Register) *Memory {

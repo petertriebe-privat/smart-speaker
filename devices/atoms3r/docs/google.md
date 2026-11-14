@@ -120,6 +120,15 @@ Desktop on the PC; on a phone a sync plugin or app). Format: `core/internal/vaul
   the archive costs neither prompt nor speed (`recall` gets at most two notes from Drive's
   full-text search, cut to `MEMORY_RECALL_CHARS`), but a vault of thousands of transcripts is no
   overview for the household.
+- The links read back (14.11.2026, Echo, `memory/related.go`): the tool `related` follows them for
+  a person of the household or a topic, from the device's index of conversations (person, topics)
+  and the core: a person's topics (open or done) with how often, the people and the other topics
+  of a topic's conversations, the newest conversations, rules and facts naming it. Local, no
+  Drive, cut to `MEMORY_RECALL_CHARS`; „Was hängt alles mit der Heizung zusammen?“. The same
+  relations make `Personen/<Name>.md` on the primary every `PERSON_PAGES_MS` (1 h, written only when
+  changed): profile, open and done topics as links, the person's rules (link to the rulebook),
+  facts naming them, the newest conversations; so `[[Anna]]` in the conversations and week notes
+  leads to a page. Everything below „## Eigene Notizen“ is the household's and stays.
 - `drive` is a restricted scope: Google shows the unverified-app warning at the login, which is
   fine for the household's own client. Until the admin logs in again (`tools/google_auth.py`, or the
   login link), the old `drive.file` login keeps working with the assistant's own files.

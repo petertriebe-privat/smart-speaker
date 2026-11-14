@@ -244,6 +244,13 @@ func (m *Memory) Run() {
 			case m.archiveWritable() && m.archiveUsable() && now.After(m.tidyNext):
 				m.tidyArchive(now) // archive.go
 				continue
+			case m.archiveWritable() && m.PersonPage != nil && now.After(m.personNext):
+				// a page per person of the household in the vault (related.go)
+				m.personNext = now.Add(time.Duration(prompts.Int("PERSON_PAGES_MS", 3600000)) * time.Millisecond)
+				if !m.syncPersonPages() {
+					m.personNext = now.Add(retry)
+				}
+				continue
 			case len(store.List(outboxDir)) > 0 && m.archiveUsable() && m.archiveWritable() && now.After(outboxRetry):
 				if !m.flushOutbox() {
 					outboxRetry = now.Add(retry)

@@ -425,6 +425,15 @@
   }
  },
  {
+  "id": "memory-related",
+  "input": "Was hängt bei uns gerade alles mit der Heizung zusammen?",
+  "expect": {
+   "any": [
+    "related"
+   ]
+  }
+ },
+ {
   "id": "memory-recall",
   "input": "Was hatten wir letzte Woche über den Urlaub besprochen?",
   "expect": {

@@ -481,6 +481,31 @@ func (d *Drive) Replace(id, mime string, data []byte) error {
 	return err
 }
 
+// UpdateNote: the Markdown note name in the subfolder (made when missing): update gets its
+// current text ("" = none) and returns the new one; false = unchanged, nothing is written.
+func (d *Drive) UpdateNote(folder, name string, update func(old string) (string, bool)) error {
+	found, err := d.List(folder, "name="+Quoted(name), 1)
+	if err != nil {
+		return err
+	}
+	old := ""
+	if len(found) > 0 {
+		data, err := d.Download(found[0].ID)
+		if err != nil {
+			return err
+		}
+		old = string(data)
+	}
+	text, changed := update(old)
+	if !changed {
+		return nil
+	}
+	if len(found) > 0 {
+		return d.Replace(found[0].ID, "text/markdown", []byte(text))
+	}
+	return d.Create(folder, name, "text/markdown", []byte(text), nil)
+}
+
 // TrashFile moves one file to Drive's trash.
 func (d *Drive) TrashFile(id string) error {
 	return d.json("PATCH", "/drive/v3/files/"+id+"?fields=id", map[string]any{"trashed": true}, nil)
